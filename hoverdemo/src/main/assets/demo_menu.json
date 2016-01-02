@@ -1,0 +1,31 @@
+{
+  "nest":{
+    "title":"Red",
+    "type":"menu",
+    "items":[
+      {
+        "title":"Take Snapshot",
+        "type":"action",
+        "data":"TODO"
+      }
+    ]
+  },
+  "camera":{
+    "title":"Green",
+    "type":"menu",
+    "items":[
+
+    ]
+  },
+  "protect":{
+    "title":"Blue",
+    "type":"menu",
+    "items":[
+      {
+        "title":"Test Alarms",
+        "type":"view",
+        "data":"TODO"
+      }
+    ]
+  }
+}

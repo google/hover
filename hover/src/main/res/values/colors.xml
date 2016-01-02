@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="floatingmenu_popup_color">#EFEFEF</color>
+    <color name="floatingmenu_shade">#CC000000</color>
+    <color name="floating_menu_content_hr_color">#CCCCCC</color>
+    <color name="floating_menu_content_title_color">#AAAAAA</color>
+    <color name="menu_item_title_color">#666666</color>
+</resources>
