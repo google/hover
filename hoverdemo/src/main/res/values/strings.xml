@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Hover Demo</string>
+    <string name="button_launch_menu">Launch Menu</string>
+    <string name="button_launch_hover_menu_activity">Launch Hover Menu Activity</string>
+</resources>

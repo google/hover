@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Hover Menu</string>
+    <string name="floatingmenuview_tabview_id">floatingmenuview_tabview_id</string> <!-- Used as a Tag key for tab IDs in HoverMenuView -->
+</resources>

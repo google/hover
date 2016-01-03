@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<io.mattcarroll.hover.defaulthovermenu.view.ViewHoverMenu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/hovermenu"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    />
