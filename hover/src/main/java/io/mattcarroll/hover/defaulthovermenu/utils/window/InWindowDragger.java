@@ -84,6 +84,9 @@ public class InWindowDragger implements Dragger {
 
     /**
      * Note: {@code view} must already be added to the {@code Window}.
+     * @param context context
+     * @param windowViewController windowViewController
+     * @param tapTouchSlop tapTouchSlop
      */
     public InWindowDragger(@NonNull Context context, @NonNull WindowViewController windowViewController, float tapTouchSlop) {
         mContext = context;

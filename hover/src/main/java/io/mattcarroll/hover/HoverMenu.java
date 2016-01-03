@@ -17,6 +17,8 @@ public interface HoverMenu {
     /**
      * Returns the current state of the collapsed menu anchor. When the {@code HoverMenu} is collapsed
      * and the user is not actively dragging it, the collapsed icon gets pulled to an anchor position.
+     *
+     * @return anchor state of this HoverMenu
      */
     PointF getAnchorState();
 

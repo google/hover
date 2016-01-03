@@ -1,7 +1,6 @@
 apply plugin: 'com.android.library'
 
-group = 'io.mattcarroll'
-version = '0.9.0-SNAPSHOT'
+version = '0.9.0'
 
 android {
     compileSdkVersion 23
@@ -24,4 +23,39 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.1.1'
+}
+
+// For Bintray publishing
+ext {
+    bintrayRepo = 'maven'
+    bintrayName = 'hover'
+
+    publishedGroupId = 'io.mattcarroll.hover'
+    artifact = 'hover'
+    libraryName = 'Hover'
+
+    libraryDescription = 'An Android implementation of a floating menu.'
+
+    siteUrl = 'http://matthew-carroll.github.io/hover/'
+    gitUrl = 'https://github.com/matthew-carroll/hover.git'
+
+    libraryVersion = version
+
+    developerId = 'matthew-carroll'
+    developerName = 'Matt Carroll'
+    developerEmail = 'me@mattcarroll.io'
+
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    allLicenses = ["Apache-2.0"]
+}
+
+apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/installv1.gradle'
+apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/bintrayv1.gradle'
+
+// The following is used to add our dependencies to the classpath for Javadoc linking.
+afterEvaluate {
+    javadoc.classpath += files(android.libraryVariants.collect { variant ->
+        variant.javaCompile.classpath.files
+    })
 }

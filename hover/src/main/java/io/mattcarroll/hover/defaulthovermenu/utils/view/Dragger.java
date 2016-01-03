@@ -31,16 +31,22 @@ public interface Dragger {
 
         /**
          * The user has begun dragging.
+         * @param x x-coordinate of the user's drag start (in the parent View's coordinate space)
+         * @param y y-coordiante of the user's drag start (in the parent View's coordinate space)
          */
         void onDragStart(float x, float y);
 
         /**
          * The user has dragged to the given coordinates.
+         * @param x x-coordinate of the user's drag (in the parent View's coordinate space)
+         * @param y y-coordiante of the user's drag (in the parent View's coordinate space)
          */
         void onDragTo(float x, float y);
 
         /**
          * The user has stopped touching the drag area.
+         * @param x x-coordinate of the user's release (in the parent View's coordinate space)
+         * @param y y-coordiante of the user's release (in the parent View's coordinate space)
          */
         void onReleasedAt(float x, float y);
 

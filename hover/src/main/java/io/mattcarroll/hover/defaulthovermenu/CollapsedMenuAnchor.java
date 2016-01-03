@@ -79,7 +79,7 @@ public class CollapsedMenuAnchor {
      * Sets the internal anchor state of this {@code CollapsedMenuAnchor}.
      *
      * @param side left or right side
-     * @param normalizedY y-position normalized -> [0.0, 1.0]
+     * @param normalizedY y-position normalized: [0.0, 1.0]
      */
     public void setAnchorAt(int side, float normalizedY) {
         mSide = side;
@@ -112,7 +112,7 @@ public class CollapsedMenuAnchor {
      * were given, then the resulting anchor position would be (left, 0.7) because this anchor
      * operates by pulling items to the sides of the display.
      *
-     * @param normalizedPosition (x,y) coordinate with normalized values -> [0.0,1.0]
+     * @param normalizedPosition (x,y) coordinate with normalized values: [0.0,1.0]
      */
     public void setAnchorByInterpolation(@NonNull PointF normalizedPosition) {
         mSide = normalizedPosition.x < 0.5f ? LEFT : RIGHT;

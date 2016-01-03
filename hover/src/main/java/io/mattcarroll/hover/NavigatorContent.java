@@ -10,6 +10,8 @@ public interface NavigatorContent {
 
     /**
      * Returns the visual display of this content.
+     *
+     * @return the visual representation of this content
      */
     @NonNull
     View getView();

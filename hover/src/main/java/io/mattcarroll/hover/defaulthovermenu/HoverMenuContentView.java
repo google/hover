@@ -54,6 +54,8 @@ public class HoverMenuContentView extends FrameLayout {
 
     /**
      * Positions the selector triangle below the center of the given {@code tabView}.
+     *
+     * @param tabView the tab with which this content view will align its selector
      */
     public void setActiveTab(@NonNull View tabView) {
         if (null != mSelectedTabView) {

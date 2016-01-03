@@ -18,6 +18,8 @@ public interface Navigator {
     /**
      * Sets the title that is displayed by this {@code Navigator}. The details of the title presentation
      * are implementation specific.
+     *
+     * @param title Title displayed in this Navigator
      */
     void setTitle(@NonNull String title);
 
@@ -30,7 +32,7 @@ public interface Navigator {
      *
      * To remove the given {@code content}, make a corresponding call to {@link #popContent()}.
      *
-     * @param content Content to display.
+     * @param content Content to display
      */
     void pushContent(@NonNull NavigatorContent content);
 
