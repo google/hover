@@ -1,8 +1,17 @@
-#Hover
-
+Hover
+=====
 Hover is a floating menu implementation for Android.
 
-## License
+Download
+--------
+Hover is available through jCenter:
+
+```groovy
+compile 'io.mattcarroll.hover:hover:0.9.1'
+```
+
+License
+=======
 
     Copyright (C) 2016 Matt Carroll
 
@@ -17,3 +26,4 @@ Hover is a floating menu implementation for Android.
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing permissions and
     limitations under the License.
+    
