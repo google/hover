@@ -27,28 +27,28 @@ public class DemoHoverMenuAdapter implements HoverMenuAdapter {
     public DemoHoverMenuAdapter(@NonNull Context context) {
         mContext = context;
 
-        MenuItem redMenu = new MenuItem(MenuItem.Type.MENU, UUID.randomUUID(), "Red", null);
-        redMenu.addItems(
-                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "Red Menu Item 1", null),
-                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "Red Menu Item 2", null),
-                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "Red Menu Item 3", null)
+        MenuItem locationMenu = new MenuItem(MenuItem.Type.MENU, UUID.randomUUID(), "User Location", null);
+        locationMenu.addItems(
+                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "GPS", null),
+                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "Cell Tower Triangulation", null),
+                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "Location Services", null)
         );
-        mRedContent = new MenuListNavigatorContent(context, redMenu);
+        mRedContent = new MenuListNavigatorContent(context, locationMenu);
 
-        MenuItem greenMenu = new MenuItem(MenuItem.Type.MENU, UUID.randomUUID(), "Green", null);
-        greenMenu.addItems(
-                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "Green Menu Item 1", null),
-                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "Green Menu Item 2", null)
+        MenuItem bluetoothMenu = new MenuItem(MenuItem.Type.MENU, UUID.randomUUID(), "Bluetooth Devices", null);
+        bluetoothMenu.addItems(
+                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "Estimote Beacon", null),
+                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "Moto 360", null)
         );
-        mGreenContent = new MenuListNavigatorContent(context, greenMenu);
+        mGreenContent = new MenuListNavigatorContent(context, bluetoothMenu);
 
-        MenuItem blueMenu = new MenuItem(MenuItem.Type.MENU, UUID.randomUUID(), "Blue", null);
-        blueMenu.addItems(
-                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "Blue Menu Item 1", null),
-                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "Blue Menu Item 2", null),
-                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "Blue Menu Item 3", null)
+        MenuItem wifiMenu = new MenuItem(MenuItem.Type.MENU, UUID.randomUUID(), "WiFi", null);
+        wifiMenu.addItems(
+                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "Wireless Access Point", null),
+                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "ATT-483759", null),
+                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "Linksys-1294562", null)
         );
-        mBlueContent = new MenuListNavigatorContent(context, blueMenu);
+        mBlueContent = new MenuListNavigatorContent(context, wifiMenu);
     }
 
     @Override
@@ -60,11 +60,11 @@ public class DemoHoverMenuAdapter implements HoverMenuAdapter {
     public View getTabView(int index) {
         switch (index) {
             case 0:
-                return createTabView(R.drawable.ic_tab_red);
+                return createTabView(R.drawable.ic_tab_location);
             case 1:
-                return createTabView(R.drawable.ic_tab_green);
+                return createTabView(R.drawable.ic_tab_bluetooth);
             case 2:
-                return createTabView(R.drawable.ic_tab_blue);
+                return createTabView(R.drawable.ic_tab_wifi);
             default:
                 throw new RuntimeException("Unknown tab selected: " + index);
         }
