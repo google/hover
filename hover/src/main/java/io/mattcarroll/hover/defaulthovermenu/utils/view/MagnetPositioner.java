@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.animation.BounceInterpolator;
+import android.view.animation.Interpolator;
 
 import io.mattcarroll.hover.defaulthovermenu.CollapsedMenuAnchor;
 
@@ -28,9 +29,6 @@ public class MagnetPositioner {
     private ValueAnimator.AnimatorUpdateListener mPullUpdateListener = new ValueAnimator.AnimatorUpdateListener() {
         @Override
         public void onAnimationUpdate(ValueAnimator valueAnimator) {
-//            Log.d(TAG, "onAnimationUpdate() - Setting position: (" + ((int) valueAnimator.getAnimatedValue()) + ", " + mAnchoredBounds.top + ")");
-//            mPositionable.setPosition(new Point((int) valueAnimator.getAnimatedValue(), mAnchoredBounds.top));
-
             int newX = mStartingBounds.left + (int) ((mAnchoredBounds.left - mStartingBounds.left) * valueAnimator.getAnimatedFraction());
             int newY = mStartingBounds.top + (int) ((mAnchoredBounds.top - mStartingBounds.top) * valueAnimator.getAnimatedFraction());
             mPositionable.setPosition(new Point(newX, newY));
@@ -60,16 +58,16 @@ public class MagnetPositioner {
         mCompletionListener = completionListener;
     }
 
-    public Point pullToAnchor(@NonNull CollapsedMenuAnchor anchor, @NonNull Rect viewToPullBounds) {
+    public Point pullToAnchor(@NonNull CollapsedMenuAnchor anchor, @NonNull Rect viewToPullBounds, @NonNull Interpolator pullInterpolator) {
         Log.d(TAG, "Pulling to side. Anchor - side: " + anchor.getAnchorSide() + ", normalized Y: " + anchor.getAnchorNormalizedY());
         mStartingBounds = new Rect(viewToPullBounds);
         mAnchoredBounds = anchor.anchor(viewToPullBounds);
         Log.d(TAG, "Anchored bounds to pull to: (" + mAnchoredBounds.left + ", " + mAnchoredBounds.top + ")");
-        animateToAnchorPosition(viewToPullBounds, mAnchoredBounds);
+        animateToAnchorPosition(viewToPullBounds, mAnchoredBounds, pullInterpolator);
         return new Point(mAnchoredBounds.left, mAnchoredBounds.top);
     }
 
-    private void animateToAnchorPosition(@NonNull Rect viewToPullBounds, @NonNull Rect anchoredBounds) {
+    private void animateToAnchorPosition(@NonNull Rect viewToPullBounds, @NonNull Rect anchoredBounds, @NonNull Interpolator interpolator) {
         Log.d(TAG, "animateToAnchorPosition() - from X: " + viewToPullBounds.left + ", to X: " + anchoredBounds.left);
 
         int timeForAnimation = getTimeForAnimationDistance(getDistanceBetweenTwoPoints(
@@ -82,7 +80,7 @@ public class MagnetPositioner {
         }
         mValueAnimator = new ValueAnimator();
         mValueAnimator.setFloatValues(0.0f, 1.0f);
-        mValueAnimator.setInterpolator(new BounceInterpolator());
+        mValueAnimator.setInterpolator(interpolator);
         mValueAnimator.setDuration(timeForAnimation);
         mValueAnimator.addUpdateListener(mPullUpdateListener);
         mValueAnimator.addListener(mPullAnimatorListener);

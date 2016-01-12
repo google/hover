@@ -20,6 +20,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.AnticipateInterpolator;
+import android.view.animation.BounceInterpolator;
 import android.view.animation.OvershootInterpolator;
 import android.widget.RelativeLayout;
 
@@ -168,7 +169,7 @@ public class HoverMenuView extends RelativeLayout {
             Log.d(TAG, "New anchor normalized Y: " + mMenuAnchor.getAnchorNormalizedY());
 
             // Pull the tab bounds to the anchor position.
-            magnetPositioner.pullToAnchor(mMenuAnchor, tabViewBounds);
+            magnetPositioner.pullToAnchor(mMenuAnchor, tabViewBounds, new BounceInterpolator());
         }
     };
 
@@ -831,7 +832,7 @@ public class HoverMenuView extends RelativeLayout {
                 (int) activeTab.getY() + activeTab.getHeight());
 
         // Pull the tab bounds to the anchor position.
-        magnetPositioner.pullToAnchor(mMenuAnchor, tabViewBounds);
+        magnetPositioner.pullToAnchor(mMenuAnchor, tabViewBounds, new OvershootInterpolator());
     }
 
     private void animateActiveTabToExpandedPosition(TimeInterpolator interpolator) {
