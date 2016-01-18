@@ -18,6 +18,7 @@ import java.util.ArrayList;
 public class MenuListView extends FrameLayout {
 
     private ListView mListView;
+    private View mEmptyView;
     private MenuListAdapter mMenuListAdapter;
     private MenuItemSelectionListener mMenuItemSelectionListener;
 
@@ -46,16 +47,39 @@ public class MenuListView extends FrameLayout {
         addView(mListView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
     }
 
+    public void setEmptyView(@NonNull View emptyView) {
+        // Remove existing empty view.
+        if (null != mEmptyView) {
+            removeView(mEmptyView);
+        }
+
+        mEmptyView = emptyView;
+        addView(mEmptyView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        updateEmptyViewVisibility();
+    }
+
     public void setMenu(@Nullable MenuItem menu) {
         if (null == menu) {
             mMenuListAdapter.setMenuItems(new ArrayList<MenuItem>(0));
         } else {
             mMenuListAdapter.setMenuItems(menu.getItems());
         }
+
+        updateEmptyViewVisibility();
     }
 
     public void setMenuItemSelectionListener(@Nullable MenuItemSelectionListener listener) {
         mMenuItemSelectionListener = listener;
+    }
+
+    private void updateEmptyViewVisibility() {
+        boolean isEmpty = null == mMenuListAdapter || 0 == mMenuListAdapter.getCount();
+        if (null != mEmptyView) {
+            mEmptyView.setVisibility(isEmpty ? VISIBLE : GONE);
+            mListView.setVisibility(isEmpty ? GONE : VISIBLE);
+        } else {
+            mListView.setVisibility(VISIBLE);
+        }
     }
 
     public interface MenuItemSelectionListener {

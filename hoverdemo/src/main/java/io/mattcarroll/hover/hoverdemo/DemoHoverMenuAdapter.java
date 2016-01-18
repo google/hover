@@ -7,12 +7,13 @@ import android.util.TypedValue;
 import android.view.View;
 import android.widget.ImageView;
 
+import java.util.UUID;
+
 import io.mattcarroll.hover.HoverMenuAdapter;
 import io.mattcarroll.hover.NavigatorContent;
 import io.mattcarroll.hover.defaulthovermenu.menus.MenuItem;
 import io.mattcarroll.hover.defaulthovermenu.menus.MenuListNavigatorContent;
-
-import java.util.UUID;
+import io.mattcarroll.hover.hoverdemo.menu.EmptyListView;
 
 /**
  * Demo implementation of a {@link HoverMenuAdapter}.
@@ -33,22 +34,22 @@ public class DemoHoverMenuAdapter implements HoverMenuAdapter {
                 new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "Cell Tower Triangulation", null),
                 new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "Location Services", null)
         );
-        mRedContent = new MenuListNavigatorContent(context, locationMenu);
+        mRedContent = new MenuListNavigatorContent(context, locationMenu, new EmptyListView(context));
 
         MenuItem bluetoothMenu = new MenuItem(MenuItem.Type.MENU, UUID.randomUUID(), "Bluetooth Devices", null);
         bluetoothMenu.addItems(
                 new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "Estimote Beacon", null),
                 new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "Moto 360", null)
         );
-        mGreenContent = new MenuListNavigatorContent(context, bluetoothMenu);
+        mGreenContent = new MenuListNavigatorContent(context, bluetoothMenu, new EmptyListView(context));
 
         MenuItem wifiMenu = new MenuItem(MenuItem.Type.MENU, UUID.randomUUID(), "WiFi", null);
-        wifiMenu.addItems(
-                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "Wireless Access Point", null),
-                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "ATT-483759", null),
-                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "Linksys-1294562", null)
-        );
-        mBlueContent = new MenuListNavigatorContent(context, wifiMenu);
+//        wifiMenu.addItems(
+//                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "Wireless Access Point", null),
+//                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "ATT-483759", null),
+//                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "Linksys-1294562", null)
+//        );
+        mBlueContent = new MenuListNavigatorContent(context, wifiMenu, new EmptyListView(context));
     }
 
     @Override
