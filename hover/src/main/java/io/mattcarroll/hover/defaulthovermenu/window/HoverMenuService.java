@@ -39,6 +39,7 @@ public abstract class HoverMenuService extends Service {
         public void onHoverMenuAboutToExit() {
             Log.d(TAG, "Menu exit requested.");
             savePreferredLocation();
+            onHoverMenuExitingByUserRequest();
             stopSelf();
         }
     };
@@ -81,6 +82,10 @@ public abstract class HoverMenuService extends Service {
     abstract protected int getMenuTheme();
 
     abstract protected HoverMenuAdapter createHoverMenuAdapter();
+
+    protected void onHoverMenuExitingByUserRequest() {
+        // Hook for subclasses.
+    }
 
     private void savePreferredLocation() {
         PointF preferredLocation = mWindowHoverMenu.getAnchorState();

@@ -2,6 +2,7 @@ package io.mattcarroll.hover.defaulthovermenu.menus;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
 
@@ -20,6 +21,10 @@ public class MenuListNavigatorContent implements NavigatorContent {
     private Navigator mNavigator;
 
     public MenuListNavigatorContent(@NonNull Context context, @NonNull final MenuItem menu) {
+        this(context, menu, null);
+    }
+
+    public MenuListNavigatorContent(@NonNull Context context, @NonNull final MenuItem menu, @Nullable View emptyView) {
         mMenu = menu;
         mMenuListView = new MenuListView(context);
         mMenuListView.setMenu(menu);
@@ -43,6 +48,12 @@ public class MenuListNavigatorContent implements NavigatorContent {
                 }
             }
         });
+
+        setEmptyView(emptyView);
+    }
+
+    public void setEmptyView(@Nullable View emptyView) {
+        mMenuListView.setEmptyView(emptyView);
     }
 
     @NonNull
