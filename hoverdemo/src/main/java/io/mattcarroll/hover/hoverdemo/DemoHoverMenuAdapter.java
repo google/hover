@@ -28,26 +28,26 @@ public class DemoHoverMenuAdapter implements HoverMenuAdapter {
     public DemoHoverMenuAdapter(@NonNull Context context) {
         mContext = context;
 
-        MenuItem locationMenu = new MenuItem(MenuItem.Type.MENU, UUID.randomUUID(), "User Location", null);
+        MenuItem locationMenu = new MenuItem(MenuItem.Type.MENU, UUID.randomUUID().toString(), "User Location", null);
         locationMenu.addItems(
-                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "GPS", null),
-                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "Cell Tower Triangulation", null),
-                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "Location Services", null)
+                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID().toString(), "GPS", null),
+                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID().toString(), "Cell Tower Triangulation", null),
+                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID().toString(), "Location Services", null)
         );
         mRedContent = new MenuListNavigatorContent(context, locationMenu, new EmptyListView(context));
 
-        MenuItem bluetoothMenu = new MenuItem(MenuItem.Type.MENU, UUID.randomUUID(), "Bluetooth Devices", null);
+        MenuItem bluetoothMenu = new MenuItem(MenuItem.Type.MENU, UUID.randomUUID().toString(), "Bluetooth Devices", null);
         bluetoothMenu.addItems(
-                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "Estimote Beacon", null),
-                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "Moto 360", null)
+                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID().toString(), "Estimote Beacon", null),
+                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID().toString(), "Moto 360", null)
         );
         mGreenContent = new MenuListNavigatorContent(context, bluetoothMenu, new EmptyListView(context));
 
-        MenuItem wifiMenu = new MenuItem(MenuItem.Type.MENU, UUID.randomUUID(), "WiFi", null);
+        MenuItem wifiMenu = new MenuItem(MenuItem.Type.MENU, UUID.randomUUID().toString(), "WiFi", null);
 //        wifiMenu.addItems(
-//                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "Wireless Access Point", null),
-//                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "ATT-483759", null),
-//                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID(), "Linksys-1294562", null)
+//                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID().toString(), "Wireless Access Point", null),
+//                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID().toString(), "ATT-483759", null),
+//                new MenuItem(MenuItem.Type.DO_ACTION, UUID.randomUUID().toString(), "Linksys-1294562", null)
 //        );
         mBlueContent = new MenuListNavigatorContent(context, wifiMenu, new EmptyListView(context));
     }

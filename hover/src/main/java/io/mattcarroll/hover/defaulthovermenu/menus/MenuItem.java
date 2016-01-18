@@ -14,18 +14,17 @@ import java.util.UUID;
 public class MenuItem {
 
     private Type mType;
-    private UUID mId;
+    private String mId;
     private String mTitle;
-    private String mDescription;
     private List<MenuItem> mItems;
     private MenuItem mParent;
     private String mPayload;
 
-    public MenuItem(@NonNull Type type, @NonNull UUID id, @NonNull String title, @Nullable MenuItem parent) {
+    public MenuItem(@NonNull Type type, @NonNull String id, @NonNull String title, @Nullable MenuItem parent) {
         this(type, id, title, parent, null);
     }
 
-    public MenuItem(@NonNull Type type, @NonNull UUID id, @NonNull String title, @Nullable MenuItem parent, @Nullable String payload) {
+    public MenuItem(@NonNull Type type, @NonNull String id, @NonNull String title, @Nullable MenuItem parent, @Nullable String payload) {
         mType = type;
         mId = id;
         mTitle = title;
@@ -34,7 +33,7 @@ public class MenuItem {
         mPayload = payload;
     }
 
-    public UUID getId() {
+    public String getId() {
         return mId;
     }
 
