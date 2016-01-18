@@ -7,7 +7,7 @@ Download
 Hover is available through jCenter:
 
 ```groovy
-compile 'io.mattcarroll.hover:hover:0.9.2'
+compile 'io.mattcarroll.hover:hover:0.9.3'
 ```
 
 License
