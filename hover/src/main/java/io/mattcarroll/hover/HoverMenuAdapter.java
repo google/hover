@@ -1,6 +1,9 @@
 package io.mattcarroll.hover;
 
+import android.support.annotation.NonNull;
 import android.view.View;
+
+import io.mattcarroll.hover.defaulthovermenu.menus.MenuAction;
 
 /**
  * Adapter that provides {@code View}s for the tabs and the content within a Hover menu.
@@ -23,11 +26,10 @@ public interface HoverMenuAdapter {
     View getTabView(int index);
 
     /**
-     * Returns the content that should be displayed for the {@code index}'th tab.
+     * Returns the {@link MenuAction} to activate for the tab at the given {@code index}.
      *
-     * @param index index of tab
-     * @return content for the {@code index}'th tab
+     * @param index index of tab to activate
      */
-    NavigatorContent getContentView(int index);
+    MenuAction getTabMenuAction(int index);
 
 }

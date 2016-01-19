@@ -88,6 +88,8 @@ public class ToolbarNavigatorView extends LinearLayout implements Navigator {
                 mContentStack.peek().onShown(this);
             }
 
+            updateToolbarBackButton();
+
             return true;
         } else {
             return false;

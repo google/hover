@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 
+import io.mattcarroll.hover.Navigator;
 import io.mattcarroll.hover.NavigatorContent;
 import io.mattcarroll.hover.R;
 
@@ -17,7 +18,7 @@ import io.mattcarroll.hover.R;
  * top of the content area.  The content area itself can display anything provided by a given
  * {@link NavigatorContent}.
  */
-public class HoverMenuContentView extends FrameLayout {
+public class HoverMenuContentView extends FrameLayout implements Navigator {
 
     private static final String TAG = "HoverMenuContentView";
 
@@ -67,13 +68,24 @@ public class HoverMenuContentView extends FrameLayout {
         updateTabSelectorPosition();
     }
 
-    /**
-     * Displays the given {@code content} in the content area of this {@code View}.
-     * @param content content to display
-     */
-    public void setContent(@NonNull NavigatorContent content) {
-        mContentContainer.clearContent();
+    @Override
+    public void setTitle(@NonNull String title) {
+        mContentContainer.setTitle(title);
+    }
+
+    @Override
+    public void pushContent(@NonNull NavigatorContent content) {
         mContentContainer.pushContent(content);
+    }
+
+    @Override
+    public boolean popContent() {
+        return mContentContainer.popContent();
+    }
+
+    @Override
+    public void clearContent() {
+        mContentContainer.clearContent();
     }
 
     /**

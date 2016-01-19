@@ -1,31 +1,35 @@
-{
-  "nest":{
-    "title":"Red",
-    "type":"menu",
+[
+  {
+    "id":"location",
+    "title":"Location",
     "items":[
       {
-        "title":"Take Snapshot",
-        "type":"action",
-        "data":"TODO"
+        "title":"Location Methods",
+        "items":[
+          {
+            "title":"GPS"
+          },{
+            "title":"Cell Tower Triangulation"
+          },{
+            "title":"Location Services"
+          }
+        ]
       }
     ]
-  },
-  "camera":{
-    "title":"Green",
-    "type":"menu",
-    "items":[
-
-    ]
-  },
-  "protect":{
-    "title":"Blue",
-    "type":"menu",
+  },{
+    "id":"bluetooth",
+    "title":"Bluetooth Devices",
     "items":[
       {
-        "title":"Test Alarms",
-        "type":"view",
-        "data":"TODO"
+        "title":"Estimote Beacon"
+      },{
+        "title":"Moto 360"
       }
+    ]
+  },{
+    "id":"wifi",
+    "title":"WiFi",
+    "items":[
     ]
   }
-}
+]

@@ -16,36 +16,22 @@ public class MenuListNavigatorContent implements NavigatorContent {
 
     private static final String TAG = "MenuListNavigatorContent";
 
-    private MenuItem mMenu;
+    private Menu mMenu;
     private MenuListView mMenuListView;
     private Navigator mNavigator;
 
-    public MenuListNavigatorContent(@NonNull Context context, @NonNull final MenuItem menu) {
+    public MenuListNavigatorContent(@NonNull Context context, @NonNull final Menu menu) {
         this(context, menu, null);
     }
 
-    public MenuListNavigatorContent(@NonNull Context context, @NonNull final MenuItem menu, @Nullable View emptyView) {
+    public MenuListNavigatorContent(@NonNull Context context, @NonNull final Menu menu, @Nullable View emptyView) {
         mMenu = menu;
         mMenuListView = new MenuListView(context);
         mMenuListView.setMenu(menu);
         mMenuListView.setMenuItemSelectionListener(new MenuListView.MenuItemSelectionListener() {
             @Override
             public void onMenuItemSelected(@NonNull MenuItem menuItem) {
-                switch (menuItem.getType()) {
-                    case MENU:
-                        MenuListNavigatorContent submenu = new MenuListNavigatorContent(getView().getContext(), menuItem);
-                        mNavigator.pushContent(submenu);
-                        break;
-                    case DO_ACTION:
-                    case SHOW_VIEW:
-                        try {
-                            runDevActionFromClasspath(menuItem.getPayload());
-                        } catch (Exception e) {
-                            Log.e(TAG, "Failed to run action for menu item: " + menuItem.getTitle());
-                            e.printStackTrace();
-                        }
-                        break;
-                }
+                menuItem.getMenuAction().execute(getView().getContext(), mNavigator);
             }
         });
 
@@ -74,21 +60,4 @@ public class MenuListNavigatorContent implements NavigatorContent {
         mNavigator = null;
     }
 
-    private void runDevActionFromClasspath(@NonNull String devActionClassPath) {
-        try {
-            MenuAction menuAction = (MenuAction) Class.forName(devActionClassPath).newInstance();
-            menuAction.execute(getView().getContext(), mNavigator);
-        } catch(ClassNotFoundException e) {
-            Log.w(TAG, "Could not locate class: " + devActionClassPath);
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            Log.w(TAG, "InstantiationException: " + devActionClassPath + ", error: " + e.getMessage());
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            Log.w(TAG, "IllegalAccessException: " + devActionClassPath);
-            e.printStackTrace();
-        } catch (ClassCastException e) {
-            Log.w(TAG, "Menu item's action is not a DevAction implementation: " + devActionClassPath);
-        }
-    }
 }
