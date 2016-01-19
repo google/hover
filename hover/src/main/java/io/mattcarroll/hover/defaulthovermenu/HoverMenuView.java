@@ -627,6 +627,11 @@ public class HoverMenuView extends RelativeLayout {
     }
 
     private void setActiveTab(String id) {
+        if (id.equals(mActiveTabId)) {
+            // This tab is already selected.
+            return;
+        }
+
         mActiveTabId = id;
         mActiveTab = findViewById(id.hashCode());
         mContentView.setActiveTab(mActiveTab);
