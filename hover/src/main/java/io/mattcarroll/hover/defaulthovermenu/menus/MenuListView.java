@@ -10,10 +10,8 @@ import android.widget.AdapterView;
 import android.widget.FrameLayout;
 import android.widget.ListView;
 
-import java.util.ArrayList;
-
 /**
- * View that displays all items in a given {@link MenuItem}.
+ * View that displays all items in a given {@link Menu}.
  */
 public class MenuListView extends FrameLayout {
 
@@ -47,24 +45,22 @@ public class MenuListView extends FrameLayout {
         addView(mListView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
     }
 
-    public void setEmptyView(@NonNull View emptyView) {
+    public void setEmptyView(@Nullable View emptyView) {
         // Remove existing empty view.
         if (null != mEmptyView) {
             removeView(mEmptyView);
         }
 
         mEmptyView = emptyView;
-        addView(mEmptyView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        if (null != mEmptyView) {
+            addView(mEmptyView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        }
+
         updateEmptyViewVisibility();
     }
 
-    public void setMenu(@Nullable MenuItem menu) {
-        if (null == menu) {
-            mMenuListAdapter.setMenuItems(new ArrayList<MenuItem>(0));
-        } else {
-            mMenuListAdapter.setMenuItems(menu.getItems());
-        }
-
+    public void setMenu(@Nullable Menu menu) {
+        mMenuListAdapter.setMenu(menu);
         updateEmptyViewVisibility();
     }
 

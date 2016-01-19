@@ -1,5 +1,6 @@
 package io.mattcarroll.hover.defaulthovermenu.menus;
 
+import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -8,27 +9,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Adapter that displays {@link MenuItem}s using {@link MenuItemView}s.
+ * Adapter that displays a {@link Menu} using {@link MenuItemView}s.
  */
 public class MenuListAdapter extends BaseAdapter {
 
-    private List<MenuItem> mMenuItems = new ArrayList<>();
+    private Menu mMenu;
 
-    public void setMenuItems(List<MenuItem> menuItems) {
-        mMenuItems.clear();
-        mMenuItems.addAll(menuItems);
-
+    public void setMenu(@Nullable Menu menu) {
+        mMenu = menu;
         notifyDataSetChanged();
     }
 
     @Override
     public int getCount() {
-        return mMenuItems.size();
+        return null == mMenu ? 0 : mMenu.getMenuItemList().size();
     }
 
     @Override
-    public MenuItem getItem(int i) {
-        return mMenuItems.get(i);
+    public MenuItem getItem(int index) {
+        return mMenu.getMenuItemList().get(index);
     }
 
     @Override

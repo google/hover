@@ -4,66 +4,36 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Represents a menu item that can act as a composite with submenu items.
  */
 public class MenuItem {
 
-    private Type mType;
-    private String mId;
-    private String mTitle;
-    private List<MenuItem> mItems;
-    private MenuItem mParent;
-    private String mPayload;
+    private final String mId;
+    private final String mTitle;
+    private final MenuAction mMenuAction;
 
-    public MenuItem(@NonNull Type type, @NonNull String id, @NonNull String title, @Nullable MenuItem parent) {
-        this(type, id, title, parent, null);
-    }
-
-    public MenuItem(@NonNull Type type, @NonNull String id, @NonNull String title, @Nullable MenuItem parent, @Nullable String payload) {
-        mType = type;
+    public MenuItem(@NonNull String id, @NonNull String title, @NonNull MenuAction menuAction) {
         mId = id;
         mTitle = title;
-        mItems = new ArrayList<>();
-        mParent = parent;
-        mPayload = payload;
+        mMenuAction = menuAction;
     }
 
+    @NonNull
     public String getId() {
         return mId;
     }
 
-    public Type getType() {
-        return mType;
-    }
-
+    @NonNull
     public String getTitle() {
         return mTitle;
     }
 
-    @Nullable
-    public String getPayload() {
-        return mPayload;
-    }
-
-    public List<MenuItem> getItems() {
-        return new ArrayList<>(mItems);
-    }
-
-    public void addItems(MenuItem... items) {
-        mItems.addAll(Arrays.asList(items));
-    }
-
-    public void removeItems(MenuItem... items) {
-        mItems.removeAll(Arrays.asList(items));
-    }
-
-    public MenuItem getParent() {
-        return mParent;
+    @NonNull
+    public MenuAction getMenuAction() {
+        return mMenuAction;
     }
 
     @Override
@@ -82,10 +52,4 @@ public class MenuItem {
         return mId.hashCode();
     }
 
-    public enum Type {
-        MENU,
-        DO_ACTION,
-        SHOW_VIEW,
-        GENERATE_MENU
-    }
 }

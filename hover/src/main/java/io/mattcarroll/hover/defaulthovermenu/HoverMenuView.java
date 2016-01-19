@@ -630,7 +630,12 @@ public class HoverMenuView extends RelativeLayout {
         mActiveTabId = id;
         mActiveTab = findViewById(id.hashCode());
         mContentView.setActiveTab(mActiveTab);
-        mContentView.setContent(mAdapter.getContentView(Integer.parseInt(id)));
+
+        // This is a top-level menu item so clear all content from the menu to start fresh.
+        mContentView.clearContent();
+
+        // Activate the chosen tab.
+        mAdapter.getTabMenuAction(Integer.parseInt(id)).execute(getContext(), mContentView);
     }
 
     public void setTabSelectionListener(@Nullable TabSelectionListener tabSelectionListener) {
@@ -639,11 +644,6 @@ public class HoverMenuView extends RelativeLayout {
         } else {
             mTabSelectionListener = new NoOpTabSelectionListener();
         }
-    }
-
-    // TODO: this should probably be private
-    public void setContentView(@NonNull NavigatorContent navigatorContent) {
-        mContentView.setContent(navigatorContent);
     }
 
     public boolean onBackPressed() {

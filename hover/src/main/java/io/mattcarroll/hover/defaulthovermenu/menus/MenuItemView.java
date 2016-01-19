@@ -10,7 +10,7 @@ import io.mattcarroll.hover.R;
 
 
 /**
- * View that represents a MenuItem as a list item.
+ * View that represents a {@link MenuItem} as a list item.
  */
 public class MenuItemView extends FrameLayout {
 
