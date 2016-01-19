@@ -5,13 +5,12 @@ import android.content.Intent;
 import android.view.ContextThemeWrapper;
 
 import java.io.IOException;
-import java.io.InputStream;
 
-import io.mattcarroll.hover.defaulthovermenu.menus.Menu;
-import io.mattcarroll.hover.defaulthovermenu.menus.serialization.MenuDeserializer;
-import io.mattcarroll.hover.defaulthovermenu.window.HoverMenuService;
 import io.mattcarroll.hover.HoverMenuAdapter;
+import io.mattcarroll.hover.defaulthovermenu.menus.Menu;
+import io.mattcarroll.hover.defaulthovermenu.window.HoverMenuService;
 import io.mattcarroll.hover.hoverdemo.menu.DemoMenuFromCode;
+import io.mattcarroll.hover.hoverdemo.menu.DemoMenuFromFile;
 
 /**
  * Demo {@link HoverMenuService}.
@@ -46,9 +45,8 @@ public class DemoHoverMenuService extends HoverMenuService {
      * @throws IOException
      */
     private Menu createDemoMenuFromFile() throws IOException {
-        InputStream in = getAssets().open("demo_menu.json");
-        MenuDeserializer menuDeserializer = new MenuDeserializer(new DemoMenuActionFactory(this));
-        return menuDeserializer.deserializeMenu(in);
+        DemoMenuFromFile demoMenuFromFile = new DemoMenuFromFile(this, new DemoMenuActionFactory(this));
+        return demoMenuFromFile.createFromFile("demo_menu.json");
     }
 
     /**

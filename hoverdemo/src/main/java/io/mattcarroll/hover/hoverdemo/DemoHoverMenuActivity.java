@@ -5,12 +5,11 @@ import android.os.Bundle;
 import android.util.Log;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 import io.mattcarroll.hover.defaulthovermenu.menus.Menu;
-import io.mattcarroll.hover.defaulthovermenu.menus.serialization.MenuDeserializer;
 import io.mattcarroll.hover.defaulthovermenu.view.ViewHoverMenu;
 import io.mattcarroll.hover.hoverdemo.menu.DemoMenuFromCode;
+import io.mattcarroll.hover.hoverdemo.menu.DemoMenuFromFile;
 
 /**
  * Presents a Hover menu within an Activity (instead of presenting it on top of all other Windows).
@@ -43,9 +42,8 @@ public class DemoHoverMenuActivity extends Activity {
      * @throws IOException
      */
     private Menu createDemoMenuFromFile() throws IOException {
-        InputStream in = getAssets().open("demo_menu.json");
-        MenuDeserializer menuDeserializer = new MenuDeserializer(new DemoMenuActionFactory(this));
-        return menuDeserializer.deserializeMenu(in);
+        DemoMenuFromFile demoMenuFromFile = new DemoMenuFromFile(this, new DemoMenuActionFactory(this));
+        return demoMenuFromFile.createFromFile("demo_menu.json");
     }
 
     /**
