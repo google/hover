@@ -70,8 +70,7 @@ public class ToolbarNavigatorView extends LinearLayout implements Navigator {
 
         // Push and display the new page.
         mContentStack.push(content);
-        mContentContainer.addView(content.getView(), mContentLayoutParams);
-        content.onShown(this);
+        showContent(content);
 
         updateToolbarBackButton();
     }
@@ -84,8 +83,7 @@ public class ToolbarNavigatorView extends LinearLayout implements Navigator {
 
             // Add back the previous content (if there is any).
             if (!mContentStack.isEmpty()) {
-                mContentContainer.addView(mContentStack.peek().getView(), mContentLayoutParams);
-                mContentStack.peek().onShown(this);
+                showContent(mContentStack.peek());
             }
 
             updateToolbarBackButton();
@@ -111,6 +109,14 @@ public class ToolbarNavigatorView extends LinearLayout implements Navigator {
 
         // Clear the root View.
         removeCurrentContent();
+    }
+
+    private void showContent(@NonNull NavigatorContent content) {
+        if (null != content.getTitle()) {
+            mToolbar.setTitle(content.getTitle());
+        }
+        mContentContainer.addView(content.getView(), mContentLayoutParams);
+        content.onShown(this);
     }
 
     private void removeCurrentContent() {

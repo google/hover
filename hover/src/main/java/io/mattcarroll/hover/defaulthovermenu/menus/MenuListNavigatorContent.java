@@ -42,6 +42,12 @@ public class MenuListNavigatorContent implements NavigatorContent {
         mMenuListView.setEmptyView(emptyView);
     }
 
+    @Nullable
+    @Override
+    public CharSequence getTitle() {
+        return mMenu.getTitle();
+    }
+
     @NonNull
     @Override
     public View getView() {
@@ -51,8 +57,6 @@ public class MenuListNavigatorContent implements NavigatorContent {
     @Override
     public void onShown(@NonNull Navigator navigator) {
         mNavigator = navigator;
-        Log.d(TAG, "Setting title: " + mMenu.getTitle());
-        mNavigator.setTitle(mMenu.getTitle());
     }
 
     @Override
