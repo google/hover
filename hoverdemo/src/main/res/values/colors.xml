@@ -3,4 +3,10 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="background_dark">#212121</color>
+    <color name="hover_accent">#ff9600</color>
+    <color name="hover_base">#212121</color>
+    <color name="text_body">#7c7c7c</color>
+    <color name="text_subheader">#7c7c7c</color>
+    <color name="menu_item_title_color">#AAAAAA</color>
 </resources>

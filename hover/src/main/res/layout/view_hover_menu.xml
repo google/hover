@@ -26,6 +26,16 @@
         android:layout_alignParentBottom="true"
         android:visibility="gone"
         />
+    <!--<FrameLayout-->
+        <!--android:id="@+id/view_content"-->
+        <!--android:layout_width="0dp"-->
+        <!--android:layout_height="0dp"-->
+        <!--android:layout_alignParentLeft="true"-->
+        <!--android:layout_alignParentRight="true"-->
+        <!--android:layout_below="@id/view_tab_strip_anchor"-->
+        <!--android:layout_alignParentBottom="true"-->
+        <!--android:visibility="gone"-->
+        <!--/>-->
     <View
         android:id="@+id/view_exit_gradient"
         android:layout_width="match_parent"

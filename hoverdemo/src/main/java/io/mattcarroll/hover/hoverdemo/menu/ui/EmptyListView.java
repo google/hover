@@ -1,4 +1,4 @@
-package io.mattcarroll.hover.hoverdemo.menu;
+package io.mattcarroll.hover.hoverdemo.menu.ui;
 
 import android.content.Context;
 import android.graphics.Color;

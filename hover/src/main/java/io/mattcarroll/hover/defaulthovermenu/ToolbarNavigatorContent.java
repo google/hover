@@ -2,6 +2,7 @@ package io.mattcarroll.hover.defaulthovermenu;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.Toolbar;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -20,18 +21,18 @@ import java.util.Stack;
  * {@link Navigator} implementation  that displays content with a {@link Toolbar} on top that allows
  * for back navigation and displays a title.
  */
-public class ToolbarNavigatorView extends LinearLayout implements Navigator {
+public class ToolbarNavigatorContent extends LinearLayout implements Navigator, NavigatorContent {
 
     private Toolbar mToolbar;
     private Stack<NavigatorContent> mContentStack;
     private FrameLayout mContentContainer;
     private LayoutParams mContentLayoutParams;
 
-    public ToolbarNavigatorView(Context context) {
+    public ToolbarNavigatorContent(Context context) {
         this(context, null);
     }
 
-    public ToolbarNavigatorView(Context context, AttributeSet attrs) {
+    public ToolbarNavigatorContent(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }
@@ -135,4 +136,25 @@ public class ToolbarNavigatorView extends LinearLayout implements Navigator {
         }
     }
 
+    @Nullable
+    @Override
+    public CharSequence getTitle() {
+        return null;
+    }
+
+    @NonNull
+    @Override
+    public View getView() {
+        return this;
+    }
+
+    @Override
+    public void onShown(@NonNull Navigator navigator) {
+        // Do nothing.
+    }
+
+    @Override
+    public void onHidden() {
+        // Do nothing.
+    }
 }

@@ -11,6 +11,8 @@ import android.view.WindowManager;
 import io.mattcarroll.hover.BuildConfig;
 import io.mattcarroll.hover.HoverMenu;
 import io.mattcarroll.hover.HoverMenuAdapter;
+import io.mattcarroll.hover.Navigator;
+import io.mattcarroll.hover.defaulthovermenu.HoverMenuBuilder;
 import io.mattcarroll.hover.defaulthovermenu.HoverMenuView;
 import io.mattcarroll.hover.defaulthovermenu.utils.window.InWindowDragger;
 import io.mattcarroll.hover.defaulthovermenu.utils.window.WindowViewController;
@@ -22,7 +24,7 @@ public class WindowHoverMenu implements HoverMenu {
 
     private static final String TAG = "WindowHoverMenu";
 
-    private InWindowDragger mInWindowDragger;
+//    private InWindowDragger mInWindowDragger;
     private WindowViewController mWindowViewController; // Shows/hides/positions Views in a Window.
     private HoverMenuView mHoverMenuView; // The visual presentation of the Hover menu.
     private boolean mIsShowingHoverMenu; // Are we currently display mHoverMenuView?
@@ -60,20 +62,25 @@ public class WindowHoverMenu implements HoverMenu {
         }
     };
 
-    public WindowHoverMenu(@NonNull Context context, @NonNull WindowManager windowManager, @NonNull PointF savedAnchorState) {
+    public WindowHoverMenu(@NonNull Context context, @NonNull WindowManager windowManager, @NonNull PointF savedAnchorState, @Nullable Navigator navigator) {
         mWindowViewController = new WindowViewController(windowManager);
 
-        mInWindowDragger = new InWindowDragger(
-                context,
-                mWindowViewController,
-                ViewConfiguration.get(context).getScaledTouchSlop()
-        );
-        mInWindowDragger.setDebugMode(BuildConfig.DEBUG);
-        Log.d(TAG, "Is debug mode? " + BuildConfig.DEBUG);
+//        mInWindowDragger = new InWindowDragger(
+//                context,
+//                mWindowViewController,
+//                ViewConfiguration.get(context).getScaledTouchSlop()
+//        );
+//        mInWindowDragger.setDebugMode(BuildConfig.DEBUG);
+//        Log.d(TAG, "Is debug mode? " + BuildConfig.DEBUG);
 
         Log.d(TAG, "Initial normalized anchor position: " + savedAnchorState);
-        mHoverMenuView = new HoverMenuView(context, mInWindowDragger, savedAnchorState);
+//        mHoverMenuView = new HoverMenuView(context, mInWindowDragger, savedAnchorState);
+        mHoverMenuView = new HoverMenuBuilder(context)
+                .displayWithinWindow(mWindowViewController)
+                .useNavigator(navigator)
+                .build();
         mHoverMenuView.setHoverMenuExitRequestListener(mMenuExitRequestListener);
+        mHoverMenuView.setContentBackgroundColor(0xFF3b3b3b);
     }
 
     @Override
@@ -143,7 +150,7 @@ public class WindowHoverMenu implements HoverMenu {
             mMenuExitListener.onHoverMenuAboutToExit();
 
             // Cleanup the control structures and Views.
-            mInWindowDragger.release();
+//            mInWindowDragger.release();
             mWindowViewController.removeView(mHoverMenuView);
         }
     }

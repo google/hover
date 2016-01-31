@@ -9,7 +9,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
-import io.mattcarroll.hover.defaulthovermenu.utils.view.Dragger;
+import io.mattcarroll.hover.defaulthovermenu.utils.Dragger;
 
 /**
  * {@link Dragger} implementation that works within a {@code Window}.
@@ -109,12 +109,6 @@ public class InWindowDragger implements Dragger {
             destroyTouchControlView();
             mIsActivated = false;
         }
-    }
-
-    // TODO: do we really need the release() method?
-    public void release() {
-        deactivate();
-        mDragListener = null;
     }
 
     public void setDebugMode(boolean isDebugMode) {

@@ -8,6 +8,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
+import io.mattcarroll.hover.defaulthovermenu.utils.Dragger;
+
 /**
  * {@link Dragger} implementation that works within a {@link ViewGroup}.
  */

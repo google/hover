@@ -1,4 +1,4 @@
-package io.mattcarroll.hover.hoverdemo.menu;
+package io.mattcarroll.hover.hoverdemo.menu.config.code;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -11,6 +11,7 @@ import io.mattcarroll.hover.defaulthovermenu.menus.DoNothingMenuAction;
 import io.mattcarroll.hover.defaulthovermenu.menus.Menu;
 import io.mattcarroll.hover.defaulthovermenu.menus.MenuItem;
 import io.mattcarroll.hover.defaulthovermenu.menus.ShowSubmenuMenuAction;
+import io.mattcarroll.hover.hoverdemo.menu.ui.EmptyListView;
 
 /**
  * Example of creating a {@link Menu} in code.

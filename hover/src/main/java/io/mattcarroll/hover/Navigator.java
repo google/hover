@@ -1,6 +1,7 @@
 package io.mattcarroll.hover;
 
 import android.support.annotation.NonNull;
+import android.view.View;
 
 /**
  * A visual display that can push and pop {@code View}s in a content area. The size and location of
@@ -50,5 +51,12 @@ public interface Navigator {
      * without any content.
      */
     void clearContent();
+
+    /**
+     * Returns the View that presents the Navigator.
+     * @return navigator View
+     */
+    @NonNull
+    View getView();
 
 }

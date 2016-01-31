@@ -36,9 +36,9 @@ public class MenuListAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int i, View view, ViewGroup viewGroup) {
+    public View getView(int i, View view, ViewGroup parent) {
         if (null == view) {
-            view = new MenuItemView(viewGroup.getContext());
+            view = new MenuItemView(parent.getContext());
         }
 
         ((MenuItemView) view).setTitle(getItem(i).getTitle());

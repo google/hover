@@ -1,4 +1,4 @@
-package io.mattcarroll.hover.hoverdemo;
+package io.mattcarroll.hover.hoverdemo.menu.config.file;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -8,7 +8,7 @@ import io.mattcarroll.hover.defaulthovermenu.menus.Menu;
 import io.mattcarroll.hover.defaulthovermenu.menus.MenuAction;
 import io.mattcarroll.hover.defaulthovermenu.menus.ShowSubmenuMenuAction;
 import io.mattcarroll.hover.defaulthovermenu.menus.serialization.MenuActionFactory;
-import io.mattcarroll.hover.hoverdemo.menu.EmptyListView;
+import io.mattcarroll.hover.hoverdemo.menu.ui.EmptyListView;
 
 /**
  * Creates {@link MenuAction}s based on IDs.

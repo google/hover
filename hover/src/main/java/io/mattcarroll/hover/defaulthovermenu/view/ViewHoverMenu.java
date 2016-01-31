@@ -12,6 +12,7 @@ import android.widget.FrameLayout;
 import io.mattcarroll.hover.BuildConfig;
 import io.mattcarroll.hover.HoverMenu;
 import io.mattcarroll.hover.HoverMenuAdapter;
+import io.mattcarroll.hover.defaulthovermenu.HoverMenuBuilder;
 import io.mattcarroll.hover.defaulthovermenu.HoverMenuView;
 import io.mattcarroll.hover.defaulthovermenu.utils.view.InViewGroupDragger;
 
@@ -54,7 +55,10 @@ public class ViewHoverMenu extends FrameLayout implements HoverMenu {
 
         mDragger = new InViewGroupDragger(this, ViewConfiguration.get(getContext()).getScaledTouchSlop());
         mDragger.setDebugMode(BuildConfig.DEBUG);
-        mHoverMenuView = new HoverMenuView(getContext(), mDragger, loadSavedAnchorState());
+//        mHoverMenuView = new HoverMenuView(getContext(), mDragger, loadSavedAnchorState());
+        mHoverMenuView = new HoverMenuBuilder(getContext())
+                .displayWithinView(this)
+                .build();
         addView(mHoverMenuView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
         if (null != mAdapter) {

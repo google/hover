@@ -10,6 +10,10 @@ Hover is available through jCenter:
 compile 'io.mattcarroll.hover:hover:0.9.5'
 ```
 
+Issues
+------
+At the current time, Hover menus cannot be used within normal view hierarchies. It can only be used within a Window.
+
 License
 =======
 

@@ -12,6 +12,7 @@ import android.view.ContextThemeWrapper;
 import android.view.WindowManager;
 
 import io.mattcarroll.hover.HoverMenuAdapter;
+import io.mattcarroll.hover.Navigator;
 
 /**
  * {@code Service} that presents a {@code HoverMenu} within a {@code Window}.
@@ -50,7 +51,7 @@ public abstract class HoverMenuService extends Service {
         mPrefs = getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE);
         ContextThemeWrapper menuThemedContext = new ContextThemeWrapper(this, getMenuTheme());
         WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        mWindowHoverMenu = new WindowHoverMenu(menuThemedContext, windowManager, loadPreferredLocation());
+        mWindowHoverMenu = new WindowHoverMenu(menuThemedContext, windowManager, loadPreferredLocation(), createNavigator());
         mWindowHoverMenu.setAdapter(createHoverMenuAdapter());
         mWindowHoverMenu.setMenuExitListener(mWindowHoverMenuMenuExitListener);
     }
@@ -77,6 +78,10 @@ public abstract class HoverMenuService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    protected Navigator createNavigator() {
+        return null; // Subclasses can override this to provide a custom Navigator.
     }
 
     abstract protected int getMenuTheme();

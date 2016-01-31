@@ -11,6 +11,7 @@ import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.os.Vibrator;
+import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -24,12 +25,12 @@ import android.view.animation.BounceInterpolator;
 import android.view.animation.OvershootInterpolator;
 import android.widget.RelativeLayout;
 
-import io.mattcarroll.hover.defaulthovermenu.utils.view.Positionable;
+import io.mattcarroll.hover.Navigator;
+import io.mattcarroll.hover.defaulthovermenu.utils.Positionable;
 import io.mattcarroll.hover.R;
 import io.mattcarroll.hover.HoverMenuAdapter;
-import io.mattcarroll.hover.NavigatorContent;
-import io.mattcarroll.hover.defaulthovermenu.utils.view.Dragger;
-import io.mattcarroll.hover.defaulthovermenu.utils.view.MagnetPositioner;
+import io.mattcarroll.hover.defaulthovermenu.utils.Dragger;
+import io.mattcarroll.hover.defaulthovermenu.utils.MagnetPositioner;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -60,6 +61,7 @@ public class HoverMenuView extends RelativeLayout {
     //------ Views From Layout XML -------
     private View mTabAnchorView;
     private HoverMenuContentView mContentView; // Content view to display a menu
+    private Navigator mNavigator;
     private View mShadeView; // Dark backdrop that fills screen behind menu
     private View mExitGradientBackground; // Dark gradient that appears behind exit view on lower part of screen
     private View mExitView; // An "x" that appears near bottom of screen to signify "exit" from floating menu
@@ -215,12 +217,28 @@ public class HoverMenuView extends RelativeLayout {
         }
     };
 
-    public HoverMenuView(Context context, @NonNull Dragger windowDragWatcher,
+    private final HoverMenuAdapter.ContentChangeListener mAdapterListener = new HoverMenuAdapter.ContentChangeListener() {
+        @Override
+        public void onContentChange(@NonNull HoverMenuAdapter adapter) {
+            // Update all the tab views.
+            removeAllTabs();
+            addAllTabs();
+
+            // TODO: need null check in case selected tab is gone.
+            Log.d(TAG, "Content change. Active id: " + mActiveTabId);
+            Log.d(TAG, "Active tab view: " + findViewById(mActiveTabId.hashCode()));
+            mActiveTab = findViewById(mActiveTabId.hashCode());
+            mContentView.setActiveTab(mActiveTab);
+        }
+    };
+
+    public HoverMenuView(Context context, @Nullable Navigator navigator, @NonNull Dragger windowDragWatcher,
                          @NonNull PointF savedAnchor) {
         super(context);
         mWindowDragWatcher = windowDragWatcher;
         mMenuAnchor = new CollapsedMenuAnchor(getResources().getDisplayMetrics(), 10);
         mMenuAnchor.setAnchorAt((int) savedAnchor.x, savedAnchor.y); // TODO: savedAnchor isn't really a position, its a tuple of values (side, y-pos)
+        mNavigator = null == navigator ? new DefaultNavigator(context) : navigator;
         init();
     }
 
@@ -237,6 +255,8 @@ public class HoverMenuView extends RelativeLayout {
         mExitView = findViewById(R.id.view_exit);
         mExitRadiusInPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, EXIT_RADIUS_IN_DP, getResources().getDisplayMetrics());
 
+        mContentView.setNavigator(mNavigator);
+
         initLayoutTransitionAnimations();
 
         // Initially we're not really in the EXPANDED or COLLAPSED states.
@@ -245,6 +265,14 @@ public class HoverMenuView extends RelativeLayout {
         setTabSelectionListener(null);
         setHoverMenuTransitionListener(null);
         setHoverMenuExitRequestListener(null);
+    }
+
+    public void release() {
+        mWindowDragWatcher.deactivate();
+    }
+
+    public void setContentBackgroundColor(@ColorInt int color) {
+        mContentView.setBackgroundColor(color);
     }
 
     public CollapsedMenuViewController getCollapsedMenuViewController() {
@@ -448,27 +476,28 @@ public class HoverMenuView extends RelativeLayout {
         Log.d(TAG, "setAdapter()");
 
         // Remove all existing tabs from any previous adapter.
+        mActiveTabId = null;
         removeAllTabs();
+        if (null != mAdapter) {
+            mAdapter.removeContentChangeListener(mAdapterListener);
+        }
 
         // Update our adapter reference.
         mAdapter = adapter;
 
         if (null != adapter) {
             // Create all the tabs that the new adapter wants.
-            for (int i = 0; i < adapter.getTabCount(); ++i) {
-                addTab(i + "", adapter.getTabView(i));
-            }
+            addAllTabs();
+
+            // Start listening for adapter changes.
+            mAdapter.addContentChangeListener(mAdapterListener);
 
             // Select the first tab.
-            post(new Runnable() {
-                @Override
-                public void run() {
-                    setActiveTab(mTabIds.get(0));
+            setActiveTab(mTabIds.get(0));
 
-                    // We force a collapse because at this point we're in a weird initial state.
-                    doCollapse(true);
-                }
-            });
+            // TODO: we might set an adapter while expanded - track down the need for this and change it.
+            // We force a collapse because at this point we're in a weird initial state.
+            doCollapse(true);
         }
     }
 
@@ -558,29 +587,17 @@ public class HoverMenuView extends RelativeLayout {
 
             // This is the first tab in the strip.
             addTabAfter(tabView, mTabAnchorView);
-
-            // Auto-select the 1st tab.
-            mActiveTab = tabView;
-            post(new Runnable() {
-                @Override
-                public void run() {
-                    mContentView.setActiveTab(mActiveTab);
-                }
-            });
-            if (null != mTabSelectionListener) {
-                mTabSelectionListener.onTabSelected(id);
-            }
         } else {
             Log.d(TAG, "Adding additional tab: " + tabView.getTag(R.string.floatingmenuview_tabview_id) + " after " + mLastTabInStrip.getTag(R.string.floatingmenuview_tabview_id));
             // There are already tabs in the strip, append this one to the end.
             addTabAfter(tabView, mLastTabInStrip);
+
+            if (!isExpanded()) {
+                tabView.setVisibility(GONE);
+            }
         }
 
         mLastTabInStrip = tabView;
-
-        if (!isExpanded() && tabView != mActiveTab) {
-            tabView.setVisibility(GONE);
-        }
     }
 
     private void addTabAfter(@NonNull View tabView, @NonNull View leadingView) {
@@ -612,13 +629,28 @@ public class HoverMenuView extends RelativeLayout {
         }
     }
 
+    private void addAllTabs() {
+        for (int i = 0; i < mAdapter.getTabCount(); ++i) {
+            addTab(i + "", mAdapter.getTabView(i));
+            mTabIds.add(i + "");
+        }
+    }
+
     private void removeAllTabs() {
         for (String tabId : mTabIds) {
             removeView(findViewById(tabId.hashCode()));
         }
 
         mTabIds.clear();
+        mLastTabInStrip = null;
     }
+
+//    private void refreshTabs() {
+//        int tabCount = mAdapter.getTabCount();
+//        for (int i = 0; i < tabCount; ++i) {
+//            replaceTabView()
+//        }
+//    }
 
     private void selectTab(@NonNull String id) {
         Log.d(TAG, "Selecting tab: " + id.hashCode());
@@ -637,10 +669,13 @@ public class HoverMenuView extends RelativeLayout {
         mContentView.setActiveTab(mActiveTab);
 
         // This is a top-level menu item so clear all content from the menu to start fresh.
-        mContentView.clearContent();
+//        mContentView.clearContent();
+        mNavigator.clearContent();
 
         // Activate the chosen tab.
-        mAdapter.getTabMenuAction(Integer.parseInt(id)).execute(getContext(), mContentView);
+//        mAdapter.getNavigatorContent(Integer.parseInt(id)).execute(getContext(), mContentView);
+//        mContentView.pushContent(mAdapter.getNavigatorContent(Integer.parseInt(id)));
+        mNavigator.pushContent(mAdapter.getNavigatorContent(Integer.parseInt(id)));
     }
 
     public void setTabSelectionListener(@Nullable TabSelectionListener tabSelectionListener) {

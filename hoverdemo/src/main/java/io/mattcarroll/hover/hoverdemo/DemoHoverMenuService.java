@@ -2,15 +2,17 @@ package io.mattcarroll.hover.hoverdemo;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.view.ContextThemeWrapper;
 
 import java.io.IOException;
 
 import io.mattcarroll.hover.HoverMenuAdapter;
-import io.mattcarroll.hover.defaulthovermenu.menus.Menu;
+import io.mattcarroll.hover.Navigator;
+import io.mattcarroll.hover.defaulthovermenu.ToolbarNavigatorContent;
 import io.mattcarroll.hover.defaulthovermenu.window.HoverMenuService;
-import io.mattcarroll.hover.hoverdemo.menu.DemoMenuFromCode;
-import io.mattcarroll.hover.hoverdemo.menu.DemoMenuFromFile;
+import io.mattcarroll.hover.hoverdemo.menu.DemoHoverMenuAdapter;
+import io.mattcarroll.hover.hoverdemo.theming.HoverTheme;
 
 /**
  * Demo {@link HoverMenuService}.
@@ -23,6 +25,25 @@ public class DemoHoverMenuService extends HoverMenuService {
         context.startService(new Intent(context, DemoHoverMenuService.class));
     }
 
+    private DemoHoverMenuAdapter mDemoHoverMenuAdapter;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        Bus.getInstance().register(this);
+    }
+
+    @Override
+    public void onDestroy() {
+        Bus.getInstance().unregister(this);
+        super.onDestroy();
+    }
+
+    @Override
+    protected Navigator createNavigator() {
+        return new ToolbarNavigatorContent(new ContextThemeWrapper(this, R.style.AppTheme));
+    }
+
     @Override
     protected int getMenuTheme() {
         return R.style.AppTheme;
@@ -30,32 +51,18 @@ public class DemoHoverMenuService extends HoverMenuService {
 
     @Override
     protected HoverMenuAdapter createHoverMenuAdapter() {
-        final ContextThemeWrapper contextThemeWrapper = new ContextThemeWrapper(this, R.style.AppTheme);
         try {
-            return new DemoHoverMenuAdapter(contextThemeWrapper, createDemoMenuFromFile());
+            final ContextThemeWrapper contextThemeWrapper = new ContextThemeWrapper(this, R.style.AppTheme);
+            mDemoHoverMenuAdapter = new DemoHoverMenuFactory().createDemoMenuFromCode(contextThemeWrapper, Bus.getInstance());
+//            mDemoHoverMenuAdapter = new DemoHoverMenuFactory().createDemoMenuFromFile(contextThemeWrapper);
+            return mDemoHoverMenuAdapter;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    /**
-     * Example of how to create a menu from a configuration file.
-     *
-     * @return Menu
-     * @throws IOException
-     */
-    private Menu createDemoMenuFromFile() throws IOException {
-        DemoMenuFromFile demoMenuFromFile = new DemoMenuFromFile(this, new DemoMenuActionFactory(this));
-        return demoMenuFromFile.createFromFile("demo_menu.json");
-    }
-
-    /**
-     * Example of how to create a menu in code.
-     * @return Menu
-     */
-    private Menu createDemoMenuFromCode() {
-        DemoMenuFromCode demoMenuFromCode = new DemoMenuFromCode(this);
-        return demoMenuFromCode.createMenu();
+    public void onEventMainThread(@NonNull HoverTheme newTheme) {
+        mDemoHoverMenuAdapter.setTheme(newTheme);
     }
 
 }

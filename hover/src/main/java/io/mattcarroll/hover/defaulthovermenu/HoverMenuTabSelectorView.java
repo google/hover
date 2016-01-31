@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.support.annotation.ColorInt;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
@@ -46,6 +47,11 @@ public class HoverMenuTabSelectorView extends View {
         mSelectorPaint = new Paint();
         mSelectorPaint.setColor(getResources().getColor(R.color.floatingmenu_popup_color));
         mSelectorPaint.setStyle(Paint.Style.FILL);
+    }
+
+    public void setSelectorColor(@ColorInt int color) {
+        mSelectorPaint.setColor(color);
+        invalidate();
     }
 
     /**

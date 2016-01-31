@@ -1,4 +1,4 @@
-package io.mattcarroll.hover.hoverdemo.menu;
+package io.mattcarroll.hover.hoverdemo.menu.config.file;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
