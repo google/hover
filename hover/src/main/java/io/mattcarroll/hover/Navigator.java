@@ -17,14 +17,6 @@ import android.view.View;
 public interface Navigator {
 
     /**
-     * Sets the title that is displayed by this {@code Navigator}. The details of the title presentation
-     * are implementation specific.
-     *
-     * @param title Title displayed in this Navigator
-     */
-    void setTitle(@NonNull String title);
-
-    /**
      * Removes the current content {@code View} if content is visible. Then displays the provided
      * {@code content}.
      *

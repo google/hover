@@ -10,14 +10,6 @@ import android.view.View;
 public interface NavigatorContent {
 
     /**
-     * Returns the title to be displayed with this content.
-     *
-     * @return title to display with this content, or null to keep whatever title is already being displayed
-     */
-    @Nullable
-    CharSequence getTitle();
-
-    /**
      * Returns the visual display of this content.
      *
      * @return the visual representation of this content

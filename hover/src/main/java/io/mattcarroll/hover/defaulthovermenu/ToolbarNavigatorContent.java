@@ -1,10 +1,15 @@
 package io.mattcarroll.hover.defaulthovermenu;
 
 import android.content.Context;
+import android.content.res.TypedArray;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,16 +19,17 @@ import android.widget.LinearLayout;
 import io.mattcarroll.hover.R;
 import io.mattcarroll.hover.Navigator;
 import io.mattcarroll.hover.NavigatorContent;
+import io.mattcarroll.hover.ToolbarNavigator;
 
 import java.util.Stack;
 
 /**
- * {@link Navigator} implementation  that displays content with a {@link Toolbar} on top that allows
- * for back navigation and displays a title.
+ * {@link Navigator} implementation  that displays content with a {@link Toolbar} on top..
  */
-public class ToolbarNavigatorContent extends LinearLayout implements Navigator, NavigatorContent {
+public class ToolbarNavigatorContent extends LinearLayout implements ToolbarNavigator, NavigatorContent {
 
     private Toolbar mToolbar;
+    private Drawable mBackArrowDrawable;
     private Stack<NavigatorContent> mContentStack;
     private FrameLayout mContentContainer;
     private LayoutParams mContentLayoutParams;
@@ -48,17 +54,29 @@ public class ToolbarNavigatorContent extends LinearLayout implements Navigator, 
                 popContent();
             }
         });
+        mBackArrowDrawable = createBackArrowDrawable();
 
         mContentContainer = (FrameLayout) findViewById(R.id.content_container);
-
         mContentLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-
         mContentStack = new Stack<>();
     }
 
+    private Drawable createBackArrowDrawable() {
+        // Load the desired back-arrow color from the theme that we're using.
+        int[] attrIds = new int[] { R.attr.colorControlNormal };
+        TypedArray attrs = getContext().obtainStyledAttributes(attrIds);
+        int backArrowColor = attrs.getColor(attrs.getIndex(0), 0xFF000000);
+        attrs.recycle();
+
+        // Apply the desired color to the back-arrow icon and return it.
+        Drawable backArrowDrawable = ContextCompat.getDrawable(getContext(), R.drawable.ic_arrow_back);
+        backArrowDrawable.setColorFilter(backArrowColor, PorterDuff.Mode.SRC_ATOP);
+        return backArrowDrawable;
+    }
+
     @Override
-    public void setTitle(@NonNull String title) {
-        mToolbar.setTitle(title);
+    public Toolbar getToolbar() {
+        return mToolbar;
     }
 
     @Override
@@ -113,9 +131,6 @@ public class ToolbarNavigatorContent extends LinearLayout implements Navigator, 
     }
 
     private void showContent(@NonNull NavigatorContent content) {
-        if (null != content.getTitle()) {
-            mToolbar.setTitle(content.getTitle());
-        }
         mContentContainer.addView(content.getView(), mContentLayoutParams);
         content.onShown(this);
     }
@@ -129,17 +144,11 @@ public class ToolbarNavigatorContent extends LinearLayout implements Navigator, 
     private void updateToolbarBackButton() {
         if (mContentStack.size() >= 2) {
             // Show the back button.
-            mToolbar.setNavigationIcon(R.drawable.ic_arrow_back);
+            mToolbar.setNavigationIcon(mBackArrowDrawable);
         } else {
             // Hide the back button.
             mToolbar.setNavigationIcon(null);
         }
-    }
-
-    @Nullable
-    @Override
-    public CharSequence getTitle() {
-        return null;
     }
 
     @NonNull

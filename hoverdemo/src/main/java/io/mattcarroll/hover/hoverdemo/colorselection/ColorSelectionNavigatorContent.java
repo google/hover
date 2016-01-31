@@ -112,12 +112,6 @@ public class ColorSelectionNavigatorContent extends FrameLayout implements Navig
         super.onDetachedFromWindow();
     }
 
-    @Nullable
-    @Override
-    public CharSequence getTitle() {
-        return null;
-    }
-
     @NonNull
     @Override
     public View getView() {

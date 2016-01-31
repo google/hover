@@ -45,12 +45,6 @@ public class PlaceholderNavigatorContent extends FrameLayout implements Navigato
         super.onDetachedFromWindow();
     }
 
-    @Nullable
-    @Override
-    public CharSequence getTitle() {
-        return null;
-    }
-
     @NonNull
     @Override
     public View getView() {

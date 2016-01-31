@@ -40,11 +40,6 @@ public class DemoHoverMenuService extends HoverMenuService {
     }
 
     @Override
-    protected Navigator createNavigator() {
-        return new ToolbarNavigatorContent(new ContextThemeWrapper(this, R.style.AppTheme));
-    }
-
-    @Override
     protected int getMenuTheme() {
         return R.style.AppTheme;
     }

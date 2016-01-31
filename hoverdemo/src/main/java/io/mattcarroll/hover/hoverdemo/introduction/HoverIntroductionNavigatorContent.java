@@ -52,12 +52,6 @@ public class HoverIntroductionNavigatorContent extends FrameLayout implements Na
         super.onDetachedFromWindow();
     }
 
-    @Nullable
-    @Override
-    public CharSequence getTitle() {
-        return null;
-    }
-
     @NonNull
     @Override
     public View getView() {

@@ -31,15 +31,7 @@ public class DefaultNavigator extends FrameLayout implements Navigator {
     }
 
     @Override
-    public void setTitle(@NonNull String title) {
-//        mContentContainer.setTitle(title);
-        // TODO: get rid of setTitle() method in interface.
-    }
-
-    @Override
     public void pushContent(@NonNull NavigatorContent content) {
-//        mContentContainer.pushContent(content);
-
         // Remove the currently visible content (if there is any).
         if (!mContentStack.isEmpty()) {
             removeView(mContentStack.peek().getView());
@@ -53,8 +45,6 @@ public class DefaultNavigator extends FrameLayout implements Navigator {
 
     @Override
     public boolean popContent() {
-//        return mContentContainer.popContent();
-
         if (mContentStack.size() > 1) {
             // Remove the currently visible content.
             removeCurrentContent();
@@ -87,6 +77,7 @@ public class DefaultNavigator extends FrameLayout implements Navigator {
         removeCurrentContent();
     }
 
+    @NonNull
     @Override
     public View getView() {
         return this;

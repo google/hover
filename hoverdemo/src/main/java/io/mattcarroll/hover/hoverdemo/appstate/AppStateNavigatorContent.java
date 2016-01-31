@@ -57,12 +57,6 @@ public class AppStateNavigatorContent extends FrameLayout implements NavigatorCo
         mAppStateAdapter.setActivityStates(event.getActivityStack());
     }
 
-    @Nullable
-    @Override
-    public CharSequence getTitle() {
-        return null;
-    }
-
     @NonNull
     @Override
     public View getView() {
