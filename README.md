@@ -2,6 +2,10 @@ Hover
 =====
 Hover is a floating menu implementation for Android.
 
+Demo Hover Menu
+---------------
+<img src=“https://github.com/matthew-carroll/hover/tree/gh-pages/images/screenshots/hover-demo-homescreen.png” />
+
 Download
 --------
 Hover is available through jCenter:
