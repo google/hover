@@ -1,26 +1,19 @@
-package io.mattcarroll.hover.hoverdemo.menu.ui;
+package io.mattcarroll.hover.hoverdemo.hovermenu.ui;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.graphics.Rect;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.shapes.OvalShape;
-import android.os.Build;
 import android.support.annotation.ColorInt;
-import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.util.TypedValue;
 import android.view.View;
 
-import java.lang.reflect.Type;
-
 /**
  * Visual representation of a top-level tab in a Hover menu.
  */
-public class DemoTabViewHack extends View {
+public class DemoTabView extends View {
 
     private int mBackgroundColor;
     private Integer mForegroundColor;
@@ -29,7 +22,7 @@ public class DemoTabViewHack extends View {
     private Drawable mIconDrawable;
     private int mIconInsetLeft, mIconInsetTop, mIconInsetRight, mIconInsetBottom;
 
-    public DemoTabViewHack(Context context, Drawable backgroundDrawable, Drawable iconDrawable) {
+    public DemoTabView(Context context, Drawable backgroundDrawable, Drawable iconDrawable) {
         super(context);
         mCircleDrawable = backgroundDrawable;
         mIconDrawable = iconDrawable;
@@ -43,38 +36,22 @@ public class DemoTabViewHack extends View {
 
     public void setTabBackgroundColor(@ColorInt int backgroundColor) {
         mBackgroundColor = backgroundColor;
-        mCircleDrawable.setTint(mBackgroundColor);
+        mCircleDrawable.setColorFilter(mBackgroundColor, PorterDuff.Mode.SRC_ATOP);
     }
 
     public void setTabForegroundColor(@ColorInt Integer foregroundColor) {
         mForegroundColor = foregroundColor;
         if (null != mForegroundColor) {
-            mIconDrawable.setTint(mForegroundColor);
+            mIconDrawable.setColorFilter(mForegroundColor, PorterDuff.Mode.SRC_ATOP);
         } else {
-            mIconDrawable.setTintList(null);
+            mIconDrawable.setColorFilter(null);
         }
     }
-
-//    public void setForegroundColor(int foregroundColor) {
-//        mForegroundColor = foregroundColor;
-//        if (null != mIconDrawable && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//            mIconDrawable.setTint(foregroundColor);
-//        }
-//
-//        invalidate();
-//    }
-
-//    public void setBackgroundColor(int backgroundColor) {
-//        mBackgroundColor = backgroundColor;
-//        mCircleDrawable.getPaint().setColor(mBackgroundColor);
-//
-//        invalidate();
-//    }
 
     public void setIcon(@Nullable Drawable icon) {
         mIconDrawable = icon;
         if (null != mForegroundColor && null != mIconDrawable) {
-            mIconDrawable.setTint(mForegroundColor);
+            mIconDrawable.setColorFilter(mForegroundColor, PorterDuff.Mode.SRC_ATOP);
         }
         updateIconBounds();
 

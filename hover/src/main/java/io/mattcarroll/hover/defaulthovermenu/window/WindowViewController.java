@@ -1,4 +1,4 @@
-package io.mattcarroll.hover.defaulthovermenu.utils.window;
+package io.mattcarroll.hover.defaulthovermenu.window;
 
 import android.graphics.PixelFormat;
 import android.graphics.Point;

@@ -1,34 +1,32 @@
-package io.mattcarroll.hover.defaulthovermenu.utils.window;
+package io.mattcarroll.hover.defaulthovermenu.view;
 
-import android.content.Context;
-import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 
-import io.mattcarroll.hover.defaulthovermenu.utils.Dragger;
+import io.mattcarroll.hover.defaulthovermenu.Dragger;
 
 /**
- * {@link Dragger} implementation that works within a {@code Window}.
+ * {@link Dragger} implementation that works within a {@link ViewGroup}.
  */
-public class InWindowDragger implements Dragger {
+public class InViewGroupDragger implements Dragger {
 
-    private static final String TAG = "WindowDragWatcher";
+    private static final String TAG = "InViewGroupDragger";
 
-    private Context mContext;
-    private WindowViewController mWindowViewController;
+    private final ViewGroup mContainer;
     private View mDragView;
-    private Dragger.DragListener mDragListener;
-    private float mTapTouchSlop;
     private boolean mIsActivated;
     private boolean mIsDragging;
-    private Point mViewOriginalPosition = new Point();
+    private boolean mIsDebugMode = false;
+    private DragListener mDragListener;
+    private int mTapTouchSlop;
+    private PointF mViewOriginalPosition = new PointF();
     private PointF mViewCurrentPosition = new PointF();
     private PointF mPrevMotionPosition = new PointF();
-    private boolean mIsDebugMode;
 
     private View.OnTouchListener mDragTouchListener = new View.OnTouchListener() {
         @Override
@@ -38,7 +36,8 @@ public class InWindowDragger implements Dragger {
                     Log.d(TAG, "ACTION_DOWN");
                     mIsDragging = false;
 
-                    mViewOriginalPosition = mWindowViewController.getViewPosition(mDragView);
+//                    mViewOriginalPosition = mWindowViewController.getViewPosition(mDragView);
+                    mViewOriginalPosition = getDragViewPosition();
                     mViewCurrentPosition = new PointF(mViewOriginalPosition.x, mViewOriginalPosition.y);
                     mPrevMotionPosition.set(motionEvent.getRawX(), motionEvent.getRawY());
 
@@ -59,10 +58,12 @@ public class InWindowDragger implements Dragger {
                         if(!mIsDragging) {
                             Log.d(TAG, "MOVE Start Drag.");
                             mIsDragging = true;
-                            Point dragViewPosition = mWindowViewController.getViewPosition(mDragView);
+//                            Point dragViewPosition = mWindowViewController.getViewPosition(mDragView);
+                            PointF dragViewPosition = getDragViewPosition();
                             mDragListener.onDragStart(dragViewPosition.x, dragViewPosition.y);
                         } else {
-                            mWindowViewController.moveViewTo(mDragView, (int) mViewCurrentPosition.x, (int) mViewCurrentPosition.y);
+//                            mWindowViewController.moveViewTo(mDragView, (int) mViewCurrentPosition.x, (int) mViewCurrentPosition.y);
+                            moveDragViewTo(mViewCurrentPosition);
                             mDragListener.onDragTo(mViewCurrentPosition.x, mViewCurrentPosition.y);
                         }
                     }
@@ -82,33 +83,9 @@ public class InWindowDragger implements Dragger {
         }
     };
 
-    /**
-     * Note: {@code view} must already be added to the {@code Window}.
-     * @param context context
-     * @param windowViewController windowViewController
-     * @param tapTouchSlop tapTouchSlop
-     */
-    public InWindowDragger(@NonNull Context context, @NonNull WindowViewController windowViewController, float tapTouchSlop) {
-        mContext = context;
-        mWindowViewController = windowViewController;
-        mTapTouchSlop = tapTouchSlop;
-    }
-
-    public void activate(@NonNull DragListener dragListener, @NonNull Rect controlBounds) {
-        if (!mIsActivated) {
-            createTouchControlView(controlBounds);
-            mDragListener = dragListener;
-            mDragView.setOnTouchListener(mDragTouchListener);
-            mIsActivated = true;
-        }
-    }
-
-    public void deactivate() {
-        if (mIsActivated) {
-            mDragView.setOnTouchListener(null);
-            destroyTouchControlView();
-            mIsActivated = false;
-        }
+    public InViewGroupDragger(@NonNull ViewGroup container, int touchSlop) {
+        mContainer = container;
+        mTapTouchSlop = touchSlop;
     }
 
     public void setDebugMode(boolean isDebugMode) {
@@ -116,18 +93,35 @@ public class InWindowDragger implements Dragger {
         updateTouchControlViewAppearance();
     }
 
+    @Override
+    public void activate(@NonNull DragListener dragListener, @NonNull Rect controlBounds) {
+        if (!mIsActivated) {
+            mDragListener = dragListener;
+            createTouchControlView(controlBounds);
+            mIsActivated = true;
+        }
+    }
+
+    @Override
+    public void deactivate() {
+        if (mIsActivated) {
+            destroyTouchControlView();
+            mIsActivated = false;
+        }
+    }
+
     private void createTouchControlView(Rect bounds) {
-        mDragView = new View(mContext);
-        int width = bounds.width();
-        int height = bounds.height();
-        mWindowViewController.addView(width, height, true, mDragView);
-        mWindowViewController.moveViewTo(mDragView, bounds.left, bounds.top);
+        mDragView = new View(mContainer.getContext());
+        mDragView.setLayoutParams(new ViewGroup.LayoutParams(bounds.width(), bounds.height()));
+        mContainer.addView(mDragView);
+        mDragView.setOnTouchListener(mDragTouchListener);
+        moveDragViewTo(new PointF(bounds.left, bounds.top));
 
         updateTouchControlViewAppearance();
     }
 
     private void destroyTouchControlView() {
-        mWindowViewController.removeView(mDragView);
+        mContainer.removeView(mDragView);
         mDragView = null;
     }
 
@@ -149,4 +143,12 @@ public class InWindowDragger implements Dragger {
         return distance < mTapTouchSlop;
     }
 
+    private PointF getDragViewPosition() {
+        return new PointF(mDragView.getX(), mDragView.getY());
+    }
+
+    private void moveDragViewTo(PointF position) {
+        mDragView.setX(position.x);
+        mDragView.setY(position.y);
+    }
 }

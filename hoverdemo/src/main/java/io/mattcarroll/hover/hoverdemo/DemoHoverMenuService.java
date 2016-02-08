@@ -8,10 +8,7 @@ import android.view.ContextThemeWrapper;
 import java.io.IOException;
 
 import io.mattcarroll.hover.HoverMenuAdapter;
-import io.mattcarroll.hover.Navigator;
-import io.mattcarroll.hover.defaulthovermenu.ToolbarNavigatorContent;
 import io.mattcarroll.hover.defaulthovermenu.window.HoverMenuService;
-import io.mattcarroll.hover.hoverdemo.menu.DemoHoverMenuAdapter;
 import io.mattcarroll.hover.hoverdemo.theming.HoverTheme;
 
 /**
@@ -40,16 +37,15 @@ public class DemoHoverMenuService extends HoverMenuService {
     }
 
     @Override
-    protected int getMenuTheme() {
-        return R.style.AppTheme;
+    protected Context getContextForHoverMenu() {
+        return new ContextThemeWrapper(this, R.style.AppTheme);
     }
 
     @Override
     protected HoverMenuAdapter createHoverMenuAdapter() {
         try {
-            final ContextThemeWrapper contextThemeWrapper = new ContextThemeWrapper(this, R.style.AppTheme);
-            mDemoHoverMenuAdapter = new DemoHoverMenuFactory().createDemoMenuFromCode(contextThemeWrapper, Bus.getInstance());
-//            mDemoHoverMenuAdapter = new DemoHoverMenuFactory().createDemoMenuFromFile(contextThemeWrapper);
+            mDemoHoverMenuAdapter = new DemoHoverMenuFactory().createDemoMenuFromCode(getContextForHoverMenu(), Bus.getInstance());
+//            mDemoHoverMenuAdapter = new DemoHoverMenuFactory().createDemoMenuFromFile(getContextForHoverMenu());
             return mDemoHoverMenuAdapter;
         } catch (IOException e) {
             throw new RuntimeException(e);

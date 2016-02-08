@@ -1,6 +1,7 @@
 package io.mattcarroll.hover.hoverdemo.introduction;
 
 import android.graphics.PointF;
+import android.os.Build;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -69,7 +70,9 @@ public class HoverMotion {
 
         // Set elevation based on scale (the bigger, the higher).
         int baseElevation = 50;
-        mView.setElevation(baseElevation * scale);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            mView.setElevation(baseElevation * scale);
+        }
     }
 
     public static class BrownianMotionGenerator {

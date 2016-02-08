@@ -1,10 +1,10 @@
 package io.mattcarroll.hover.defaulthovermenu;
 
 import android.content.Context;
-import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.shapes.RoundRectShape;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
@@ -33,12 +33,9 @@ public class HoverMenuContentView extends FrameLayout {
     private Drawable mContentBackground;
     private Navigator mNavigator;
     // We need to update the tab selector position every draw frame so that animations don't result in a bad selector position.
-    private ViewTreeObserver.OnDrawListener mOnDrawListener = new ViewTreeObserver.OnDrawListener() {
-        @Override
-        public void onDraw() {
-            updateTabSelectorPosition();
-        }
-    };
+    private ViewTreeObserver.OnDrawListener mOnDrawListener;
+    // This version of the listener is for compatibility with API level 15.
+    private ViewTreeObserver.OnPreDrawListener mOnPreDrawListener;
 
     public HoverMenuContentView(Context context) {
         super(context);
@@ -59,7 +56,28 @@ public class HoverMenuContentView extends FrameLayout {
 
         mContentView = (FrameLayout) findViewById(R.id.view_content_container);
         mContentBackground = ContextCompat.getDrawable(getContext(), R.drawable.round_rect_white);
-        mContentView.setBackground(mContentBackground);
+        mContentView.setBackgroundDrawable(mContentBackground);
+
+        createSelectedTabDrawListener();
+    }
+
+    private void createSelectedTabDrawListener() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            mOnDrawListener = new ViewTreeObserver.OnDrawListener() {
+                @Override
+                public void onDraw() {
+                    updateTabSelectorPosition();
+                }
+            };
+        } else {
+            mOnPreDrawListener = new ViewTreeObserver.OnPreDrawListener() {
+                @Override
+                public boolean onPreDraw() {
+                    updateTabSelectorPosition();
+                    return true;
+                }
+            };
+        }
     }
 
     /**
@@ -68,12 +86,9 @@ public class HoverMenuContentView extends FrameLayout {
      * @param tabView the tab with which this content view will align its selector
      */
     public void setActiveTab(@NonNull View tabView) {
-        if (null != mSelectedTabView) {
-            mSelectedTabView.getViewTreeObserver().removeOnDrawListener(mOnDrawListener);
-        }
-
+        detachSelectedTabOnDrawListener();
         mSelectedTabView = tabView;
-        mSelectedTabView.getViewTreeObserver().addOnDrawListener(mOnDrawListener);
+        attachSelectedTabOnDrawListener();
         updateTabSelectorPosition();
     }
 
@@ -92,7 +107,7 @@ public class HoverMenuContentView extends FrameLayout {
     public void setBackgroundColor(int color) {
         // Forward the call on to our constituent pieces.
         mTabSelectorView.setSelectorColor(color);
-        mContentBackground.setTint(color);
+        mContentBackground.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
     }
 
     @Override
@@ -110,80 +125,11 @@ public class HoverMenuContentView extends FrameLayout {
         // Don't allow setting a background.
     }
 
-    //    @Override
-//    public void setTitle(@NonNull String title) {
-////        mContentContainer.setTitle(title);
-//        // TODO: get rid of setTitle() method in interface.
-//    }
-//
-//    @Override
-//    public void pushContent(@NonNull NavigatorContent content) {
-////        mContentContainer.pushContent(content);
-//
-//        // Remove the currently visible content (if there is any).
-//        if (!mContentStack.isEmpty()) {
-//            mContentContainer.removeView(mContentStack.peek().getView());
-//            mContentStack.peek().onHidden();
-//        }
-//
-//        // Push and display the new page.
-//        mContentStack.push(content);
-//        showContent(content);
-//    }
-//
-//    @Override
-//    public boolean popContent() {
-////        return mContentContainer.popContent();
-//
-//        if (mContentStack.size() > 1) {
-//            // Remove the currently visible content.
-//            removeCurrentContent();
-//
-//            // Add back the previous content (if there is any).
-//            if (!mContentStack.isEmpty()) {
-//                showContent(mContentStack.peek());
-//            }
-//
-//            return true;
-//        } else {
-//            return false;
-//        }
-//    }
-//
-//    @Override
-//    public void clearContent() {
-//        if (mContentStack.isEmpty()) {
-//            // Nothing to clear.
-//            return;
-//        }
-//
-//        // Pop every content View that we can.
-//        boolean didPopContent = popContent();
-//        while (didPopContent) {
-//            didPopContent = popContent();
-//        }
-//
-//        // Clear the root View.
-//        removeCurrentContent();
-//    }
-//
-//    private void showContent(@NonNull NavigatorContent content) {
-//        mContentContainer.addView(content.getView(), mContentLayoutParams);
-//        content.onShown(this);
-//    }
-//
-//    private void removeCurrentContent() {
-//        NavigatorContent visibleContent = mContentStack.pop();
-//        mContentContainer.removeView(visibleContent.getView());
-//        visibleContent.onHidden();
-//    }
-
     /**
      * Tries to handle a back-press.
      * @return true if the back-press was handled, false otherwise
      */
     public boolean onBackPressed() {
-//        return mContentContainer.popContent();
         if (null != mNavigator) {
             return mNavigator.popContent();
         } else {
@@ -197,6 +143,26 @@ public class HoverMenuContentView extends FrameLayout {
             mSelectedTabView.getGlobalVisibleRect(tabBounds);
             int globalTabCenter = tabBounds.centerX();
             mTabSelectorView.setSelectorPosition(globalTabCenter);
+        }
+    }
+
+    private void attachSelectedTabOnDrawListener() {
+        if (null != mSelectedTabView) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                mSelectedTabView.getViewTreeObserver().addOnDrawListener(mOnDrawListener);
+            } else {
+                mSelectedTabView.getViewTreeObserver().addOnPreDrawListener(mOnPreDrawListener);
+            }
+        }
+    }
+
+    private void detachSelectedTabOnDrawListener() {
+        if (null != mSelectedTabView) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                mSelectedTabView.getViewTreeObserver().removeOnDrawListener(mOnDrawListener);
+            } else {
+                mSelectedTabView.getViewTreeObserver().removeOnPreDrawListener(mOnPreDrawListener);
+            }
         }
     }
 

@@ -4,15 +4,14 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.PointF;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
-import android.view.ContextThemeWrapper;
-import android.view.WindowManager;
 
+import io.mattcarroll.hover.HoverMenu;
 import io.mattcarroll.hover.HoverMenuAdapter;
 import io.mattcarroll.hover.Navigator;
+import io.mattcarroll.hover.defaulthovermenu.HoverMenuBuilder;
 
 /**
  * {@code Service} that presents a {@code HoverMenu} within a {@code Window}.
@@ -29,15 +28,14 @@ public abstract class HoverMenuService extends Service {
     private static final String TAG = "HoverMenuService";
 
     private static final String PREF_FILE = "hover_menu";
-    private static final String PREF_ICON_POSITION_X = "icon_position_x";
-    private static final String PREF_ICON_POSITION_Y = "icon_position_y";
+    private static final String PREF_HOVER_MENU_VISUAL_STATE = "hover_menu_visual_state";
 
-    private SharedPreferences mPrefs;
-    private WindowHoverMenu mWindowHoverMenu;
+    private HoverMenu mHoverMenu;
     private boolean mIsRunning;
-    private WindowHoverMenu.MenuExitListener mWindowHoverMenuMenuExitListener = new WindowHoverMenu.MenuExitListener() {
+    private SharedPreferences mPrefs;
+    private HoverMenu.OnExitListener mWindowHoverMenuMenuExitListener = new HoverMenu.OnExitListener() {
         @Override
-        public void onHoverMenuAboutToExit() {
+        public void onExitByUserRequest() {
             Log.d(TAG, "Menu exit requested.");
             savePreferredLocation();
             onHoverMenuExitingByUserRequest();
@@ -49,11 +47,14 @@ public abstract class HoverMenuService extends Service {
     public void onCreate() {
         Log.d(TAG, "onCreate()");
         mPrefs = getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE);
-        ContextThemeWrapper menuThemedContext = new ContextThemeWrapper(this, getMenuTheme());
-        WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        mWindowHoverMenu = new WindowHoverMenu(menuThemedContext, windowManager, loadPreferredLocation(), createNavigator());
-        mWindowHoverMenu.setAdapter(createHoverMenuAdapter());
-        mWindowHoverMenu.setMenuExitListener(mWindowHoverMenuMenuExitListener);
+
+        mHoverMenu = new HoverMenuBuilder(getContextForHoverMenu())
+                .displayWithinWindow()
+                .useNavigator(createNavigator())
+                .useAdapter(createHoverMenuAdapter())
+                .restoreVisualState(loadPreferredLocation())
+                .build();
+        mHoverMenu.addOnExitListener(mWindowHoverMenuMenuExitListener);
     }
 
     @Override
@@ -61,7 +62,7 @@ public abstract class HoverMenuService extends Service {
         if (!mIsRunning) {
             Log.d(TAG, "onStartCommand() - showing Hover menu.");
             mIsRunning = true;
-            mWindowHoverMenu.show();
+            mHoverMenu.show();
         }
 
         return START_STICKY;
@@ -70,7 +71,7 @@ public abstract class HoverMenuService extends Service {
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy()");
-        mWindowHoverMenu.exit();
+        mHoverMenu.hide();
         mIsRunning = false;
     }
 
@@ -78,6 +79,16 @@ public abstract class HoverMenuService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    /**
+     * Hook for subclasses to return a custom Context to be used in the creation of the {@code HoverMenu}.
+     * For example, subclasses might choose to provide a ContextThemeWrapper.
+     *
+     * @return context for HoverMenu initialization
+     */
+    protected Context getContextForHoverMenu() {
+        return this;
     }
 
     /**
@@ -97,23 +108,22 @@ public abstract class HoverMenuService extends Service {
         return null; // Subclasses can override this to provide a custom Navigator.
     }
 
-    abstract protected int getMenuTheme();
-
     abstract protected HoverMenuAdapter createHoverMenuAdapter();
 
+    /**
+     * Hook method for subclasses to take action when the user exits the HoverMenu. This method runs
+     * just before this {@code HoverMenuService} calls {@code stopSelf()}.
+     */
     protected void onHoverMenuExitingByUserRequest() {
         // Hook for subclasses.
     }
 
     private void savePreferredLocation() {
-        PointF preferredLocation = mWindowHoverMenu.getAnchorState();
-        mPrefs.edit()
-                .putFloat(PREF_ICON_POSITION_X, preferredLocation.x)
-                .putFloat(PREF_ICON_POSITION_Y, preferredLocation.y)
-                .apply();
+        String memento = mHoverMenu.getVisualState();
+        mPrefs.edit().putString(PREF_HOVER_MENU_VISUAL_STATE, memento).apply();
     }
 
-    private PointF loadPreferredLocation() {
-        return new PointF(mPrefs.getFloat(PREF_ICON_POSITION_X, 0), mPrefs.getFloat(PREF_ICON_POSITION_Y, 0));
+    private String loadPreferredLocation() {
+        return mPrefs.getString(PREF_HOVER_MENU_VISUAL_STATE, null);
     }
 }

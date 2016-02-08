@@ -8,7 +8,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         />
-    <!--<io.mattcarroll.hover.defaulthovermenu.ToolbarNavigatorContent-->
+    <!--<io.mattcarroll.hover.defaulthovermenu.toolbar.ToolbarNavigatorContent-->
         <!--android:id="@+id/view_content_container"-->
         <!--android:layout_width="match_parent"-->
         <!--android:layout_height="0dp"-->

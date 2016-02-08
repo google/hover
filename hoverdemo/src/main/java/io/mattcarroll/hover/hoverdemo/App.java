@@ -2,6 +2,7 @@ package io.mattcarroll.hover.hoverdemo;
 
 import android.app.ActivityManager;
 import android.app.Application;
+import android.os.Build;
 import android.support.v4.content.ContextCompat;
 
 import io.mattcarroll.hover.hoverdemo.appstate.AppStateTracker;
@@ -30,7 +31,13 @@ public class App extends Application {
 
     private void setupAppStateTracking() {
         ActivityManager activityManager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+
         AppStateTracker.init(this, Bus.getInstance());
-        AppStateTracker.getInstance().trackTask(activityManager.getAppTasks().get(0).getTaskInfo());
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            if (activityManager.getAppTasks().size() > 0) {
+                AppStateTracker.getInstance().trackTask(activityManager.getAppTasks().get(0).getTaskInfo());
+            }
+        }
     }
 }

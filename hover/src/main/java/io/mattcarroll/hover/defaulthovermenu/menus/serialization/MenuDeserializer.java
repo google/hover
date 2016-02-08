@@ -34,6 +34,15 @@ public class MenuDeserializer {
         return doDeserialization(new BufferedReader(new InputStreamReader(in)));
     }
 
+    public Menu deserializeMenu(@NonNull String json) throws IOException {
+        try {
+            JSONArray jsonArray = new JSONArray(json);
+            return createMenuFromJson(jsonArray);
+        } catch (JSONException e) {
+            throw new IOException(e);
+        }
+    }
+
     private Menu doDeserialization(@NonNull BufferedReader br) throws IOException {
         // Read in all the menu configuration JSON.
         StringBuilder sb = new StringBuilder();

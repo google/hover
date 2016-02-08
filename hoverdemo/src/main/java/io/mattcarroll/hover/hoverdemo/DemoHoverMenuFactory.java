@@ -4,7 +4,6 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -12,18 +11,15 @@ import java.util.UUID;
 
 import de.greenrobot.event.EventBus;
 import io.mattcarroll.hover.NavigatorContent;
-import io.mattcarroll.hover.defaulthovermenu.ToolbarNavigatorContent;
 import io.mattcarroll.hover.defaulthovermenu.menus.DoNothingMenuAction;
 import io.mattcarroll.hover.defaulthovermenu.menus.Menu;
 import io.mattcarroll.hover.defaulthovermenu.menus.MenuItem;
 import io.mattcarroll.hover.defaulthovermenu.menus.MenuListNavigatorContent;
 import io.mattcarroll.hover.defaulthovermenu.menus.ShowSubmenuMenuAction;
+import io.mattcarroll.hover.defaulthovermenu.toolbar.ToolbarNavigatorContent;
 import io.mattcarroll.hover.hoverdemo.appstate.AppStateNavigatorContent;
 import io.mattcarroll.hover.hoverdemo.colorselection.ColorSelectionNavigatorContent;
 import io.mattcarroll.hover.hoverdemo.introduction.HoverIntroductionNavigatorContent;
-import io.mattcarroll.hover.hoverdemo.menu.DemoHoverMenuAdapter;
-import io.mattcarroll.hover.hoverdemo.menu.config.file.DemoMenuActionFactory;
-import io.mattcarroll.hover.hoverdemo.menu.config.file.DemoMenuFromFile;
 import io.mattcarroll.hover.hoverdemo.placeholder.PlaceholderNavigatorContent;
 import io.mattcarroll.hover.hoverdemo.theming.HoverThemeManager;
 
@@ -31,17 +27,6 @@ import io.mattcarroll.hover.hoverdemo.theming.HoverThemeManager;
  * Can create a Hover menu from code or from file.
  */
 public class DemoHoverMenuFactory {
-
-    /**
-     * Example of how to create a menu from a configuration file.
-     *
-     * @return Menu
-     * @throws IOException
-     */
-    public Menu createDemoMenuFromFile(@NonNull Context context) throws IOException {
-        DemoMenuFromFile demoMenuFromFile = new DemoMenuFromFile(context, new DemoMenuActionFactory(context));
-        return demoMenuFromFile.createFromFile("demo_menu.json");
-    }
 
     /**
      * Example of how to create a menu in code.

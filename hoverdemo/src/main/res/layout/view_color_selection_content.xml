@@ -57,7 +57,7 @@
         android:layout_height="wrap_content"
         android:padding="24dp"
         android:gravity="center"
-        android:textSize="12dp"
+        android:textSize="12sp"
         android:textStyle="bold"
         android:textColor="@color/hover_accent"
         android:text="Powered by HoloColorPicker created by @LarsWerkman"

@@ -10,6 +10,7 @@ import android.content.Context;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.os.Build;
 import android.os.Vibrator;
 import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
@@ -26,11 +27,8 @@ import android.view.animation.OvershootInterpolator;
 import android.widget.RelativeLayout;
 
 import io.mattcarroll.hover.Navigator;
-import io.mattcarroll.hover.defaulthovermenu.utils.Positionable;
 import io.mattcarroll.hover.R;
 import io.mattcarroll.hover.HoverMenuAdapter;
-import io.mattcarroll.hover.defaulthovermenu.utils.Dragger;
-import io.mattcarroll.hover.defaulthovermenu.utils.MagnetPositioner;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -301,8 +299,18 @@ public class HoverMenuView extends RelativeLayout {
         mExitRequestListener = null == exitRequestListener ? new NoOpHoverMenuExitRequestListener() : exitRequestListener;
     }
 
+    // TODO: create custom object to hold anchor state
     public PointF getAnchorState() {
         return new PointF(mMenuAnchor.getAnchorSide(), mMenuAnchor.getAnchorNormalizedY());
+    }
+
+    public void setAnchorState(@NonNull PointF anchorState) {
+        mMenuAnchor.setAnchorAt((int) anchorState.x, anchorState.y);
+
+        // If we're in the collapsed state, update the collapsed position to the new anchor position.
+        if (COLLAPSED == mVisualState) {
+            moveActiveTabToAnchor();
+        }
     }
 
     private void doCollapse(boolean animate) {
@@ -310,8 +318,10 @@ public class HoverMenuView extends RelativeLayout {
         mTransitionListener.onCollapsing();
 
         if (animate) {
-            LayoutTransition transition = getLayoutTransition();
-            transition.enableTransitionType(LayoutTransition.DISAPPEARING);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                LayoutTransition transition = getLayoutTransition();
+                transition.enableTransitionType(LayoutTransition.DISAPPEARING);
+            }
 
             Iterator<View> tabIterator = getTailToHeadTabIterator();
             int timeUntilVisiblityChange = 0;
@@ -335,8 +345,10 @@ public class HoverMenuView extends RelativeLayout {
             postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    LayoutTransition transition = getLayoutTransition();
-                    transition.disableTransitionType(LayoutTransition.DISAPPEARING);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                        LayoutTransition transition = getLayoutTransition();
+                        transition.disableTransitionType(LayoutTransition.DISAPPEARING);
+                    }
                 }
             }, timeUntilVisiblityChange);
 
@@ -383,8 +395,10 @@ public class HoverMenuView extends RelativeLayout {
         if (animate) {
             animateActiveTabToExpandedPosition(new OvershootInterpolator());
 
-            LayoutTransition transition = getLayoutTransition();
-            transition.enableTransitionType(LayoutTransition.APPEARING);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                LayoutTransition transition = getLayoutTransition();
+                transition.enableTransitionType(LayoutTransition.APPEARING);
+            }
 
             Iterator<View> headToTailTabIterator = getHeadToTailTabIterator();
             int timeUntilVisiblityChange = 0;
@@ -406,8 +420,10 @@ public class HoverMenuView extends RelativeLayout {
             postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    LayoutTransition transition = getLayoutTransition();
-                    transition.disableTransitionType(LayoutTransition.APPEARING);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                        LayoutTransition transition = getLayoutTransition();
+                        transition.disableTransitionType(LayoutTransition.APPEARING);
+                    }
 
                     // Set state to expanded.
                     mVisualState = EXPANDED;
@@ -615,7 +631,12 @@ public class HoverMenuView extends RelativeLayout {
         View tabView = findViewById(id.hashCode());
         if (null != tabView) {
             RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) tabView.getLayoutParams();
-            int anchorViewId = layoutParams.getRule(RelativeLayout.LEFT_OF);
+            int anchorViewId;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                anchorViewId = layoutParams.getRule(RelativeLayout.LEFT_OF);
+            } else {
+                anchorViewId = layoutParams.getRules()[RelativeLayout.LEFT_OF];
+            }
             View leadingTabView = findViewById(anchorViewId);
 
             View trailingTabView = (View) tabView.getTag();
@@ -732,11 +753,15 @@ public class HoverMenuView extends RelativeLayout {
         mExitGradientBackground.setVisibility(VISIBLE);
 
         LayoutTransition transition = getLayoutTransition();
-        transition.enableTransitionType(LayoutTransition.APPEARING);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            transition.enableTransitionType(LayoutTransition.APPEARING);
+        }
 
         mExitView.setVisibility(VISIBLE);
 
-        transition.disableTransitionType(LayoutTransition.APPEARING);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            transition.disableTransitionType(LayoutTransition.APPEARING);
+        }
     }
 
     private void stopDragMode() {
@@ -763,11 +788,15 @@ public class HoverMenuView extends RelativeLayout {
         animator.start();
 
         LayoutTransition transition = getLayoutTransition();
-        transition.enableTransitionType(LayoutTransition.DISAPPEARING);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            transition.enableTransitionType(LayoutTransition.DISAPPEARING);
+        }
 
         mExitView.setVisibility(INVISIBLE);
 
-        transition.disableTransitionType(LayoutTransition.DISAPPEARING);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            transition.disableTransitionType(LayoutTransition.DISAPPEARING);
+        }
     }
 
     private void checkForExitRegionActivation() {
@@ -795,7 +824,6 @@ public class HoverMenuView extends RelativeLayout {
         mExitView.setScaleY(1.0f);
     }
 
-    // TODO: should this be in a controller or here?
     private void setCollapsedPosition(int x, int y) {
         Log.d(TAG, "Setting collapsed position - x: " + x + ", y: " + y);
         mDraggingPoint.set(x, y);
@@ -816,20 +844,21 @@ public class HoverMenuView extends RelativeLayout {
         }
     }
 
-    // TODO: should this go in HoverMenuViewExpandedController?
     private void initLayoutTransitionAnimations() {
         setLayoutTransition(new LayoutTransition());
         final LayoutTransition transition = getLayoutTransition();
 
-        transition.disableTransitionType(LayoutTransition.APPEARING);
         transition.setAnimator(LayoutTransition.APPEARING, createEnterObjectAnimator());
 
-        transition.disableTransitionType(LayoutTransition.DISAPPEARING);
         transition.setAnimator(LayoutTransition.DISAPPEARING, createExitObjectAnimator());
 
-        transition.disableTransitionType(LayoutTransition.CHANGE_APPEARING);
-        transition.disableTransitionType(LayoutTransition.CHANGE_DISAPPEARING);
-        transition.disableTransitionType(LayoutTransition.CHANGING);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            transition.disableTransitionType(LayoutTransition.APPEARING);
+            transition.disableTransitionType(LayoutTransition.DISAPPEARING);
+            transition.disableTransitionType(LayoutTransition.CHANGE_APPEARING);
+            transition.disableTransitionType(LayoutTransition.CHANGE_DISAPPEARING);
+            transition.disableTransitionType(LayoutTransition.CHANGING);
+        }
     }
 
     private ObjectAnimator createEnterObjectAnimator() {

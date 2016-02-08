@@ -1,4 +1,4 @@
-package io.mattcarroll.hover.defaulthovermenu.utils;
+package io.mattcarroll.hover.defaulthovermenu;
 
 import android.animation.Animator;
 import android.animation.ValueAnimator;
@@ -9,9 +9,6 @@ import android.support.annotation.Nullable;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.animation.Interpolator;
-
-import io.mattcarroll.hover.defaulthovermenu.CollapsedMenuAnchor;
-import io.mattcarroll.hover.defaulthovermenu.utils.Positionable;
 
 /**
  * Pulls a {@link Positionable} to the side of given {@code displayBounds} with animated motion.

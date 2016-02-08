@@ -2,7 +2,6 @@ package io.mattcarroll.hover.hoverdemo.colorselection;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,9 +15,9 @@ import com.larswerkman.holocolorpicker.ValueBar;
 import de.greenrobot.event.EventBus;
 import io.mattcarroll.hover.Navigator;
 import io.mattcarroll.hover.NavigatorContent;
+import io.mattcarroll.hover.hoverdemo.R;
 import io.mattcarroll.hover.hoverdemo.theming.HoverTheme;
 import io.mattcarroll.hover.hoverdemo.theming.HoverThemer;
-import io.mattcarroll.hover.hoverdemo.R;
 
 /**
  * {@link NavigatorContent} that displays a color chooser and applies the color selection to the

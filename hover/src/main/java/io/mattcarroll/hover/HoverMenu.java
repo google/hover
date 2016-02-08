@@ -1,6 +1,6 @@
 package io.mattcarroll.hover;
 
-import android.graphics.PointF;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 /**
@@ -13,22 +13,9 @@ import android.support.annotation.Nullable;
  */
 public interface HoverMenu {
 
-    // TODO: should we be publishing anchor stuff? if so, why is there not a setter?
-    /**
-     * Returns the current state of the collapsed menu anchor. When the {@code HoverMenu} is collapsed
-     * and the user is not actively dragging it, the collapsed icon gets pulled to an anchor position.
-     *
-     * @return anchor state of this HoverMenu
-     */
-    PointF getAnchorState();
+    void show();
 
-    /**
-     * Sets the {@link HoverMenuAdapter} that is used to determine what tabs and content should be
-     * displayed in this {@code HoverMenu}.
-     *
-     * @param adapter adapter to provide content for this {@code HoverMenu}
-     */
-    void setAdapter(@Nullable HoverMenuAdapter adapter);
+    void hide();
 
     /**
      * Expands the {@code HoverMenu} to display content.
@@ -40,4 +27,23 @@ public interface HoverMenu {
      */
     void collapseMenu();
 
+    /**
+     * Sets the {@link HoverMenuAdapter} that is used to determine what tabs and content should be
+     * displayed in this {@code HoverMenu}.
+     *
+     * @param adapter adapter to provide content for this {@code HoverMenu}
+     */
+    void setAdapter(@Nullable HoverMenuAdapter adapter);
+
+    String getVisualState();
+
+    void restoreVisualState(@NonNull String savedVisualState);
+
+    void addOnExitListener(@NonNull OnExitListener onExitListener);
+
+    void removeOnExitListener(@NonNull OnExitListener onExitListener);
+
+    interface OnExitListener {
+        void onExitByUserRequest();
+    }
 }

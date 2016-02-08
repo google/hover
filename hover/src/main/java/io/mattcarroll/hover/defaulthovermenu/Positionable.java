@@ -1,4 +1,4 @@
-package io.mattcarroll.hover.defaulthovermenu.utils;
+package io.mattcarroll.hover.defaulthovermenu;
 
 import android.graphics.Point;
 import android.support.annotation.NonNull;

@@ -5,9 +5,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Adapter that displays a {@link Menu} using {@link MenuItemView}s.
  */

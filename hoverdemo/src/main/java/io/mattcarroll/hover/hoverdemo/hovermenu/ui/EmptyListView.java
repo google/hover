@@ -1,7 +1,6 @@
-package io.mattcarroll.hover.hoverdemo.menu.ui;
+package io.mattcarroll.hover.hoverdemo.hovermenu.ui;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.widget.FrameLayout;
