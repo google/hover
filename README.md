@@ -131,14 +131,10 @@ Hover is available through jCenter:
 compile 'io.mattcarroll.hover:hover:0.9.5'
 ```
 
-Disclaimer
---------
-This is not an official Google product.
-
 License
 =======
 
-    Copyright (C) 2016 Nest Labs
+    Copyright (C) 2016 Matt Carroll
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
