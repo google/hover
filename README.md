@@ -135,10 +135,14 @@ Issues
 ------
 At the current time, Hover menus cannot be used within normal view hierarchies. It can only be used within a Window.
 
+Disclaimer
+--------
+This is not an official Google product.
+
 License
 =======
 
-    Copyright (C) 2016 Matt Carroll
+    Copyright (C) 2016 Nest Labs
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
