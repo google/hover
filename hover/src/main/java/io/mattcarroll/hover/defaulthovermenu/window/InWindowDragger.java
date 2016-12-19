@@ -41,6 +41,7 @@ public class InWindowDragger implements Dragger {
     private boolean mIsActivated;
     private boolean mIsDragging;
     private Point mViewOriginalPosition = new Point();
+    private PointF mTouchOffsetFromCornerOfControlView = new PointF();
     private PointF mViewCurrentPosition = new PointF();
     private PointF mPrevMotionPosition = new PointF();
     private boolean mIsDebugMode;
@@ -55,6 +56,7 @@ public class InWindowDragger implements Dragger {
 
                     mViewOriginalPosition = mWindowViewController.getViewPosition(mDragView);
                     mViewCurrentPosition = new PointF(mViewOriginalPosition.x, mViewOriginalPosition.y);
+                    mTouchOffsetFromCornerOfControlView = new PointF(mViewOriginalPosition.x - motionEvent.getRawX(), mViewCurrentPosition.y - motionEvent.getRawY());
                     mPrevMotionPosition.set(motionEvent.getRawX(), motionEvent.getRawY());
 
                     mDragListener.onPress(mViewCurrentPosition.x, mViewCurrentPosition.y);
@@ -62,10 +64,9 @@ public class InWindowDragger implements Dragger {
                     return true;
                 case MotionEvent.ACTION_MOVE:
                     Log.d(TAG, "ACTION_MOVE. motionX: " + motionEvent.getRawX() + ", motionY: " + motionEvent.getRawY());
-                    float dragDeltaX = motionEvent.getRawX() - mPrevMotionPosition.x;
-                    float dragDeltaY = motionEvent.getRawY() - mPrevMotionPosition.y;
 
-                    mViewCurrentPosition.offset(dragDeltaX, dragDeltaY);
+                    mViewCurrentPosition = new PointF(motionEvent.getRawX(), motionEvent.getRawY());
+                    mViewCurrentPosition.offset(mTouchOffsetFromCornerOfControlView.x, mTouchOffsetFromCornerOfControlView.y);
 
                     mPrevMotionPosition.set((int) motionEvent.getRawX(), (int) motionEvent.getRawY());
 
