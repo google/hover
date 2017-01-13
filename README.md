@@ -53,7 +53,7 @@ public class MyHoverMenuAdapter extends BaseHoverMenuAdapter {
     public MyHoverMenuAdapter() {
         mTabs = Arrays.asList("first", "second");
         mContentMap.put("first", /*...*/);
-        mContentMap.put("second, /*...*/);
+        mContentMap.put("second", /*...*/);
     }
 
     @Override
