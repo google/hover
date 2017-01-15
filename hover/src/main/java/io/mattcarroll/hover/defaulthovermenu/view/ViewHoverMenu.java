@@ -20,6 +20,7 @@ import android.content.SharedPreferences;
 import android.graphics.PointF;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.AttributeSet;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -51,7 +52,11 @@ public class ViewHoverMenu extends FrameLayout implements HoverMenu {
     private Set<OnExitListener> mOnExitListeners = new HashSet<>();
 
     public ViewHoverMenu(Context context) {
-        super(context);
+        this(context, null);
+    }
+
+    public ViewHoverMenu(Context context, AttributeSet attrs) {
+        super(context, attrs);
         init();
     }
 
