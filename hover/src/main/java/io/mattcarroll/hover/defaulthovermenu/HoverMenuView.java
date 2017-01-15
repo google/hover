@@ -443,6 +443,7 @@ public class HoverMenuView extends RelativeLayout {
                     // Set state to expanded.
                     mVisualState = EXPANDED;
                     mTransitionListener.onExpanded();
+                    mContentView.setActiveTab(mActiveTab);
                 }
             }, timeUntilVisiblityChange);
         } else {
