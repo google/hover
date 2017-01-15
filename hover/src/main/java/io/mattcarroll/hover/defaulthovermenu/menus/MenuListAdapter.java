@@ -20,9 +20,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Adapter that displays a {@link Menu} using {@link MenuItemView}s.
  */
@@ -51,9 +48,9 @@ public class MenuListAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int i, View view, ViewGroup viewGroup) {
+    public View getView(int i, View view, ViewGroup parent) {
         if (null == view) {
-            view = new MenuItemView(viewGroup.getContext());
+            view = new MenuItemView(parent.getContext());
         }
 
         ((MenuItemView) view).setTitle(getItem(i).getTitle());

@@ -18,8 +18,6 @@ package io.mattcarroll.hover;
 import android.support.annotation.NonNull;
 import android.view.View;
 
-import io.mattcarroll.hover.defaulthovermenu.menus.MenuAction;
-
 /**
  * Adapter that provides {@code View}s for the tabs and the content within a Hover menu.
  */
@@ -33,18 +31,34 @@ public interface HoverMenuAdapter {
     int getTabCount();
 
     /**
-     * Returns the visual representation of the {@code index}'th tab.
+     * Returns the unique ID for the tab that is currently at the given {@code position}. The ID
+     * should be unique per tab, not per position.  If the same tab moves around in the tab list,
+     * it should still return the same ID.
      *
-     * @param index index of tab
-     * @return visual representation of the {@code index}'th tab
+     * @return ID of tab at given position
      */
-    View getTabView(int index);
+    long getTabId(int position);
 
     /**
-     * Returns the {@link MenuAction} to activate for the tab at the given {@code index}.
+     * Returns the visual representation of the {@code index}'th tab.
      *
-     * @param index index of tab to activate
+     * @param position index of tab
+     * @return visual representation of the {@code index}'th tab
      */
-    MenuAction getTabMenuAction(int index);
+    View getTabView(int position);
 
+    /**
+     * Returns the {@link NavigatorContent} to display for the tab at the given {@code position}.
+     *
+     * @param position position of tab to activate
+     */
+    NavigatorContent getNavigatorContent(int position);
+
+    void addContentChangeListener(@NonNull ContentChangeListener listener);
+
+    void removeContentChangeListener(@NonNull ContentChangeListener listener);
+
+    interface ContentChangeListener {
+        void onContentChange(@NonNull HoverMenuAdapter adapter);
+    }
 }

@@ -25,4 +25,11 @@
         android:text="@string/button_launch_hover_menu_activity"
         />
 
+    <Button
+        android:id="@+id/button_launch_activity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Launch Activity"
+        />
+
 </LinearLayout>
