@@ -128,7 +128,7 @@ Download
 Hover is available through jCenter:
 
 ```groovy
-compile 'io.mattcarroll.hover:hover:0.9.5'
+compile 'io.mattcarroll.hover:hover:0.9.6'
 ```
 
 Issues

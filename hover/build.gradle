@@ -1,6 +1,6 @@
 apply plugin: 'com.android.library'
 
-version = '0.9.5'
+version = '0.9.6'
 
 android {
     compileSdkVersion 23
@@ -16,6 +16,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
 }
 
 dependencies {
@@ -35,8 +36,8 @@ ext {
 
     libraryDescription = 'An Android implementation of a floating menu.'
 
-    siteUrl = 'http://matthew-carroll.github.io/hover/'
-    gitUrl = 'https://github.com/matthew-carroll/hover.git'
+    siteUrl = 'http://google.github.io/hover/'
+    gitUrl = 'https://github.com/google/hover.git'
 
     libraryVersion = version
 
@@ -58,3 +59,7 @@ afterEvaluate {
         variant.javaCompile.classpath.files
     })
 }
+
+// This disabled Javadoc tasks because its breaking the release build.  Since Javadocs are
+// not mission critical, they will remain disabled until the issue can be debugged.
+tasks.withType(Javadoc).all { enabled = false }
