@@ -53,7 +53,7 @@ public class MyHoverMenuAdapter extends BaseHoverMenuAdapter {
     public MyHoverMenuAdapter() {
         mTabs = Arrays.asList("first", "second");
         mContentMap.put("first", /*...*/);
-        mContentMap.put("second, /*...*/);
+        mContentMap.put("second", /*...*/);
     }
 
     @Override
@@ -128,8 +128,16 @@ Download
 Hover is available through jCenter:
 
 ```groovy
-compile 'io.mattcarroll.hover:hover:0.9.5'
+compile 'io.mattcarroll.hover:hover:0.9.6'
 ```
+
+Issues
+------
+At the current time, Hover menus cannot be used within normal view hierarchies. It can only be used within a Window.
+
+Disclaimer
+--------
+This is not an official Google product.
 
 Disclaimer
 --------

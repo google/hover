@@ -18,11 +18,11 @@ package io.mattcarroll.hover.defaulthovermenu.menus;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.View;
 
 import io.mattcarroll.hover.Navigator;
 import io.mattcarroll.hover.NavigatorContent;
+import io.mattcarroll.hover.defaulthovermenu.toolbar.ToolbarNavigator;
 
 /**
  * Implementation of {@link NavigatorContent} that displays a {@link MenuItem} as a list.
@@ -57,12 +57,6 @@ public class MenuListNavigatorContent implements NavigatorContent {
         mMenuListView.setEmptyView(emptyView);
     }
 
-    @Nullable
-    @Override
-    public CharSequence getTitle() {
-        return mMenu.getTitle();
-    }
-
     @NonNull
     @Override
     public View getView() {
@@ -72,6 +66,9 @@ public class MenuListNavigatorContent implements NavigatorContent {
     @Override
     public void onShown(@NonNull Navigator navigator) {
         mNavigator = navigator;
+        if (navigator instanceof ToolbarNavigator) {
+            ((ToolbarNavigator) navigator).getToolbar().setTitle(mMenu.getTitle());
+        }
     }
 
     @Override

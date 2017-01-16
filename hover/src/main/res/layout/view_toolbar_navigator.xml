@@ -7,13 +7,12 @@
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="54dp"
+        android:layout_height="?android:attr/actionBarSize"
         />
     <View
-        android:id="@+id/hr_top"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@color/floating_menu_content_hr_color"
+        android:background="?android:attr/listDivider"
         />
 
     <FrameLayout
@@ -23,11 +22,4 @@
         android:layout_weight="1"
         />
 
-    <View
-        android:id="@+id/hr_bottom"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginBottom="32dp"
-        android:background="@color/floating_menu_content_hr_color"
-        />
 </merge>

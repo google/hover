@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <ImageView
+            android:id="@+id/imageview_logo"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_margin="40dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="16dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/hover_introduction_logo_no_shadow"
+            android:background="@drawable/circle"
+            />
+        <TextView
+            android:id="@+id/textview_hover_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="2dp"
+            android:gravity="center"
+            android:textAllCaps="true"
+            android:textColor="@color/hover_accent"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:text="Hover"
+            />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textAllCaps="true"
+            android:textColor="@color/text_subheader"
+            android:textStyle="bold"
+            android:textSize="12sp"
+            android:text="An Android Floating Menu"
+            />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:gravity="center"
+            android:textAllCaps="true"
+            android:textColor="@color/text_body"
+            android:textSize="10sp"
+            android:text="By Matt Carroll"
+            />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/background_dark"
+        />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="32dp">
+        <TextView
+            android:id="@+id/textview_goals_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:gravity="center"
+            android:textAllCaps="true"
+            android:textColor="@color/hover_accent"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:text="Goals"
+            />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:gravity="center"
+            android:textColor="@color/text_body"
+            android:textSize="12sp"
+            android:text="Provide an easy-to-use, out-of-the-box floating menu implementation for developers.\n\nProvide common tools for developers to create their own floating menu."
+            />
+    </LinearLayout>
+
+</LinearLayout>
