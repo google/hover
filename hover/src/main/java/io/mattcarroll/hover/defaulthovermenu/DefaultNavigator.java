@@ -32,17 +32,25 @@ import io.mattcarroll.hover.NavigatorContent;
  */
 public class DefaultNavigator extends FrameLayout implements Navigator {
 
+    private final boolean mIsFullscreen;
     private Stack<NavigatorContent> mContentStack;
     private ViewGroup.LayoutParams mContentLayoutParams;
 
-    public DefaultNavigator(Context context) {
+    public DefaultNavigator(@NonNull Context context) {
+        this(context, true);
+    }
+
+    public DefaultNavigator(@NonNull Context context, boolean isFullscreen) {
         super(context);
+        mIsFullscreen = isFullscreen;
         init();
     }
 
     private void init() {
+        int heightMode = mIsFullscreen ? ViewGroup.LayoutParams.MATCH_PARENT : ViewGroup.LayoutParams.WRAP_CONTENT;
         mContentStack = new Stack<>();
-        mContentLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        mContentLayoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, heightMode);
+        setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, heightMode));
     }
 
     @Override
