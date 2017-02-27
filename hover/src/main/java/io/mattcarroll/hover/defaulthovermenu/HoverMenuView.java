@@ -36,6 +36,7 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.AnticipateInterpolator;
 import android.view.animation.BounceInterpolator;
 import android.view.animation.OvershootInterpolator;
@@ -98,6 +99,28 @@ public class HoverMenuView extends RelativeLayout {
     private Dragger mWindowDragWatcher;
     private HoverMenuTransitionListener mTransitionListener;
     private HoverMenuExitRequestListener mExitRequestListener;
+
+    private HoverMenuContentView.HoverMenuContentResizer mHoverMenuContentResizer = new HoverMenuContentView.HoverMenuContentResizer() {
+        @Override
+        public void makeHoverMenuContentFullscreen() {
+            RelativeLayout.LayoutParams contentContainerLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+            contentContainerLayoutParams.height = 0;
+            contentContainerLayoutParams.addRule(RelativeLayout.BELOW, R.id.view_tab_strip_anchor);
+            contentContainerLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+            contentContainerLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+            contentContainerLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            mContentView.setLayoutParams(contentContainerLayoutParams);
+        }
+
+        @Override
+        public void makeHoverMenuContentAsTallAsItsContent() {
+            RelativeLayout.LayoutParams contentContainerLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            contentContainerLayoutParams.addRule(RelativeLayout.BELOW, R.id.view_tab_strip_anchor);
+            contentContainerLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+            contentContainerLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+            mContentView.setLayoutParams(contentContainerLayoutParams);
+        }
+    };
 
     private OnTouchListener mTabOnTouchListener = new OnTouchListener() {
         @Override
@@ -268,6 +291,7 @@ public class HoverMenuView extends RelativeLayout {
         mExitView = findViewById(R.id.view_exit);
         mExitRadiusInPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, EXIT_RADIUS_IN_DP, getResources().getDisplayMetrics());
 
+        mContentView.setContentResizer(mHoverMenuContentResizer);
         mContentView.setNavigator(mNavigator);
 
         initLayoutTransitionAnimations();

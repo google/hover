@@ -98,7 +98,6 @@ public class WindowHoverMenu implements HoverMenu {
 
         mHoverMenuView = new HoverMenuView(context, navigator, inWindowDragger, anchorState);
         mHoverMenuView.setHoverMenuExitRequestListener(mMenuExitRequestListener);
-        mHoverMenuView.setContentBackgroundColor(0xFF3b3b3b);
     }
 
     @Override
@@ -154,6 +153,7 @@ public class WindowHoverMenu implements HoverMenu {
 
             // Cleanup the control structures and Views.
             mWindowViewController.removeView(mHoverMenuView);
+            mHoverMenuView.release();
         }
     }
 
