@@ -24,10 +24,13 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 
 import io.mattcarroll.hover.Navigator;
 import io.mattcarroll.hover.NavigatorContent;
@@ -42,6 +45,7 @@ public class HoverMenuContentView extends FrameLayout {
 
     private static final String TAG = "HoverMenuContentView";
 
+    private HoverMenuContentResizer mContentResizer;
     private HoverMenuTabSelectorView mTabSelectorView;
     private View mSelectedTabView;
     private FrameLayout mContentView;
@@ -95,6 +99,10 @@ public class HoverMenuContentView extends FrameLayout {
         }
     }
 
+    public void setContentResizer(@Nullable HoverMenuContentResizer contentResizer) {
+        mContentResizer = contentResizer;
+    }
+
     /**
      * Positions the selector triangle below the center of the given {@code tabView}.
      *
@@ -115,6 +123,23 @@ public class HoverMenuContentView extends FrameLayout {
         if (null != navigator) {
             mNavigator = navigator;
             mContentView.addView(navigator.getView());
+            resizeHoverMenuContent(navigator.getView());
+        }
+    }
+
+    // Set this HoverMenuContentView to either take up the whole screen, or wrap content based on
+    // the LayoutParams of the given contentView.  This is our attempt to adjust our size to meet
+    // the intention of our child contentView.
+    private void resizeHoverMenuContent(@NonNull View contentView) {
+        ViewGroup.LayoutParams contentLayoutParams = contentView.getLayoutParams();
+        if (null == contentLayoutParams || ViewGroup.LayoutParams.MATCH_PARENT == contentLayoutParams.height) {
+            if (null != mContentResizer) {
+                mContentResizer.makeHoverMenuContentFullscreen();
+            }
+        } else {
+            if (null != mContentResizer) {
+                mContentResizer.makeHoverMenuContentAsTallAsItsContent();
+            }
         }
     }
 
@@ -181,4 +206,9 @@ public class HoverMenuContentView extends FrameLayout {
         }
     }
 
+    public interface HoverMenuContentResizer {
+        void makeHoverMenuContentFullscreen();
+
+        void makeHoverMenuContentAsTallAsItsContent();
+    }
 }
