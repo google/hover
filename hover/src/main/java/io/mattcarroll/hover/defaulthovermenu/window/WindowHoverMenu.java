@@ -153,6 +153,7 @@ public class WindowHoverMenu implements HoverMenu {
 
             // Cleanup the control structures and Views.
             mWindowViewController.removeView(mHoverMenuView);
+            mHoverMenuView.release();
         }
     }
 
