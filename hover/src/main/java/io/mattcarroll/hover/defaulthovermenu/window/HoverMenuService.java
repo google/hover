@@ -53,6 +53,7 @@ public abstract class HoverMenuService extends Service {
         public void onExitByUserRequest() {
             Log.d(TAG, "Menu exit requested.");
             savePreferredLocation();
+            mHoverMenu.hide();
             onHoverMenuExitingByUserRequest();
             stopSelf();
         }
