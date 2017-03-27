@@ -604,10 +604,6 @@ public class HoverMenuView extends RelativeLayout {
         Rect anchoredBounds = mMenuAnchor.anchor(new Rect(0, 0, getActiveTab().getWidth(), getActiveTab().getHeight()));
         Log.d(TAG, "Adjusted anchor bounds at (" + anchoredBounds.left + ", " + anchoredBounds.top + ")");
 
-        if (!changed) {
-            return;
-        }
-
         // TODO: how can we avoid this null check?
         if (null != mActiveTab) {
             Log.d(TAG, "Adjusting tab position due to layout change.");
