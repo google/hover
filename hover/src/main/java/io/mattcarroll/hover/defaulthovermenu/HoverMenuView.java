@@ -692,8 +692,7 @@ public class HoverMenuView extends RelativeLayout {
 
     private void addAllTabs() {
         for (int i = 0; i < mAdapter.getTabCount(); ++i) {
-            addTab(i + "", mAdapter.getTabView(i));
-            mTabIds.add(i + "");
+            addTab(String.valueOf(mAdapter.getTabId(i)), mAdapter.getTabView(i));
         }
     }
 
