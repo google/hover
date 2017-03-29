@@ -1,1 +1,1 @@
-include ':hover', ':hoverdemo', ':hover-demo-nonfullscreen'
+include ':hover', ':hoverdemo', ':hover-demo-nonfullscreen', ':hoverdemo-helloworld'
