@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Hello World</string>
+    <string name="introduction">This is the Hello World demo of the Hover library.  This demo app contains only the most fundamental aspects of Hover to help you figure out what you need to get started.</string>
+    <string name="button_launch_hover">Launch Hover!</string>
+</resources>
