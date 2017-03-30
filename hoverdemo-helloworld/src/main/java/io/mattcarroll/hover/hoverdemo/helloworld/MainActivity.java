@@ -10,6 +10,8 @@ import android.view.View;
 
 import org.codecanon.hover.hoverdemo.helloworld.R;
 
+import io.mattcarroll.hover.overlay.OverlayPermission;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_CODE_HOVER_PERMISSION = 1000;
@@ -35,16 +37,12 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
 
         // On Android M and above we need to ask the user for permission to display the Hover
-        // menu within the "alert window" layer.
-        if (!mPermissionsRequested && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            boolean needsPermissionToShowHover = !Settings.canDrawOverlays(getApplicationContext());
-            if (needsPermissionToShowHover) {
-                Intent myIntent = new Intent(
-                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                        Uri.parse("package:" + getPackageName())
-                );
-                startActivityForResult(myIntent, REQUEST_CODE_HOVER_PERMISSION);
-            }
+        // menu within the "alert window" layer.  Use OverlayPermission to check for the permission
+        // and to request it.
+        if (!mPermissionsRequested && !OverlayPermission.hasRuntimePermissionToDrawOverlay(this)) {
+            @SuppressWarnings("NewApi")
+            Intent myIntent = OverlayPermission.createIntentToRequestOverlayPermission(this);
+            startActivityForResult(myIntent, REQUEST_CODE_HOVER_PERMISSION);
         }
     }
 

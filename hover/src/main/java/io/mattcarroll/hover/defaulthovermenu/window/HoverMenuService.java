@@ -19,9 +19,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.IBinder;
-import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -29,6 +27,7 @@ import io.mattcarroll.hover.HoverMenu;
 import io.mattcarroll.hover.HoverMenuAdapter;
 import io.mattcarroll.hover.Navigator;
 import io.mattcarroll.hover.defaulthovermenu.HoverMenuBuilder;
+import io.mattcarroll.hover.overlay.OverlayPermission;
 
 /**
  * {@code Service} that presents a {@code HoverMenu} within a {@code Window}.
@@ -71,8 +70,8 @@ public abstract class HoverMenuService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         // Stop and return immediately if we don't have permission to display things above other
         // apps.
-        if (!hasAndroidOverlayPermission()) {
-            Log.w(TAG, "Cannot display a Hover menu in a Window without the draw overlay permission.");
+        if (!OverlayPermission.hasRuntimePermissionToDrawOverlay(getApplicationContext())) {
+            Log.e(TAG, "Cannot display a Hover menu in a Window without the draw overlay permission.");
             stopSelf();
             return START_NOT_STICKY;
         }
@@ -100,17 +99,6 @@ public abstract class HoverMenuService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return null;
-    }
-
-    private boolean hasAndroidOverlayPermission() {
-        //noinspection SimplifiableIfStatement
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            // Runtime permissions are required. Check for the draw overlay permission.
-            return Settings.canDrawOverlays(getApplicationContext());
-        } else {
-            // No runtime permissions required. We're all good.
-            return true;
-        }
     }
 
     private void initHoverMenu() {
