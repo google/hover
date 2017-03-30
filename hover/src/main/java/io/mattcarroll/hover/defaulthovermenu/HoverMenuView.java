@@ -604,7 +604,7 @@ public class HoverMenuView extends RelativeLayout {
         Rect anchoredBounds = mMenuAnchor.anchor(new Rect(0, 0, getActiveTab().getWidth(), getActiveTab().getHeight()));
         Log.d(TAG, "Adjusted anchor bounds at (" + anchoredBounds.left + ", " + anchoredBounds.top + ")");
 
-        if (!changed) {
+        if (!changed && mVisualState == TRANSITIONING) {
             return;
         }
 
