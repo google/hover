@@ -19,7 +19,9 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.IBinder;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -63,21 +65,22 @@ public abstract class HoverMenuService extends Service {
     public void onCreate() {
         Log.d(TAG, "onCreate()");
         mPrefs = getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE);
-
-        mHoverMenu = new HoverMenuBuilder(getContextForHoverMenu())
-                .displayWithinWindow()
-                .useNavigator(createNavigator())
-                .useAdapter(createHoverMenuAdapter())
-                .restoreVisualState(loadPreferredLocation())
-                .build();
-        mHoverMenu.addOnExitListener(mWindowHoverMenuMenuExitListener);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        // Stop and return immediately if we don't have permission to display things above other
+        // apps.
+        if (!hasAndroidOverlayPermission()) {
+            Log.w(TAG, "Cannot display a Hover menu in a Window without the draw overlay permission.");
+            stopSelf();
+            return START_NOT_STICKY;
+        }
+
         if (!mIsRunning) {
             Log.d(TAG, "onStartCommand() - showing Hover menu.");
             mIsRunning = true;
+            initHoverMenu();
             mHoverMenu.show();
         }
 
@@ -87,14 +90,37 @@ public abstract class HoverMenuService extends Service {
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy()");
-        mHoverMenu.hide();
-        mIsRunning = false;
+        if (mIsRunning) {
+            mHoverMenu.hide();
+            mIsRunning = false;
+        }
     }
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    private boolean hasAndroidOverlayPermission() {
+        //noinspection SimplifiableIfStatement
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            // Runtime permissions are required. Check for the draw overlay permission.
+            return Settings.canDrawOverlays(getApplicationContext());
+        } else {
+            // No runtime permissions required. We're all good.
+            return true;
+        }
+    }
+
+    private void initHoverMenu() {
+        mHoverMenu = new HoverMenuBuilder(getContextForHoverMenu())
+                .displayWithinWindow()
+                .useNavigator(createNavigator())
+                .useAdapter(createHoverMenuAdapter())
+                .restoreVisualState(loadPreferredLocation())
+                .build();
+        mHoverMenu.addOnExitListener(mWindowHoverMenuMenuExitListener);
     }
 
     /**
