@@ -60,4 +60,14 @@ public class DemoHoverMenuService extends HoverMenuService {
     protected Navigator createNavigator() {
         return new DefaultNavigator(getApplicationContext(), false);
     }
+
+    @Override
+    public void onHoverMenuCollapsed() {
+        Log.d(TAG, "onHoverMenuCollapsed() called");
+    }
+
+    @Override
+    public void onHoverMenuExpanded() {
+        Log.d(TAG, "onHoverMenuExpanded() called");
+    }
 }
