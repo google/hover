@@ -58,7 +58,16 @@ public interface HoverMenu {
 
     void removeOnExitListener(@NonNull OnExitListener onExitListener);
 
+    void addOnCollapseAndExpandListener(@NonNull OnCollapseAndExpandListener onCollapseAndExpandListener);
+
+    void removeOnCollapseAndExpandListener(@NonNull OnCollapseAndExpandListener onCollapseAndExpandListener);
+
     interface OnExitListener {
         void onExitByUserRequest();
+    }
+
+    interface OnCollapseAndExpandListener {
+        void onHoverMenuCollapsed();
+        void onHoverMenuExpanded();
     }
 }

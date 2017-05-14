@@ -50,6 +50,25 @@ public class ViewHoverMenu extends FrameLayout implements HoverMenu {
     private HoverMenuAdapter mAdapter;
     private SharedPreferences mPrefs;
     private Set<OnExitListener> mOnExitListeners = new HashSet<>();
+    private Set<OnCollapseAndExpandListener> mOnCollapseAndExpandListeners = new HashSet<>();
+
+    private HoverMenuView.HoverMenuTransitionListener mHoverMenuTransitionListener = new HoverMenuView.HoverMenuTransitionListener() {
+        @Override
+        public void onCollapsing() { }
+
+        @Override
+        public void onCollapsed() {
+            notifyOnCollapsedListeners();
+        }
+
+        @Override
+        public void onExpanding() {}
+
+        @Override
+        public void onExpanded() {
+            notifyOnExpandedListeners();
+        }
+    };
 
     public ViewHoverMenu(Context context) {
         this(context, null);
@@ -131,6 +150,7 @@ public class ViewHoverMenu extends FrameLayout implements HoverMenu {
 
     @Override
     public void collapseMenu() {
+        mHoverMenuView.setHoverMenuTransitionListener(mHoverMenuTransitionListener);
         mHoverMenuView.collapse();
     }
 
@@ -142,6 +162,28 @@ public class ViewHoverMenu extends FrameLayout implements HoverMenu {
     @Override
     public void removeOnExitListener(@NonNull OnExitListener onExitListener) {
         mOnExitListeners.remove(onExitListener);
+    }
+
+    @Override
+    public void addOnCollapseAndExpandListener(@NonNull OnCollapseAndExpandListener onCollapseAndExpandListener) {
+        mOnCollapseAndExpandListeners.add(onCollapseAndExpandListener);
+    }
+
+    @Override
+    public void removeOnCollapseAndExpandListener(@NonNull OnCollapseAndExpandListener onCollapseAndExpandListener) {
+        mOnCollapseAndExpandListeners.remove(onCollapseAndExpandListener);
+    }
+
+    private void notifyOnCollapsedListeners() {
+        for (OnCollapseAndExpandListener listener : mOnCollapseAndExpandListeners) {
+            listener.onHoverMenuCollapsed();
+        }
+    }
+
+    private void notifyOnExpandedListeners() {
+        for (OnCollapseAndExpandListener listener : mOnCollapseAndExpandListeners) {
+            listener.onHoverMenuExpanded();
+        }
     }
 
     private void notifyOnExitListeners() {
