@@ -45,6 +45,7 @@ public class WindowHoverMenu implements HoverMenu {
     private boolean mIsShowingHoverMenu; // Are we currently display mHoverMenuView?
     private boolean mIsInDragMode; // If we're not in drag mode then we're in menu mode.
     private Set<OnExitListener> mOnExitListeners = new HashSet<>();
+    private Set<OnCollapseAndExpandListener> mOnCollapseAndExpandListeners = new HashSet<>();
 
     private HoverMenuView.HoverMenuTransitionListener mHoverMenuTransitionListener = new HoverMenuView.HoverMenuTransitionListener() {
         @Override
@@ -57,6 +58,7 @@ public class WindowHoverMenu implements HoverMenu {
             // take over. We do this so that touch events outside the drag area can propagate to
             // applications on screen.
             mWindowViewController.makeUntouchable(mHoverMenuView);
+            notifyOnCollapsedListeners();
         }
 
         @Override
@@ -67,6 +69,7 @@ public class WindowHoverMenu implements HoverMenu {
         @Override
         public void onExpanded() {
             mWindowViewController.makeTouchable(mHoverMenuView);
+            notifyOnExpandedListeners();
         }
     };
 
@@ -188,6 +191,28 @@ public class WindowHoverMenu implements HoverMenu {
     @Override
     public void removeOnExitListener(@NonNull OnExitListener onExitListener) {
         mOnExitListeners.remove(onExitListener);
+    }
+
+    @Override
+    public void addOnCollapseAndExpandListener(@NonNull OnCollapseAndExpandListener onCollapseAndExpandListener) {
+        mOnCollapseAndExpandListeners.add(onCollapseAndExpandListener);
+    }
+
+    @Override
+    public void removeOnCollapseAndExpandListener(@NonNull OnCollapseAndExpandListener onCollapseAndExpandListener) {
+        mOnCollapseAndExpandListeners.remove(onCollapseAndExpandListener);
+    }
+
+    private void notifyOnCollapsedListeners() {
+        for (OnCollapseAndExpandListener listener : mOnCollapseAndExpandListeners) {
+            listener.onHoverMenuCollapsed();
+        }
+    }
+
+    private void notifyOnExpandedListeners() {
+        for (OnCollapseAndExpandListener listener : mOnCollapseAndExpandListeners) {
+            listener.onHoverMenuExpanded();
+        }
     }
 
     private void notifyOnExitListeners() {

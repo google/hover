@@ -38,7 +38,7 @@ import io.mattcarroll.hover.defaulthovermenu.HoverMenuBuilder;
  * is no {@code Activity} to associate with the {@code HoverMenu}'s UI. This {@code Service} is the
  * application's link to the device's {@code Window} to display the {@code HoverMenu}.
  */
-public abstract class HoverMenuService extends Service {
+public abstract class HoverMenuService extends Service implements HoverMenu.OnCollapseAndExpandListener {
 
     private static final String TAG = "HoverMenuService";
 
@@ -71,6 +71,7 @@ public abstract class HoverMenuService extends Service {
                 .restoreVisualState(loadPreferredLocation())
                 .build();
         mHoverMenu.addOnExitListener(mWindowHoverMenuMenuExitListener);
+        mHoverMenu.addOnCollapseAndExpandListener(this);
     }
 
     @Override
@@ -131,6 +132,22 @@ public abstract class HoverMenuService extends Service {
      * just before this {@code HoverMenuService} calls {@code stopSelf()}.
      */
     protected void onHoverMenuExitingByUserRequest() {
+        // Hook for subclasses.
+    }
+
+    /**
+     * Hook method for subclasses to take action when HoverMenu collapses.
+     */
+    @Override
+    public void onHoverMenuCollapsed() {
+        // Hook for subclasses.
+    }
+
+    /**
+     * Hook method for subclasses to take action when HoverMenu expands.
+     */
+    @Override
+    public void onHoverMenuExpanded() {
         // Hook for subclasses.
     }
 
