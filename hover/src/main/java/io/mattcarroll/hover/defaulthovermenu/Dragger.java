@@ -15,6 +15,7 @@
  */
 package io.mattcarroll.hover.defaulthovermenu;
 
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.support.annotation.NonNull;
 
@@ -26,9 +27,12 @@ public interface Dragger {
     /**
      * Starts reporting user drag behavior given a drag area represented by {@code controlBounds}.
      * @param dragListener listener that receives information about drag behavior
-     * @param controlBounds the initial area that is draggable (this area will move as the user drags)
+     * @param dragStartCenterPosition initial touch point to start dragging
      */
-    void activate(@NonNull DragListener dragListener, @NonNull Rect controlBounds);
+    void activate(@NonNull DragListener dragListener, @NonNull Point dragStartCenterPosition);
+
+    // TODO: legacy method used to avoid compile errors. delete this.
+    void activate(@NonNull DragListener dragListener, @NonNull Rect bounds);
 
     /**
      * Stops monitoring and reporting user drag behavior.

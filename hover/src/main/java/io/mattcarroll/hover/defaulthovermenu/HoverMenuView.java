@@ -420,7 +420,7 @@ public class HoverMenuView extends RelativeLayout {
         }
 
         // Close the content area.
-        getContentView().setVisibility(View.GONE);
+        mContentView.setVisibility(View.GONE);
     }
 
     private void doExpansion(boolean animate) {
@@ -487,7 +487,7 @@ public class HoverMenuView extends RelativeLayout {
         }
 
         // Open the content.
-        getContentView().setVisibility(View.VISIBLE);
+        mContentView.setVisibility(View.VISIBLE);
     }
 
     private void enableDragging() {
@@ -565,11 +565,6 @@ public class HoverMenuView extends RelativeLayout {
     @NonNull
     private View getShadeView() {
         return mShadeView;
-    }
-
-    @NonNull
-    private HoverMenuContentView getContentView() {
-        return mContentView;
     }
 
     @NonNull

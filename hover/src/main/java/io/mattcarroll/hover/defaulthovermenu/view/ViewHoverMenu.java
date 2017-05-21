@@ -34,6 +34,7 @@ import java.util.Set;
 import io.mattcarroll.hover.BuildConfig;
 import io.mattcarroll.hover.HoverMenu;
 import io.mattcarroll.hover.HoverMenuAdapter;
+import io.mattcarroll.hover.R;
 import io.mattcarroll.hover.defaulthovermenu.HoverMenuView;
 
 /**
@@ -68,7 +69,8 @@ public class ViewHoverMenu extends FrameLayout implements HoverMenu {
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
 
-        mDragger = new InViewGroupDragger(this, ViewConfiguration.get(getContext()).getScaledTouchSlop());
+        int touchDiameter = getResources().getDimensionPixelSize(R.dimen.exit_radius);
+        mDragger = new InViewGroupDragger(this, touchDiameter, ViewConfiguration.get(getContext()).getScaledTouchSlop());
         mDragger.setDebugMode(BuildConfig.DEBUG);
         mHoverMenuView = new HoverMenuView(getContext(), null, mDragger, loadSavedAnchorState());
 //        mHoverMenuView = new HoverMenuBuilder(getContext())

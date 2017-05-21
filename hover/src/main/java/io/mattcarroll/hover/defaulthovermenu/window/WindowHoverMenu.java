@@ -19,6 +19,7 @@ import android.content.Context;
 import android.graphics.PointF;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.ViewConfiguration;
 import android.view.WindowManager;
 
@@ -32,6 +33,8 @@ import io.mattcarroll.hover.HoverMenu;
 import io.mattcarroll.hover.HoverMenuAdapter;
 import io.mattcarroll.hover.Navigator;
 import io.mattcarroll.hover.defaulthovermenu.HoverMenuView;
+import io.mattcarroll.hover.defaulthovermenu.zungle.ExitListener;
+import io.mattcarroll.hover.defaulthovermenu.zungle.HoverView;
 
 /**
  * {@link HoverMenu} implementation that displays within a {@code Window}.
@@ -41,7 +44,8 @@ public class WindowHoverMenu implements HoverMenu {
     private static final String TAG = "WindowHoverMenu";
 
     private WindowViewController mWindowViewController; // Shows/hides/positions Views in a Window.
-    private HoverMenuView mHoverMenuView; // The visual presentation of the Hover menu.
+//    private HoverMenuView2 mHoverMenuView; // The visual presentation of the Hover menu.
+    private HoverView mHoverView;
     private boolean mIsShowingHoverMenu; // Are we currently display mHoverMenuView?
     private boolean mIsInDragMode; // If we're not in drag mode then we're in menu mode.
     private Set<OnExitListener> mOnExitListeners = new HashSet<>();
@@ -56,7 +60,7 @@ public class WindowHoverMenu implements HoverMenu {
             // When collapsed, we make mHoverMenuView untouchable so that the WindowDragWatcher can
             // take over. We do this so that touch events outside the drag area can propagate to
             // applications on screen.
-            mWindowViewController.makeUntouchable(mHoverMenuView);
+            mWindowViewController.makeUntouchable(mHoverView);
         }
 
         @Override
@@ -66,7 +70,7 @@ public class WindowHoverMenu implements HoverMenu {
 
         @Override
         public void onExpanded() {
-            mWindowViewController.makeTouchable(mHoverMenuView);
+            mWindowViewController.makeTouchable(mHoverView);
         }
     };
 
@@ -96,29 +100,39 @@ public class WindowHoverMenu implements HoverMenu {
             }
         }
 
-        mHoverMenuView = new HoverMenuView(context, navigator, inWindowDragger, anchorState);
-        mHoverMenuView.setHoverMenuExitRequestListener(mMenuExitRequestListener);
+//        mHoverMenuView = new HoverMenuView2(context, navigator, inWindowDragger, anchorState);
+//        mHoverMenuView.setHoverMenuExitRequestListener(mMenuExitRequestListener);
+
+        mHoverView = new HoverView(context);
+        mHoverView.setExitListener(new ExitListener() {
+            @Override
+            public void onExit() {
+                Log.d(TAG, "Hover menu has exited. Hiding from window.");
+                mMenuExitRequestListener.onExitRequested();
+            }
+        });
     }
 
     @Override
     public String getVisualState() {
-        PointF anchor = mHoverMenuView.getAnchorState();
-        return new VisualStateMemento((int) anchor.x, anchor.y).toJsonString();
+//        PointF anchor = mHoverMenuView.getAnchorState();
+//        return new VisualStateMemento((int) anchor.x, anchor.y).toJsonString();
+        return null;
     }
 
     @Override
     public void restoreVisualState(@NonNull String savedVisualState) {
-        try {
-            VisualStateMemento memento = VisualStateMemento.fromJsonString(savedVisualState);
-            mHoverMenuView.setAnchorState(new PointF(memento.getAnchorSide(), memento.getNormalizedPositionY()));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            VisualStateMemento memento = VisualStateMemento.fromJsonString(savedVisualState);
+//            mHoverMenuView.setAnchorState(new PointF(memento.getAnchorSide(), memento.getNormalizedPositionY()));
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
     }
 
     @Override
     public void setAdapter(@Nullable HoverMenuAdapter adapter) {
-        mHoverMenuView.setAdapter(adapter);
+        mHoverView.setAdapter(adapter);
     }
 
     /**
@@ -127,14 +141,14 @@ public class WindowHoverMenu implements HoverMenu {
     @Override
     public void show() {
         if (!mIsShowingHoverMenu) {
-            mWindowViewController.addView(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT, false, mHoverMenuView);
+            mWindowViewController.addView(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT, false, mHoverView);
 
             // Sync our control state with the HoverMenuView state.
-            if (mHoverMenuView.isExpanded()) {
-                mWindowViewController.makeTouchable(mHoverMenuView);
-            } else {
-                collapseMenu();
-            }
+//            if (mHoverMenuView.isExpanded()) {
+                mWindowViewController.makeTouchable(mHoverView);
+//            } else {
+//                collapseMenu();
+//            }
 
             mIsShowingHoverMenu = true;
         }
@@ -152,8 +166,8 @@ public class WindowHoverMenu implements HoverMenu {
             notifyOnExitListeners();
 
             // Cleanup the control structures and Views.
-            mWindowViewController.removeView(mHoverMenuView);
-            mHoverMenuView.release();
+            mWindowViewController.removeView(mHoverView);
+//            mHoverMenuView.release();
         }
     }
 
@@ -164,7 +178,7 @@ public class WindowHoverMenu implements HoverMenu {
     @Override
     public void expandMenu() {
         if (mIsInDragMode) {
-            mHoverMenuView.expand();
+//            mHoverMenuView.expand();
         }
     }
 
@@ -175,8 +189,8 @@ public class WindowHoverMenu implements HoverMenu {
     @Override
     public void collapseMenu() {
         if (!mIsInDragMode) {
-            mHoverMenuView.setHoverMenuTransitionListener(mHoverMenuTransitionListener);
-            mHoverMenuView.collapse();
+//            mHoverMenuView.setHoverMenuTransitionListener(mHoverMenuTransitionListener);
+//            mHoverMenuView.collapse();
         }
     }
 

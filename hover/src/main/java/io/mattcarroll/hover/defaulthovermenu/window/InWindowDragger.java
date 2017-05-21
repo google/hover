@@ -110,6 +110,19 @@ public class InWindowDragger implements Dragger {
         mTapTouchSlop = tapTouchSlop;
     }
 
+//    public void activate(@NonNull DragListener dragListener, @NonNull Rect controlBounds) {
+    public void activate(@NonNull DragListener dragListener, @NonNull Point dragStartCenterPosition) {
+        if (!mIsActivated) {
+//            createTouchControlView(controlBounds);
+            createTouchControlView(null); // TODO: broken until updated to use center position
+            mDragListener = dragListener;
+            mDragView.setOnTouchListener(mDragTouchListener);
+            mIsActivated = true;
+        }
+    }
+
+    // TODO: here to avoid compilation error. delete this.
+    @Override
     public void activate(@NonNull DragListener dragListener, @NonNull Rect controlBounds) {
         if (!mIsActivated) {
             createTouchControlView(controlBounds);

@@ -6,4 +6,5 @@
     <dimen name="floating_icon_margin">0dp</dimen>
     <dimen name="popup_corner_radius">7dp</dimen>
     <dimen name="delete_icon_size">40dp</dimen>
+    <dimen name="exit_radius">75dp</dimen>
 </resources>

@@ -15,6 +15,7 @@
  */
 package io.mattcarroll.hover.defaulthovermenu.view;
 
+import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.support.annotation.NonNull;
@@ -38,10 +39,11 @@ public class InViewGroupDragger implements Dragger {
     private boolean mIsDragging;
     private boolean mIsDebugMode = false;
     private DragListener mDragListener;
+    private final int mTouchAreaDiameter;
     private int mTapTouchSlop;
-    private PointF mViewOriginalPosition = new PointF();
-    private PointF mViewCurrentPosition = new PointF();
-    private PointF mPrevMotionPosition = new PointF();
+    private PointF mOriginalViewPosition = new PointF();
+    private PointF mCurrentViewPosition = new PointF();
+    private PointF mOriginalTouchPosition = new PointF();
 
     private View.OnTouchListener mDragTouchListener = new View.OnTouchListener() {
         @Override
@@ -51,35 +53,31 @@ public class InViewGroupDragger implements Dragger {
                     Log.d(TAG, "ACTION_DOWN");
                     mIsDragging = false;
 
-//                    mViewOriginalPosition = mWindowViewController.getViewPosition(mDragView);
-                    mViewOriginalPosition = getDragViewPosition();
-                    mViewCurrentPosition = new PointF(mViewOriginalPosition.x, mViewOriginalPosition.y);
-                    mPrevMotionPosition.set(motionEvent.getRawX(), motionEvent.getRawY());
+                    mOriginalViewPosition = getDragViewCenterPosition();
+                    mCurrentViewPosition = new PointF(mOriginalViewPosition.x, mOriginalViewPosition.y);
+                    mOriginalTouchPosition.set(motionEvent.getRawX(), motionEvent.getRawY());
 
-                    mDragListener.onPress(mViewCurrentPosition.x, mViewCurrentPosition.y);
+                    mDragListener.onPress(mCurrentViewPosition.x, mCurrentViewPosition.y);
 
                     return true;
                 case MotionEvent.ACTION_MOVE:
                     Log.d(TAG, "ACTION_MOVE. motionX: " + motionEvent.getRawX() + ", motionY: " + motionEvent.getRawY());
-                    float dragDeltaX = motionEvent.getRawX() - mPrevMotionPosition.x;
-                    float dragDeltaY = motionEvent.getRawY() - mPrevMotionPosition.y;
-
-                    mViewCurrentPosition.offset(dragDeltaX, dragDeltaY);
-
-                    mPrevMotionPosition.set((int) motionEvent.getRawX(), (int) motionEvent.getRawY());
+                    float dragDeltaX = motionEvent.getRawX() - mOriginalTouchPosition.x;
+                    float dragDeltaY = motionEvent.getRawY() - mOriginalTouchPosition.y;
+                    mCurrentViewPosition = new PointF(
+                            mOriginalViewPosition.x + dragDeltaX,
+                            mOriginalViewPosition.y + dragDeltaY
+                    );
 
                     if (mIsDragging || !isTouchWithinSlopOfOriginalTouch()) {
-                        // Dragging just started
                         if(!mIsDragging) {
+                            // Dragging just started
                             Log.d(TAG, "MOVE Start Drag.");
                             mIsDragging = true;
-//                            Point dragViewPosition = mWindowViewController.getViewPosition(mDragView);
-                            PointF dragViewPosition = getDragViewPosition();
-                            mDragListener.onDragStart(dragViewPosition.x, dragViewPosition.y);
+                            mDragListener.onDragStart(mCurrentViewPosition.x, mCurrentViewPosition.y);
                         } else {
-//                            mWindowViewController.moveViewTo(mDragView, (int) mViewCurrentPosition.x, (int) mViewCurrentPosition.y);
-                            moveDragViewTo(mViewCurrentPosition);
-                            mDragListener.onDragTo(mViewCurrentPosition.x, mViewCurrentPosition.y);
+                            moveDragViewTo(mCurrentViewPosition);
+                            mDragListener.onDragTo(mCurrentViewPosition.x, mCurrentViewPosition.y);
                         }
                     }
 
@@ -88,7 +86,7 @@ public class InViewGroupDragger implements Dragger {
                     if (!mIsDragging) {
                         mDragListener.onTap();
                     } else {
-                        mDragListener.onReleasedAt(mViewCurrentPosition.x, mViewCurrentPosition.y);
+                        mDragListener.onReleasedAt(mCurrentViewPosition.x, mCurrentViewPosition.y);
                     }
 
                     return true;
@@ -98,8 +96,9 @@ public class InViewGroupDragger implements Dragger {
         }
     };
 
-    public InViewGroupDragger(@NonNull ViewGroup container, int touchSlop) {
+    public InViewGroupDragger(@NonNull ViewGroup container, int touchAreaDiameter, int touchSlop) {
         mContainer = container;
+        mTouchAreaDiameter = touchAreaDiameter;
         mTapTouchSlop = touchSlop;
     }
 
@@ -109,12 +108,17 @@ public class InViewGroupDragger implements Dragger {
     }
 
     @Override
-    public void activate(@NonNull DragListener dragListener, @NonNull Rect controlBounds) {
+    public void activate(@NonNull DragListener dragListener, @NonNull Point dragStartCenterPosition) {
         if (!mIsActivated) {
             mDragListener = dragListener;
-            createTouchControlView(controlBounds);
+            createTouchControlView(dragStartCenterPosition);
             mIsActivated = true;
         }
+    }
+
+    @Override
+    public void activate(@NonNull DragListener dragListener, @NonNull Rect bounds) {
+        // TODO: delete this.
     }
 
     @Override
@@ -125,14 +129,23 @@ public class InViewGroupDragger implements Dragger {
         }
     }
 
-    private void createTouchControlView(Rect bounds) {
+    private void createTouchControlView(@NonNull final Point dragStartCenterPosition) {
+        // TODO: define dimen size
         mDragView = new View(mContainer.getContext());
-        mDragView.setLayoutParams(new ViewGroup.LayoutParams(bounds.width(), bounds.height()));
+        mDragView.setLayoutParams(new ViewGroup.LayoutParams(mTouchAreaDiameter, mTouchAreaDiameter));
         mContainer.addView(mDragView);
         mDragView.setOnTouchListener(mDragTouchListener);
-        moveDragViewTo(new PointF(bounds.left, bounds.top));
 
-        updateTouchControlViewAppearance();
+        // Run layout listener once to position the drag view based on the width/height of the drag view.
+        mDragView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                mDragView.removeOnLayoutChangeListener(this);
+
+                moveDragViewTo(new PointF(dragStartCenterPosition.x, dragStartCenterPosition.y));
+                updateTouchControlViewAppearance();
+            }
+        });
     }
 
     private void destroyTouchControlView() {
@@ -151,19 +164,39 @@ public class InViewGroupDragger implements Dragger {
     }
 
     private boolean isTouchWithinSlopOfOriginalTouch() {
-        float dx = mViewCurrentPosition.x - mViewOriginalPosition.x;
-        float dy = mViewCurrentPosition.y - mViewOriginalPosition.y;
+        float dx = mCurrentViewPosition.x - mOriginalViewPosition.x;
+        float dy = mCurrentViewPosition.y - mOriginalViewPosition.y;
         double distance = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
 
         return distance < mTapTouchSlop;
     }
 
-    private PointF getDragViewPosition() {
-        return new PointF(mDragView.getX(), mDragView.getY());
+    private PointF getDragViewCenterPosition() {
+        return convertCornerToCenter(new PointF(
+                mDragView.getX(),
+                mDragView.getY()
+        ));
     }
 
-    private void moveDragViewTo(PointF position) {
-        mDragView.setX(position.x);
-        mDragView.setY(position.y);
+    private void moveDragViewTo(PointF centerPosition) {
+        Log.d(TAG, "Center position: " + centerPosition);
+        PointF cornerPosition = convertCenterToCorner(centerPosition);
+        Log.d(TAG, "Corner position: " + cornerPosition);
+        mDragView.setX(cornerPosition.x);
+        mDragView.setY(cornerPosition.y);
+    }
+
+    private PointF convertCornerToCenter(@NonNull PointF cornerPosition) {
+        return new PointF(
+                cornerPosition.x + (mDragView.getWidth() / 2),
+                cornerPosition.y + (mDragView.getHeight() / 2)
+        );
+    }
+
+    private PointF convertCenterToCorner(@NonNull PointF centerPosition) {
+        return new PointF(
+                centerPosition.x - (mDragView.getWidth() / 2),
+                centerPosition.y - (mDragView.getHeight() / 2)
+        );
     }
 }

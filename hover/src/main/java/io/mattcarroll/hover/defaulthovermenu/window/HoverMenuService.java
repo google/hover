@@ -22,11 +22,13 @@ import android.content.SharedPreferences;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.WindowManager;
 
 import io.mattcarroll.hover.HoverMenu;
 import io.mattcarroll.hover.HoverMenuAdapter;
 import io.mattcarroll.hover.Navigator;
 import io.mattcarroll.hover.defaulthovermenu.HoverMenuBuilder;
+import io.mattcarroll.hover.defaulthovermenu.ziggle.HoverMenuView2;
 import io.mattcarroll.hover.overlay.OverlayPermission;
 
 /**
@@ -102,13 +104,24 @@ public abstract class HoverMenuService extends Service {
     }
 
     private void initHoverMenu() {
+        HoverMenuAdapter adapter = createHoverMenuAdapter();
         mHoverMenu = new HoverMenuBuilder(getContextForHoverMenu())
                 .displayWithinWindow()
                 .useNavigator(createNavigator())
-                .useAdapter(createHoverMenuAdapter())
+                .useAdapter(adapter)
                 .restoreVisualState(loadPreferredLocation())
                 .build();
         mHoverMenu.addOnExitListener(mWindowHoverMenuMenuExitListener);
+
+//        HoverMenuView2 hoverMenuView2 = new HoverMenuView2(getApplicationContext());
+//        WindowManager windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+//        WindowViewController windowViewController = new WindowViewController(windowManager);
+//        windowViewController.addView(
+//                WindowManager.LayoutParams.MATCH_PARENT,
+//                WindowManager.LayoutParams.MATCH_PARENT,
+//                false,
+//                hoverMenuView2
+//        );
     }
 
     /**
