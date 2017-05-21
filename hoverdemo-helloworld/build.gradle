@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.1"
+    compileSdkVersion project.compileSdkVersion.toInteger()
+    buildToolsVersion project.buildToolsVersion
 
     defaultConfig {
         applicationId "org.codecanon.hover.hoverdemo.helloworld"
         minSdkVersion 15
-        targetSdkVersion 25
+        targetSdkVersion project.targetSdkVersion.toInteger()
         versionCode 1
         versionName "1.0"
 

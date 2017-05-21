@@ -18,7 +18,7 @@ That said, Hover should be in a usable state at this time.
 
 Demo Hover Menu
 ---------------
-A demo app is included with the Hover repo. Here are some screenshots of the demo in action.
+A demo app (called Kitchen Sink) is included with the Hover repo. Here are some screenshots of the demo in action.
 
 <img src="https://raw.githubusercontent.com/matthew-carroll/hover/gh-pages/images/screenrecords/hover-demo-screenrecord.gif" width="270" /> ![Demo Hover Menu - Launching](https://raw.githubusercontent.com/matthew-carroll/hover/gh-pages/images/screenshots/hover-demo-homescreen.png) ![Demo Hover Menu - Launching](https://raw.githubusercontent.com/matthew-carroll/hover/gh-pages/images/screenshots/hover-demo-menu-intro.png) 
 
@@ -27,100 +27,124 @@ A demo app is included with the Hover repo. Here are some screenshots of the dem
 Getting Started
 ---------------
 ### Subclass HoverMenuService
-To get started with Hover, create a subclass of `HoverMenuService` to host your Hover menu. The only method that you're required to override is `createHoverMenuAdapter()` which essentially returns the content of your Hover menu.
+To get started with Hover, create a subclass of `HoverMenuService` to host your Hover menu. Implement `onHoverMenuLaunched(Intent, HoverView)` to take control of your `HoverView`. You'll want to set it's `HoverMenu`, and also start it in the `collapsed` or `expanded` state:
 
 ```java
 public class MyHoverMenuService extends HoverMenuService {
 
     @Override
-    protected HoverMenuAdapter createHoverMenuAdapter() {
-        // Create and configure your content for the HoverMenu.
-        return myHoverMenuAdapter;
+    protected void onHoverMenuLaunched(@NonNull Intent intent, @NonNull HoverView hoverView) {
+        // Configure and start your HoverView.
+        HoverMenu menu = ...;
+        hoverView.setMenu(menu);
+        hoverView.collapse();
     }
     
 }
 ```
 
-### Implement A HoverMenuAdapter
-A `HoverMenuAdapter` acts a lot like a standard Android `Adapter`. `HoverMenuAdapter`s provide a `View` for each tab that appears in your Hover menu. It also provides the corresponding `NavigatorContent` for each tab.
+### Implement A HoverMenu
+A `HoverMenu` is the content that appears within a `HoverView`. A `HoverMenu` is divided into an ordered list of `Section`s.  Each `Section` has a tab as well as `Content` that appear in your `HoverView`.
 
 ```java
-public class MyHoverMenuAdapter extends BaseHoverMenuAdapter {
-
-    private List<String> mTabs;
-    private Map<String, NavigatorContent> mContentMap = new HashMap<>();
-    
-    public MyHoverMenuAdapter() {
-        mTabs = Arrays.asList("first", "second");
-        mContentMap.put("first", /*...*/);
-        mContentMap.put("second", /*...*/);
+public class MyHoverMenu extends HoverMenu {
+ 
+    private Context mContext;
+    private Section mSection;
+ 
+    private SingleSectionHoverMenu(@NonNull Context context) {
+        mContext = context;
+ 
+        mSection = new Section(
+                new SectionId("1"),
+                createTabView(),
+                createScreen()
+        );
     }
-
-    @Override
-    public void getTabCount() {
-        return mTabs.size();
+ 
+    private View createTabView() {
+        ImageView imageView = new ImageView(mContext);
+        imageView.setImageResource(R.drawable.tab_background);
+        imageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        return imageView;
     }
-    
-    @Override
-    public long getTabId(int position) {
-        return mTabs.get(position).hashCode();
+ 
+    private Content createScreen() {
+        return new MyContent(mContext, "Screen 1");
     }
-    
+ 
     @Override
-    public View getTabView(int position) {
-        String tabName = mTabs.get(position);
-        if ("first".equals(tabName)) {
-            // Create and return the tab View for "first".
-        } else if ("second".equals(tabName)) {
-            // Create and return the tab View for "second".
+    public String getId() {
+        return "singlesectionmenu";
+    }
+ 
+    @Override
+    public int getSectionCount() {
+        return 1;
+    }
+ 
+    @Nullable
+    @Override
+    public Section getSection(int index) {
+        if (0 == index) {
+            return mSection;
+        } else {
+            return null;
         }
-        // etc.
     }
-    
+ 
+    @Nullable
     @Override
-    public NavigatorContent getNavigatorContent(int position) {
-        String tabName = mTabs.get(position);
-        return mContentMap.get(tabName);
+    public Section getSection(@NonNull SectionId sectionId) {
+        if (sectionId.equals(mSection.getId())) {
+            return mSection;
+        } else {
+            return null;
+        }
     }
-
+ 
+    @NonNull
+    @Override
+    public List<Section> getSections() {
+        return Collections.singletonList(mSection);
+    }
+ 
 }
 ```
 
-### Working Directly With A HoverMenu
-If you want to create your own Hover menu `Service` from scratch, or if you want to experiment with a `HoverMenu` directly, you can instantiate one yourself. Use `HoverMenuBuilder` to configure a `HoverMenu` for your particular requirements.
+### Working Directly With A HoverView
+If you want to create your own Hover `Service` from scratch, or if you want to experiment with a `HoverView` directly, you can instantiate one yourself.
 
 ```java
-// Build a HoverMenu.
-HoverMenu hoverMenu = new HoverMenuBuilder(context)
-                        .displayWithinWindow()
-                        .useNavigator(myNavigator)
-                        .startAtLocation(savedLocationMemento)
-                        .useAdapter(adapter)
-                        .build();
-
-// When you're ready for your HoverMenu to appear on screen.
-hoverMenu.show();
-
-// When you want to remove your HoverMenu from the screen.
-hoverMenu.hide();
-
-// When you want to force your HoverMenu to expand fullscreen.
-hoverMenu.expandMenu();
-
-// When you want to force your HoverMenu to collapse to a draggable icon.
-hoverMenu.collapseMenu();
-
-// When you want to change the tabs and content in your HoverMenu.
-hoverMenu.setAdapter(otherAdapter);
-
-// When you want to save the display state of your HoverMenu.
-Parcelable displayState = hoverMenu.createDisplayStateMemento();
-
-// When you want to be notified when your HoverMenu is added to/removed from the display.
-hoverMenu.addOnVisibilityChangeListener(listener);
-
-// When you want to be notified when your HoverMenu expands or collapses.
-hoverMenu.addOnCollapseAndExpandListener(listener);
+// Create a HoverView to display in a Window:
+HoverView hoverView = HoverView.createForWindow(
+        context,
+        new WindowViewController(
+            (WindowManager) getSystemService(Context.WINDOW_SERVICE)
+        )
+);
+hoverView.setOnExitListener(onExitListener);
+hoverView.addToWindow();
+hoverView.setMenu(...);
+hoverView.collapse();
+ 
+// Create a HoverView to display in a View hierarchy:
+HoverView hoverView = HoverView.createForView(context);
+viewGroup.addView(hoverView);
+hoverView.setOnExitListener(onExitListener);
+hoverView.setMenu(...);
+hoverView.collapse();
+ 
+// Create a HoverView in XML:
+<io.mattcarroll.hover.HoverView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:hover="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/hovermenu"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    hover:dockSide="right"
+    hover:dockPosition="70%"
+    />
 ```
 
 Download
@@ -133,7 +157,9 @@ compile 'io.mattcarroll.hover:hover:0.9.7'
 
 Issues
 ------
-At the current time, Hover menus cannot be used within normal view hierarchies. It can only be used within a Window.
+When Hover is used within a Window, there is always a fullscreen View - even when nothing is visible.  This is done to dramatically simplify the layout logic. However, this causes problems when apps request runtime permissions because the Android OS complains that an overlay is visible.
+
+There is no built-in solution for this problem at this time. You should take care to destroy your Hover `Service` when the `HoverView` is closed. You may also want to inform the users of your app that issues with runtime permission dialogs might occur, and that those users should exit your Hover menu if problems occur.
 
 Disclaimer
 --------

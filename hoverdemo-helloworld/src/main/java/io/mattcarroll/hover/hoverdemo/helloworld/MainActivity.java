@@ -1,11 +1,23 @@
+/*
+ * Copyright 2016 Google Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.mattcarroll.hover.hoverdemo.helloworld;
 
 import android.content.Intent;
-import android.net.Uri;
-import android.os.Build;
-import android.provider.Settings;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 import org.codecanon.hover.hoverdemo.helloworld.R;
@@ -23,10 +35,66 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        findViewById(R.id.button_launch_hover).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.button_launch_hover_single_section).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent startHoverIntent = new Intent(MainActivity.this, HelloWorldHoverMenuService.class);
+                Intent startHoverIntent = new Intent(MainActivity.this, SingleSectionHoverMenuService.class);
+                startService(startHoverIntent);
+            }
+        });
+
+        findViewById(R.id.button_launch_hover_multi_sections).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent startHoverIntent = new Intent(MainActivity.this, MultipleSectionsHoverMenuService.class);
+                startService(startHoverIntent);
+            }
+        });
+
+        findViewById(R.id.button_launch_hover_foreground).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent startHoverIntent = new Intent(MainActivity.this, SingleSectionNotificationHoverMenuService.class);
+                startService(startHoverIntent);
+            }
+        });
+
+        findViewById(R.id.button_launch_hover_changing_sections).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent startHoverIntent = new Intent(MainActivity.this, MutatingSectionsHoverMenuService.class);
+                startService(startHoverIntent);
+            }
+        });
+
+        findViewById(R.id.button_launch_hover_reordering_sections).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent startHoverIntent = new Intent(MainActivity.this, ReorderingHoverMenuService.class);
+                startService(startHoverIntent);
+            }
+        });
+
+        findViewById(R.id.button_launch_hover_all_states).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent startHoverIntent = new Intent(MainActivity.this, AllStatesHoverMenuService.class);
+                startService(startHoverIntent);
+            }
+        });
+
+        findViewById(R.id.button_launch_hover_changing_menus).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent startHoverIntent = new Intent(MainActivity.this, ChangingMenusHoverMenuService.class);
+                startService(startHoverIntent);
+            }
+        });
+
+        findViewById(R.id.button_launch_hover_menu_then_no_menu).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent startHoverIntent = new Intent(MainActivity.this, MenuThenNoMenuHoverMenuService.class);
                 startService(startHoverIntent);
             }
         });
