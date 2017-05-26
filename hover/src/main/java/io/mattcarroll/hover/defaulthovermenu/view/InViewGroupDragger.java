@@ -102,7 +102,8 @@ public class InViewGroupDragger implements Dragger {
         mTapTouchSlop = touchSlop;
     }
 
-    public void setDebugMode(boolean isDebugMode) {
+    @Override
+    public void enableDebugMode(boolean isDebugMode) {
         mIsDebugMode = isDebugMode;
         updateTouchControlViewAppearance();
     }

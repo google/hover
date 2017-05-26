@@ -37,7 +37,7 @@ public interface HoverMenuAdapter {
      *
      * @return ID of tab at given position
      */
-    long getTabId(int position);
+    String getTabId(int position);
 
     /**
      * Returns the visual representation of the {@code index}'th tab.

@@ -17,6 +17,7 @@ package io.mattcarroll.hoverdemo.nonfullscreen;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.view.ContextThemeWrapper;
 
 import io.mattcarroll.hover.HoverMenuAdapter;
@@ -51,7 +52,7 @@ public class DemoHoverMenuService extends HoverMenuService {
     }
 
     @Override
-    protected HoverMenuAdapter createHoverMenuAdapter() {
+    protected HoverMenuAdapter createHoverMenuAdapter(@NonNull Intent intent) {
         return new DemoHoverMenuAdapter(getApplicationContext());
     }
 

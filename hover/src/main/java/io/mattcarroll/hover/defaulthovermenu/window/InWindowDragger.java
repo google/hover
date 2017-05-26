@@ -140,7 +140,8 @@ public class InWindowDragger implements Dragger {
         }
     }
 
-    public void setDebugMode(boolean isDebugMode) {
+    @Override
+    public void enableDebugMode(boolean isDebugMode) {
         mIsDebugMode = isDebugMode;
         updateTouchControlViewAppearance();
     }

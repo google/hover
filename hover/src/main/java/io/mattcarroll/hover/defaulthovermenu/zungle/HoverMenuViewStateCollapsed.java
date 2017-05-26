@@ -10,48 +10,45 @@ import io.mattcarroll.hover.defaulthovermenu.Dragger;
 /**
  * TODO
  */
-class CollapsedMenu implements FloatingTabOwner {
+class HoverMenuViewStateCollapsed implements HoverMenuViewState {
 
-    private static final String TAG = "CollapsedMenuFloatingTabOwner";
+    private static final String TAG = "HoverMenuViewStateCollapsed";
 
-    private final Screen mScreen;
     private final Dragger mDragger;
+    private Screen mScreen;
     private FloatingTab mFloatingTab;
+    private Point mDropPoint; // Where the floating tab is dropped before seeking its initial dock.
     private Point mDock;
     private boolean mHasControl = false;
     private Dragger.DragListener mDragListener;
     private Listener mListener;
 
-    public CollapsedMenu(@NonNull Screen screen, @NonNull Dragger dragger) {
-        this(screen, dragger, null);
+    public HoverMenuViewStateCollapsed(@NonNull Dragger dragger) {
+        this(dragger, null);
     }
 
-    public CollapsedMenu(@NonNull Screen screen, @NonNull Dragger dragger, @Nullable Point dock) {
-        mScreen = screen;
+    public HoverMenuViewStateCollapsed(@NonNull Dragger dragger, @Nullable Point dropPoint) {
         mDragger = dragger;
-        mDock = null != dock ? dock : createInitialDock();
-    }
-
-    private Point createInitialDock() {
-        Log.d(TAG, "Initial dock.  Screen height: " + mScreen.getHeight() + ", Position: " + (mScreen.getHeight() / 2));
-        return new Point(0, mScreen.getHeight() / 2);
+        mDropPoint = dropPoint;
     }
 
     @Override
-    public void takeControl(@NonNull FloatingTab floatingTab) {
+    public void takeControl(@NonNull Screen screen) {
         if (mHasControl) {
             throw new RuntimeException("Cannot take control of a FloatingTab when we already control one.");
         }
 
         Log.d(TAG, "Instructing tab to dock itself.");
         mHasControl = true;
-        mFloatingTab = floatingTab;
+        mScreen = screen;
+        mFloatingTab = screen.createChainedTab("PRIMARY", null); // TODO:
         mDragListener = new FloatingTabDragListener(this);
+        createDock();
         sendToDock();
     }
 
     @Override
-    public void giveControlTo(@NonNull FloatingTabOwner otherController) {
+    public void giveControlTo(@NonNull HoverMenuViewState otherController) {
         if (!mHasControl) {
             throw new RuntimeException("Cannot give control to another HoverMenuController when we don't have the HoverTab.");
         }
@@ -59,7 +56,8 @@ class CollapsedMenu implements FloatingTabOwner {
         mHasControl = false;
         mDragger.deactivate();
         mDragListener = null;
-        otherController.takeControl(mFloatingTab);
+        otherController.takeControl(mScreen);
+        mScreen = null;
         mFloatingTab = null;
     }
 
@@ -79,7 +77,7 @@ class CollapsedMenu implements FloatingTabOwner {
     }
 
     private void onDroppedByUser() {
-        mDock = calculateDockPosition();
+        mDock = calculateDockPosition(mFloatingTab.getPosition());
 
         if (null != mListener) {
             mListener.onDragEnd();
@@ -109,13 +107,28 @@ class CollapsedMenu implements FloatingTabOwner {
         });
     }
 
-    private Point calculateDockPosition() {
-        Point currentTabPosition = mFloatingTab.getPosition();
+    private void createDock() {
+        if (null == mDock) {
+            mDock = null != mDropPoint ?
+                    calculateDockPosition(mDropPoint) :
+                    createInitialDock();
+        }
+    }
+
+    private Point createInitialDock() {
+        Point artificialInitialDropPoint = new Point(0, mScreen.getHeight() / 2);
+        Log.d(TAG, "Initial dock.  Screen height: " + mScreen.getHeight()
+                + ", artificial drop point: " + artificialInitialDropPoint);
+        return calculateDockPosition(artificialInitialDropPoint);
+    }
+
+    private Point calculateDockPosition(@NonNull Point dropPosition) {
         Point newAnchorPosition;
-        if (currentTabPosition.x < (mScreen.getWidth() / 2)) {
-            newAnchorPosition = new Point(0, currentTabPosition.y);
+        int dockInset = mFloatingTab.getTabSize() / 4;
+        if (dropPosition.x < (mScreen.getWidth() / 2)) {
+            newAnchorPosition = new Point(dockInset, dropPosition.y);
         } else {
-            newAnchorPosition = new Point(mScreen.getWidth(), currentTabPosition.y);
+            newAnchorPosition = new Point(mScreen.getWidth() - dockInset, dropPosition.y);
         }
         return newAnchorPosition;
     }
@@ -154,9 +167,9 @@ class CollapsedMenu implements FloatingTabOwner {
 
     private static final class FloatingTabDragListener implements Dragger.DragListener {
 
-        private final CollapsedMenu mOwner;
+        private final HoverMenuViewStateCollapsed mOwner;
 
-        private FloatingTabDragListener(@NonNull CollapsedMenu owner) {
+        private FloatingTabDragListener(@NonNull HoverMenuViewStateCollapsed owner) {
             mOwner = owner;
         }
 

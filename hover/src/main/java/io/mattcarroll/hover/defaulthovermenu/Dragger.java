@@ -39,6 +39,13 @@ public interface Dragger {
      */
     void deactivate();
 
+    /**
+     * Enable/Disable debug mode.  In debug mode this Dragger will paint its touch area with a
+     * translucent color.
+     * @param debugMode true for debug mode, false otherwise
+     */
+    void enableDebugMode(boolean debugMode);
+
     interface DragListener {
 
         /**

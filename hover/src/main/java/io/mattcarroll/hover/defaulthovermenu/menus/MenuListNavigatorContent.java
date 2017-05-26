@@ -64,6 +64,11 @@ public class MenuListNavigatorContent implements NavigatorContent {
     }
 
     @Override
+    public boolean isFullscreen() {
+        return true;
+    }
+
+    @Override
     public void onShown(@NonNull Navigator navigator) {
         mNavigator = navigator;
         if (navigator instanceof ToolbarNavigator) {

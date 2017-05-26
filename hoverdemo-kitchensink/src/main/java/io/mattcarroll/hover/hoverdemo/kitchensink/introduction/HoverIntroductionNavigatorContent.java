@@ -73,6 +73,11 @@ public class HoverIntroductionNavigatorContent extends FrameLayout implements Na
     }
 
     @Override
+    public boolean isFullscreen() {
+        return true;
+    }
+
+    @Override
     public void onShown(@NonNull Navigator navigator) {
         mHoverMotion.start(mLogo);
     }

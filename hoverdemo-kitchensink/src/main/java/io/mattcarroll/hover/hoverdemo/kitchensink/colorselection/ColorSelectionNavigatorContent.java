@@ -133,6 +133,11 @@ public class ColorSelectionNavigatorContent extends FrameLayout implements Navig
     }
 
     @Override
+    public boolean isFullscreen() {
+        return true;
+    }
+
+    @Override
     public void onShown(@NonNull Navigator navigator) {
 
     }

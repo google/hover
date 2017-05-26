@@ -36,8 +36,8 @@ public class HoverView extends FrameLayout {
         int touchDiameter = getResources().getDimensionPixelSize(R.dimen.exit_radius);
         int slop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
         InViewGroupDragger dragger = new InViewGroupDragger(this, touchDiameter, slop);
-        dragger.setDebugMode(true);
         mHoverMenuView = new HoverMenuView3(getContext(), dragger);
+        mHoverMenuView.enableDebugMode(true);
         LayoutParams layoutParams = new LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT

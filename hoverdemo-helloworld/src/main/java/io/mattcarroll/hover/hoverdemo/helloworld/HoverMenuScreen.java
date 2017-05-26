@@ -41,6 +41,11 @@ public class HoverMenuScreen implements NavigatorContent {
     }
 
     @Override
+    public boolean isFullscreen() {
+        return true;
+    }
+
+    @Override
     public void onShown(@NonNull Navigator navigator) {
         // No-op.
     }

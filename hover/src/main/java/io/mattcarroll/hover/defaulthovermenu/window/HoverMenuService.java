@@ -20,6 +20,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.WindowManager;
@@ -78,10 +79,16 @@ public abstract class HoverMenuService extends Service {
             return START_NOT_STICKY;
         }
 
+        if (null == intent) {
+            Log.e(TAG, "Received null Intent. Not creating Hover menu.");
+            stopSelf();
+            return START_NOT_STICKY;
+        }
+
         if (!mIsRunning) {
             Log.d(TAG, "onStartCommand() - showing Hover menu.");
             mIsRunning = true;
-            initHoverMenu();
+            initHoverMenu(intent);
             mHoverMenu.show();
         }
 
@@ -103,8 +110,8 @@ public abstract class HoverMenuService extends Service {
         return null;
     }
 
-    private void initHoverMenu() {
-        HoverMenuAdapter adapter = createHoverMenuAdapter();
+    private void initHoverMenu(@NonNull Intent intent) {
+        HoverMenuAdapter adapter = createHoverMenuAdapter(intent);
         mHoverMenu = new HoverMenuBuilder(getContextForHoverMenu())
                 .displayWithinWindow()
                 .useNavigator(createNavigator())
@@ -151,7 +158,7 @@ public abstract class HoverMenuService extends Service {
         return null; // Subclasses can override this to provide a custom Navigator.
     }
 
-    abstract protected HoverMenuAdapter createHoverMenuAdapter();
+    abstract protected HoverMenuAdapter createHoverMenuAdapter(@NonNull Intent intent);
 
     /**
      * Hook method for subclasses to take action when the user exits the HoverMenu. This method runs

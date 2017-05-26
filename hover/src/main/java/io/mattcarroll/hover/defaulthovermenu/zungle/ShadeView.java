@@ -15,7 +15,7 @@ import io.mattcarroll.hover.R;
 /**
  * TODO
  */
-public class ShadeView extends FrameLayout {
+class ShadeView extends FrameLayout {
 
     private static final int FADE_DURATION = 250;
 

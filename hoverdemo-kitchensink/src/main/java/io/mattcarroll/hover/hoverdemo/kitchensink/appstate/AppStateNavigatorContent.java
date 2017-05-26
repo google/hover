@@ -78,6 +78,11 @@ public class AppStateNavigatorContent extends FrameLayout implements NavigatorCo
     }
 
     @Override
+    public boolean isFullscreen() {
+        return true;
+    }
+
+    @Override
     public void onShown(@NonNull Navigator navigator) {
         mAppStateAdapter.setServiceStates(AppStateTracker.getInstance().getServiceStates());
     }

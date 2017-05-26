@@ -1,6 +1,7 @@
 package io.mattcarroll.hover.defaulthovermenu.zungle;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
@@ -22,7 +23,7 @@ import io.mattcarroll.hover.defaulthovermenu.HoverMenuTabSelectorView;
 /**
  * TODO
  */
-public class ContentDisplay extends RelativeLayout {
+class ContentDisplay extends RelativeLayout {
 
     private static final String TAG = "ContentDisplay";
 
@@ -35,7 +36,6 @@ public class ContentDisplay extends RelativeLayout {
 
     public ContentDisplay(@NonNull Context context) {
         super(context);
-        setBackgroundColor(0x88FFFF00);
         init();
     }
 
@@ -43,11 +43,7 @@ public class ContentDisplay extends RelativeLayout {
         LayoutInflater.from(getContext()).inflate(R.layout.view_hover_menu_content, this, true);
 
         mContainer = findViewById(R.id.container);
-        RelativeLayout.LayoutParams layoutParams = (LayoutParams) mContainer.getLayoutParams();
-        layoutParams.height = 0;
-        layoutParams.addRule(ALIGN_PARENT_TOP);
-        layoutParams.addRule(ALIGN_PARENT_BOTTOM);
-        mContainer.setLayoutParams(layoutParams);
+        expandToScreenBounds();
 
         int backgroundCornerRadiusPx = (int) getResources().getDimension(R.dimen.popup_corner_radius);
         mTabSelectorView = (HoverMenuTabSelectorView) findViewById(R.id.tabselector);
@@ -71,7 +67,15 @@ public class ContentDisplay extends RelativeLayout {
         setLayoutParams(layoutParams);
     }
 
-    void activeTabIs(@Nullable Tab tab) {
+    public void enableDebugMode(boolean debugMode) {
+        if (debugMode) {
+            setBackgroundColor(0x88FFFF00);
+        } else {
+            setBackgroundColor(Color.TRANSPARENT);
+        }
+    }
+
+    public void activeTabIs(@Nullable Tab tab) {
         // TODO: handle nullable
         mSelectedTab = tab;
 
@@ -97,28 +101,39 @@ public class ContentDisplay extends RelativeLayout {
     public void displayContent(@Nullable NavigatorContent content) {
         mNavigator.clearContent();
         mNavigator.pushContent(content);
+
+        if (content.isFullscreen()) {
+            expandToScreenBounds();
+        } else {
+            wrapContent();
+        }
     }
 
-    void anchorTo(@NonNull final View anchor) {
-//        setY(500);
-//        setY(anchor.getBottom());
+    public void anchorTo(@NonNull final View anchor) {
         setPadding(0, anchor.getBottom(), 0, 0);
 
         anchor.addOnLayoutChangeListener(new OnLayoutChangeListener() {
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
                 Log.d(TAG, "Updating anchor position to: " + (anchor.getY() + anchor.getHeight()));
-//                setY((anchor.getY() + anchor.getHeight()));
                 setPadding(0, anchor.getBottom(), 0, 0);
             }
         });
     }
 
-    void expandToScreenBounds() {
-        // TODO: full width, height to bottom of screen
+    public void expandToScreenBounds() {
+        RelativeLayout.LayoutParams layoutParams = (LayoutParams) mContainer.getLayoutParams();
+        layoutParams.height = 0;
+        layoutParams.addRule(ALIGN_PARENT_TOP);
+        layoutParams.addRule(ALIGN_PARENT_BOTTOM);
+        mContainer.setLayoutParams(layoutParams);
     }
 
-    void wrapContent() {
-        // TODO: full width, height based on content
+    public void wrapContent() {
+        RelativeLayout.LayoutParams layoutParams = (LayoutParams) mContainer.getLayoutParams();
+        layoutParams.height = LayoutParams.WRAP_CONTENT;
+        layoutParams.addRule(ALIGN_PARENT_TOP);
+        layoutParams.addRule(ALIGN_PARENT_BOTTOM, 0); // This means "remove rule". Can't use removeRule() until API 17.
+        mContainer.setLayoutParams(layoutParams);
     }
 }

@@ -93,8 +93,8 @@ public class DemoHoverMenuAdapter implements HoverMenuAdapter {
     }
 
     @Override
-    public long getTabId(int position) {
-        return position;
+    public String getTabId(int position) {
+        return Integer.toString(position);
     }
 
     @Override

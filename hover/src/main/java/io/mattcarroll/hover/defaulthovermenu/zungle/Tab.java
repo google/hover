@@ -8,7 +8,10 @@ import android.view.View;
 /**
  * TODO:
  */
-public interface Tab {
+interface Tab {
+
+    @NonNull
+    String getTabId();
 
     @NonNull
     Point getPosition();

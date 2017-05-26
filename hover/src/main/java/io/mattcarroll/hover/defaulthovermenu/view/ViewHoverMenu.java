@@ -71,7 +71,7 @@ public class ViewHoverMenu extends FrameLayout implements HoverMenu {
 
         int touchDiameter = getResources().getDimensionPixelSize(R.dimen.exit_radius);
         mDragger = new InViewGroupDragger(this, touchDiameter, ViewConfiguration.get(getContext()).getScaledTouchSlop());
-        mDragger.setDebugMode(BuildConfig.DEBUG);
+        mDragger.enableDebugMode(BuildConfig.DEBUG);
         mHoverMenuView = new HoverMenuView(getContext(), null, mDragger, loadSavedAnchorState());
 //        mHoverMenuView = new HoverMenuBuilder(getContext())
 //                .displayWithinView(this)

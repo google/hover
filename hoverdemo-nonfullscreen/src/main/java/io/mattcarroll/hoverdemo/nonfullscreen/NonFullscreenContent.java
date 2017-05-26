@@ -36,6 +36,11 @@ public class NonFullscreenContent implements NavigatorContent {
     }
 
     @Override
+    public boolean isFullscreen() {
+        return false;
+    }
+
+    @Override
     public void onShown(@NonNull Navigator navigator) {
         // No-op.
     }

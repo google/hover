@@ -14,26 +14,25 @@ import io.mattcarroll.hover.defaulthovermenu.Dragger;
 /**
  * TODO
  */
-public class HoverMenuView3 extends RelativeLayout {
+class HoverMenuView3 extends RelativeLayout {
 
     private static final String TAG = "HoverMenuView3";
 
-
-
     private final Dragger mDragger;
     private Screen mScreen;
-    private CollapsedMenu mCollapsedMenu;
+    private HoverMenuViewStateCollapsed mCollapsedMenu;
     private Point mCollapsedDock;
-    private ExpandedMenu mExpandedMenu;
+    private HoverMenuViewStateExpanded mExpandedMenu;
     private HoverMenuAdapter mAdapter;
     private boolean mIsInitialized;
     private boolean mIsExpanded = false;
     private ExitListener mExitListener;
-
+    private boolean mIsDebugMode = false;
 
     public HoverMenuView3(Context context, @NonNull Dragger dragger) {
         super(context);
         mDragger = dragger;
+        mScreen = new Screen(this);
     }
 
     @Override
@@ -52,14 +51,20 @@ public class HoverMenuView3 extends RelativeLayout {
     private void initAfterInitialLayout() {
         Log.d(TAG, "initAfterInitialLayout() " + hashCode());
         mIsInitialized = true;
-        mScreen = new Screen(this);
 
         if (null != mAdapter) {
             applyAdapter();
         }
 
         createCollapsedMenu();
-        mCollapsedMenu.takeControl(mScreen.getFloatingTab());
+        mCollapsedMenu.takeControl(mScreen);
+    }
+
+    public void enableDebugMode(boolean debugMode) {
+        mIsDebugMode = debugMode;
+
+        mDragger.enableDebugMode(debugMode);
+        mScreen.enableDrugMode(debugMode);
     }
 
     public void setExitListener(@Nullable ExitListener listener) {
@@ -75,7 +80,7 @@ public class HoverMenuView3 extends RelativeLayout {
 
     private void applyAdapter() {
         View floatingTabView = mAdapter.getTabView(0);
-        mScreen.getFloatingTab().setTabView(floatingTabView);
+        mScreen.createChainedTab("PRIMARY", floatingTabView);
     }
 
     private void expand() {
@@ -91,8 +96,8 @@ public class HoverMenuView3 extends RelativeLayout {
     }
 
     private void createExpandedMenu() {
-        mExpandedMenu = new ExpandedMenu(mScreen);
-        mExpandedMenu.setListener(new ExpandedMenu.Listener() {
+        mExpandedMenu = new HoverMenuViewStateExpanded();
+        mExpandedMenu.setListener(new HoverMenuViewStateExpanded.Listener() {
             @Override
             public void onExpanding() { }
 
@@ -106,7 +111,7 @@ public class HoverMenuView3 extends RelativeLayout {
                 collapse();
             }
         });
-        mExpandedMenu.setAdapter(mAdapter);
+        mExpandedMenu.setMenu(new HoverMenu(mAdapter));
     }
 
     private void collapse() {
@@ -123,8 +128,8 @@ public class HoverMenuView3 extends RelativeLayout {
     }
 
     private void createCollapsedMenu() {
-        mCollapsedMenu = new CollapsedMenu(mScreen, mDragger, mCollapsedDock);
-        mCollapsedMenu.setListener(new CollapsedMenu.Listener() {
+        mCollapsedMenu = new HoverMenuViewStateCollapsed(mDragger, mCollapsedDock);
+        mCollapsedMenu.setListener(new HoverMenuViewStateCollapsed.Listener() {
             @Override
             public void onDragStart() {
                 mScreen.getExitView().setVisibility(VISIBLE);

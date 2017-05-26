@@ -1,6 +1,7 @@
 package io.mattcarroll.hover.hoverdemo.helloworld;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
@@ -26,13 +27,99 @@ import io.mattcarroll.hover.defaulthovermenu.window.HoverMenuService;
  */
 public class HelloWorldHoverMenuService extends HoverMenuService {
 
-    @Override
-    protected HoverMenuAdapter createHoverMenuAdapter() {
-//        return new HelloWorldHoverMenuAdapter(getApplicationContext());
-        return new MutatingAdapter(getApplicationContext());
+    private static final String TAG = "HelloWorldHoverMenuService";
+
+    private static final String EXTRA_MENU_TYPE = "menu_type";
+    private static final String TYPE_SINGLE_SECTION = "single_section";
+    private static final String TYPE_MULTI_SECTION = "multi_sections";
+    private static final String TYPE_CHANGING_SECTION = "changing_sections";
+
+    public static Intent intentForSingleSection(@NonNull Context context) {
+        return new Intent(context, HelloWorldHoverMenuService.class)
+                .putExtra(EXTRA_MENU_TYPE, TYPE_SINGLE_SECTION);
     }
 
-    private static class HelloWorldHoverMenuAdapter implements HoverMenuAdapter {
+    public static Intent intentForMultiSection(@NonNull Context context) {
+        return new Intent(context, HelloWorldHoverMenuService.class)
+                .putExtra(EXTRA_MENU_TYPE, TYPE_MULTI_SECTION);
+    }
+
+    public static Intent intentForChangingSections(@NonNull Context context) {
+        return new Intent(context, HelloWorldHoverMenuService.class)
+                .putExtra(EXTRA_MENU_TYPE, TYPE_CHANGING_SECTION);
+    }
+
+    @Override
+    protected HoverMenuAdapter createHoverMenuAdapter(@NonNull Intent intent) {
+        String menuType = intent.getStringExtra(EXTRA_MENU_TYPE);
+
+        if (TYPE_CHANGING_SECTION.equals(menuType)) {
+            return new MutatingAdapter(getApplicationContext());
+        } else if (TYPE_MULTI_SECTION.equals(menuType)) {
+            return new MultiSectionHoverMenuAdapter(getApplicationContext());
+        } else {
+            return new SingleSectionHoverMenuAdapter(getApplicationContext());
+        }
+    }
+
+    private static class SingleSectionHoverMenuAdapter implements HoverMenuAdapter {
+
+        private final Context mContext;
+        private final View mTab1;
+        private final HoverMenuScreen mScreen1;
+
+        public SingleSectionHoverMenuAdapter(@NonNull Context context) {
+            mContext = context.getApplicationContext();
+
+            mTab1 = createTabView();
+            mScreen1 = new HoverMenuScreen(mContext, "Screen 1");
+        }
+
+        private View createTabView() {
+            int tabPadding = mContext.getResources().getDimensionPixelSize(R.dimen.tab_padding);
+            ImageView imageView = new ImageView(mContext);
+            imageView.setImageResource(R.drawable.tab_background);
+
+            int tabSize = mContext.getResources().getDimensionPixelSize(R.dimen.tab_size);
+            FrameLayout tabView = new FrameLayout(mContext);
+//            tabView.setPadding(tabPadding, tabPadding, tabPadding, tabPadding);
+            tabView.addView(imageView, new FrameLayout.LayoutParams(tabSize, tabSize));
+
+            return tabView;
+        }
+
+        @Override
+        public int getTabCount() {
+            return 1;
+        }
+
+        @Override
+        public String getTabId(int position) {
+            return Integer.toString(position);
+        }
+
+        @Override
+        public View getTabView(int position) {
+                return mTab1;
+        }
+
+        @Override
+        public NavigatorContent getNavigatorContent(int position) {
+                return mScreen1;
+        }
+
+        @Override
+        public void addContentChangeListener(@NonNull ContentChangeListener listener) {
+            // No-op. We don't care about content changes in this demo.
+        }
+
+        @Override
+        public void removeContentChangeListener(@NonNull ContentChangeListener listener) {
+            // No-op. We don't care about content changes in this demo.
+        }
+    }
+
+    private static class MultiSectionHoverMenuAdapter implements HoverMenuAdapter {
 
         private final Context mContext;
         private final View mTab1;
@@ -42,7 +129,7 @@ public class HelloWorldHoverMenuService extends HoverMenuService {
         private final View mTab3;
         private final HoverMenuScreen mScreen3;
 
-        public HelloWorldHoverMenuAdapter(@NonNull Context context) {
+        public MultiSectionHoverMenuAdapter(@NonNull Context context) {
             mContext = context.getApplicationContext();
 
             mTab1 = createTabView();
@@ -74,8 +161,8 @@ public class HelloWorldHoverMenuService extends HoverMenuService {
         }
 
         @Override
-        public long getTabId(int position) {
-            return position;
+        public String getTabId(int position) {
+            return Integer.toString(position);
         }
 
         @Override
@@ -120,7 +207,7 @@ public class HelloWorldHoverMenuService extends HoverMenuService {
     private static class MutatingAdapter implements HoverMenuAdapter {
 
         private final Context mContext;
-        private final List<Long> mTabIds = new ArrayList<>();
+        private final List<String> mTabIds = new ArrayList<>();
         private final List<View> mTabViews = new ArrayList<>();
         private final List<NavigatorContent> mTabContents = new ArrayList<>();
         private final Set<ContentChangeListener> mContentChangeListeners = new CopyOnWriteArraySet<>();
@@ -179,7 +266,7 @@ public class HelloWorldHoverMenuService extends HoverMenuService {
 
         MutatingAdapter(@NonNull Context context) {
             mContext = context;
-            mTabIds.add(1L);
+            mTabIds.add("PRIMARY");
             mTabViews.add(createTabView());
             mTabContents.add(new HoverMenuScreen(mContext, "Screen 1"));
 
@@ -190,7 +277,7 @@ public class HelloWorldHoverMenuService extends HoverMenuService {
                     ++mNextStep;
 
                     if (mNextStep < mMutationSteps.size()) {
-                        new Handler(Looper.getMainLooper()).postDelayed(this, 400);
+                        new Handler(Looper.getMainLooper()).postDelayed(this, 1000);
                     }
                 }
             }, 2000);
@@ -199,12 +286,15 @@ public class HelloWorldHoverMenuService extends HoverMenuService {
         private View createTabView() {
             ImageView imageView = new ImageView(mContext);
             imageView.setImageResource(R.drawable.tab_background);
+            imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            return imageView;
 
-            int tabSize = mContext.getResources().getDimensionPixelSize(R.dimen.tab_size);
-            FrameLayout tabView = new FrameLayout(mContext);
-            tabView.addView(imageView, new FrameLayout.LayoutParams(tabSize, tabSize));
-
-            return tabView;
+//            int tabSize = mContext.getResources().getDimensionPixelSize(R.dimen.tab_size);
+//            FrameLayout tabView = new FrameLayout(mContext);
+//            tabView.addView(imageView, new FrameLayout.LayoutParams(tabSize, tabSize));
+//
+//            Log.d(TAG, "Created new tab view: " + tabView.hashCode());
+//            return tabView;
         }
 
         @Override
@@ -213,7 +303,7 @@ public class HelloWorldHoverMenuService extends HoverMenuService {
         }
 
         @Override
-        public long getTabId(int position) {
+        public String getTabId(int position) {
             return mTabIds.get(position);
         }
 
@@ -238,10 +328,10 @@ public class HelloWorldHoverMenuService extends HoverMenuService {
         }
 
         private void insertTab(int position) {
-            long id = (long) (mTabIds.size() + 1);
+            String id = Integer.toString(mTabIds.size() + 1);
             mTabIds.add(position, id);
-            mTabViews.add(createTabView());
-            mTabContents.add(new HoverMenuScreen(mContext, "Screen " + id));
+            mTabViews.add(position, createTabView());
+            mTabContents.add(position, new HoverMenuScreen(mContext, "Screen " + id));
 
             for (ContentChangeListener listener : mContentChangeListeners) {
                 listener.onContentChange(this);

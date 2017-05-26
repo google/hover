@@ -10,9 +10,7 @@ import android.widget.FrameLayout;
 
 import io.mattcarroll.hover.HoverMenuAdapter;
 import io.mattcarroll.hover.R;
-import io.mattcarroll.hover.defaulthovermenu.Dragger;
 import io.mattcarroll.hover.defaulthovermenu.view.InViewGroupDragger;
-import io.mattcarroll.hover.defaulthovermenu.zungle.HoverMenuView3;
 
 /**
  * TODO:
@@ -34,7 +32,7 @@ public class HoverView extends FrameLayout {
         int touchDiameter = getResources().getDimensionPixelSize(R.dimen.exit_radius);
         int slop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
         InViewGroupDragger dragger = new InViewGroupDragger(this, touchDiameter, slop);
-        dragger.setDebugMode(true);
+        dragger.enableDebugMode(true);
         mHoverMenuView = new HoverMenuView2(getContext(), dragger);
         FrameLayout.LayoutParams layoutParams = new LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,

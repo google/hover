@@ -21,12 +21,30 @@
         />
 
     <Button
-        android:id="@+id/button_launch_hover"
+        android:id="@+id/button_launch_hover_single_section"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/textview_intro"
         android:layout_marginTop="16dp"
-        android:text="@string/button_launch_hover"
+        android:text="@string/button_launch_hover_single_section"
+        />
+
+    <Button
+        android:id="@+id/button_launch_hover_multi_sections"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/button_launch_hover_single_section"
+        android:layout_marginTop="16dp"
+        android:text="@string/button_launch_hover_multi_sections"
+        />
+
+    <Button
+        android:id="@+id/button_launch_hover_changing_sections"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/button_launch_hover_multi_sections"
+        android:layout_marginTop="16dp"
+        android:text="@string/button_launch_hover_changing_sections"
         />
 
 </RelativeLayout>

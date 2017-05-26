@@ -171,6 +171,11 @@ public class ToolbarNavigatorContent extends LinearLayout implements ToolbarNavi
     }
 
     @Override
+    public boolean isFullscreen() {
+        return true;
+    }
+
+    @Override
     public void onShown(@NonNull Navigator navigator) {
         // Do nothing.
     }

@@ -1,8 +1,10 @@
 package io.mattcarroll.hover.defaulthovermenu.zungle;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.util.ListUpdateCallback;
+import android.util.Log;
 import android.view.View;
 
 import java.util.ArrayList;
@@ -14,7 +16,9 @@ import io.mattcarroll.hover.NavigatorContent;
 /**
  * TODO:
  */
-public class HoverMenu {
+class HoverMenu {
+
+    private static final String TAG = "HoverMenu";
 
     private HoverMenuAdapter mAdapter;
     private List<Section> mSections = new ArrayList<>();
@@ -35,11 +39,17 @@ public class HoverMenu {
     private List<Section> createSections(@NonNull HoverMenuAdapter adapter) {
         List<Section> sections = new ArrayList<>();
         for (int i = 0; i < adapter.getTabCount(); ++i) {
-            sections.add(new Section(
-                    new Section.SectionId(Long.toString(adapter.getTabId(i))),
+            Section section = new Section(
+                    new Section.SectionId(adapter.getTabId(i)),
                     adapter.getTabView(i),
                     adapter.getNavigatorContent(i)
-            ));
+            );
+
+            Log.d(TAG, "Creating new Section: " + (i) + ", ID: " + section.getId());
+            Log.d(TAG, " - tab View: " + section.getTabView().hashCode());
+            Log.d(TAG, " - screen: " + section.getContent().hashCode());
+
+            sections.add(section);
         }
         return sections;
     }
@@ -66,7 +76,7 @@ public class HoverMenu {
         return mSections.get(index);
     }
 
-    public void setUpdatedCallback(@NonNull ListUpdateCallback listUpdatedCallback) {
+    public void setUpdatedCallback(@Nullable ListUpdateCallback listUpdatedCallback) {
         mListUpdateCallback = listUpdatedCallback;
     }
 
@@ -120,6 +130,11 @@ public class HoverMenu {
             @Override
             public int hashCode() {
                 return mId.hashCode();
+            }
+
+            @Override
+            public String toString() {
+                return mId;
             }
         }
     }

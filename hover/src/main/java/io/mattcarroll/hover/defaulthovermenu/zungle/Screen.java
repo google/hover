@@ -5,18 +5,23 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 import static android.view.View.GONE;
 
 /**
  * TODO:
  */
-public class Screen {
+class Screen {
 
     private ViewGroup mContainer;
-    private FloatingTab mFloatingTab;
     private ContentDisplay mContentDisplay;
     private ExitView mExitView;
     private ShadeView mShadeView;
+    private Map<String, FloatingTab> mTabs = new HashMap<>();
+    private boolean mIsDebugMode = false;
 
     Screen(@NonNull ViewGroup hoverMenuContainer) {
         mContainer = hoverMenuContainer;
@@ -28,20 +33,25 @@ public class Screen {
         ));
         mShadeView.hideImmediate();
 
-        mFloatingTab = new FloatingTab(mContainer.getContext());
-        mContainer.addView(mFloatingTab);
-
-        mContentDisplay = new ContentDisplay(mContainer.getContext());
-        mContainer.addView(mContentDisplay);
-        mContentDisplay.anchorTo(mFloatingTab);
-        mContentDisplay.setVisibility(GONE);
-
         mExitView = new ExitView(mContainer.getContext());
         mContainer.addView(mExitView, new WindowManager.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
         ));
         mExitView.setVisibility(GONE);
+
+        mContentDisplay = new ContentDisplay(mContainer.getContext());
+        mContainer.addView(mContentDisplay);
+        mContentDisplay.setVisibility(GONE);
+    }
+
+    public void enableDrugMode(boolean debugMode) {
+        mIsDebugMode = debugMode;
+
+        mContentDisplay.enableDebugMode(debugMode);
+        for (FloatingTab tab : mTabs.values()) {
+            tab.enableDebugMode(debugMode);
+        }
     }
 
     public int getWidth() {
@@ -52,19 +62,23 @@ public class Screen {
         return mContainer.getHeight();
     }
 
-    public FloatingTab getFloatingTab() {
-        return mFloatingTab;
+    public FloatingTab createChainedTab(@NonNull String tabId, @NonNull View tabView) {
+        if (mTabs.containsKey(tabId)) {
+            return mTabs.get(tabId);
+        } else {
+            FloatingTab chainedTab = new FloatingTab(mContainer.getContext(), tabId);
+            chainedTab.setTabView(tabView);
+            chainedTab.enableDebugMode(mIsDebugMode);
+            mContainer.addView(chainedTab);
+            mTabs.put(tabId, chainedTab);
+            return chainedTab;
+        }
     }
 
-    public ChainedTab createChainedTab() {
-        ChainedTab chainedTab = new ChainedTab(mContainer.getContext());
-        mContainer.addView(chainedTab);
-        return chainedTab;
-    }
-
-    public void destroyChainedTab(@NonNull ChainedTab chainedTab) {
-        mContainer.removeView(chainedTab);
+    public void destroyChainedTab(@NonNull FloatingTab chainedTab) {
+        mTabs.remove(chainedTab.getTabId());
         chainedTab.setTabView(null);
+        mContainer.removeView(chainedTab);
     }
 
     public ContentDisplay getContentDisplay() {

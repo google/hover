@@ -32,6 +32,11 @@ public interface NavigatorContent {
     View getView();
 
     /**
+     * @return true to fill all available space, false to wrap content height
+     */
+    boolean isFullscreen();
+
+    /**
      * Called when this content is displayed to the user.
      *
      * @param navigator the {@link Navigator} that is displaying this content.

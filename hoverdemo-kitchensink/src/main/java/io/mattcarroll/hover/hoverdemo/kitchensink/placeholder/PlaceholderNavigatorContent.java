@@ -66,6 +66,11 @@ public class PlaceholderNavigatorContent extends FrameLayout implements Navigato
     }
 
     @Override
+    public boolean isFullscreen() {
+        return true;
+    }
+
+    @Override
     public void onShown(@NonNull Navigator navigator) {
 
     }

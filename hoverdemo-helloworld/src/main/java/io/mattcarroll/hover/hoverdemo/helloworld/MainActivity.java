@@ -23,10 +23,26 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        findViewById(R.id.button_launch_hover).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.button_launch_hover_single_section).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent startHoverIntent = new Intent(MainActivity.this, HelloWorldHoverMenuService.class);
+                Intent startHoverIntent = HelloWorldHoverMenuService.intentForSingleSection(MainActivity.this);
+                startService(startHoverIntent);
+            }
+        });
+
+        findViewById(R.id.button_launch_hover_multi_sections).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent startHoverIntent = HelloWorldHoverMenuService.intentForMultiSection(MainActivity.this);
+                startService(startHoverIntent);
+            }
+        });
+
+        findViewById(R.id.button_launch_hover_changing_sections).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent startHoverIntent = HelloWorldHoverMenuService.intentForChangingSections(MainActivity.this);
                 startService(startHoverIntent);
             }
         });

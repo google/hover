@@ -25,10 +25,11 @@ import io.mattcarroll.hover.R;
  * TODO
  */
 
-public class FloatingTab extends FrameLayout implements Tab {
+class FloatingTab extends FrameLayout implements Tab {
 
     private static final String TAG = "FloatingTab";
 
+    private final String mId;
     private int mTabSize;
     private Point mDock;
     private final Set<OnPositionChangeListener> mOnPositionChangeListeners = new CopyOnWriteArraySet<OnPositionChangeListener>();
@@ -40,10 +41,10 @@ public class FloatingTab extends FrameLayout implements Tab {
         }
     };
 
-    public FloatingTab(@NonNull Context context) {
+    public FloatingTab(@NonNull Context context, @NonNull String tabId) {
         super(context);
+        mId = tabId;
         mTabSize = getResources().getDimensionPixelSize(R.dimen.floating_icon_size);
-        setBackgroundColor(0x8800FF00);
     }
 
     @Override
@@ -65,16 +66,108 @@ public class FloatingTab extends FrameLayout implements Tab {
         removeOnLayoutChangeListener(mOnLayoutChangeListener);
     }
 
+    public void enableDebugMode(boolean debugMode) {
+        if (debugMode) {
+            setBackgroundColor(0x8800FF00);
+        } else {
+            setBackgroundColor(Color.TRANSPARENT);
+        }
+    }
+
+    public void appear(@Nullable final Runnable onAppeared) {
+        AnimatorSet animatorSet = new AnimatorSet();
+        ObjectAnimator scaleX = ObjectAnimator.ofFloat(this, "scaleX", 0.0f, 1.0f);
+        scaleX.setDuration(250);
+        ObjectAnimator scaleY = ObjectAnimator.ofFloat(this, "scaleY", 0.0f, 1.0f);
+        scaleY.setDuration(250);
+        animatorSet.playTogether(scaleX, scaleY);
+        animatorSet.start();
+
+
+        animatorSet.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (null != onAppeared) {
+                    onAppeared.run();
+                }
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+            }
+        });
+
+        setVisibility(VISIBLE);
+    }
+
+    public void appearImmediate() {
+        setVisibility(VISIBLE);
+    }
+
+    public void disappear(@Nullable final Runnable onDisappeared) {
+        AnimatorSet animatorSet = new AnimatorSet();
+        ObjectAnimator scaleX = ObjectAnimator.ofFloat(this, "scaleX", 0.0f);
+        scaleX.setDuration(250);
+        ObjectAnimator scaleY = ObjectAnimator.ofFloat(this, "scaleY", 0.0f);
+        scaleY.setDuration(250);
+        animatorSet.playTogether(scaleX, scaleY);
+        animatorSet.start();
+
+        animatorSet.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) { }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                setVisibility(GONE);
+
+                if (null != onDisappeared) {
+                    onDisappeared.run();
+                }
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) { }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) { }
+        });
+    }
+
+    public void disappearImmediate() {
+        setVisibility(GONE);
+    }
+
+    @NonNull
+    @Override
+    public String getTabId() {
+        return mId;
+    }
+
+    public int getTabSize() {
+        return mTabSize;
+    }
+
     @Override
     public void setTabView(@Nullable View view) {
         removeAllViews();
 
         if (null != view) {
             FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+//                    ViewGroup.LayoutParams.WRAP_CONTENT,
+//                    ViewGroup.LayoutParams.WRAP_CONTENT
             );
-            layoutParams.gravity = Gravity.CENTER;
+//            layoutParams.gravity = Gravity.CENTER;
             addView(view, layoutParams);
         }
     }
@@ -83,8 +176,8 @@ public class FloatingTab extends FrameLayout implements Tab {
     @NonNull
     public Point getPosition() {
         return new Point(
-                (int) (getX() + (getSize() / 2)),
-                (int) (getY() + (getSize() / 2))
+                (int) (getX() + (getTabSize() / 2)),
+                (int) (getY() + (getTabSize() / 2))
         );
     }
 
@@ -97,7 +190,7 @@ public class FloatingTab extends FrameLayout implements Tab {
     @NonNull
     public Rect getBounds() {
         Point cornerPosition = getCornerPosition();
-        return new Rect(cornerPosition.x, cornerPosition.y, cornerPosition.x + getSize(), cornerPosition.y + getSize());
+        return new Rect(cornerPosition.x, cornerPosition.y, cornerPosition.x + getTabSize(), cornerPosition.y + getTabSize());
     }
 
     private Point getCornerPosition() {
@@ -105,6 +198,10 @@ public class FloatingTab extends FrameLayout implements Tab {
                 (int) getX(),
                 (int) getY()
         );
+    }
+
+    public void setDockPosition(@NonNull Point dock) {
+        mDock = dock;
     }
 
     public void dockTo(@NonNull Point dock) {
@@ -153,8 +250,8 @@ public class FloatingTab extends FrameLayout implements Tab {
 
     private Point convertCenterToCorner(@NonNull Point centerPosition) {
         return new Point(
-                centerPosition.x - (getSize() / 2),
-                centerPosition.y - (getSize() / 2)
+                centerPosition.x - (getTabSize() / 2),
+                centerPosition.y - (getTabSize() / 2)
         );
     }
 
@@ -179,9 +276,5 @@ public class FloatingTab extends FrameLayout implements Tab {
     // contract and not just an inherited method.
     public void setOnClickListener(@Nullable View.OnClickListener onClickListener) {
         super.setOnClickListener(onClickListener);
-    }
-
-    private int getSize() {
-        return mTabSize;
     }
 }

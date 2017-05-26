@@ -4,6 +4,7 @@ import android.graphics.Point;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.View;
 
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -11,7 +12,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 /**
  * TODO:
  */
-public class TabChain {
+class TabChain {
 
     private static final String TAG = "TabChain";
 
@@ -31,6 +32,11 @@ public class TabChain {
         mTab = tab;
     }
 
+    @NonNull
+    public FloatingTab getTab() {
+        return mTab;
+    }
+
     public void chainTo(@NonNull Tab tab) {
         chainTo(tab, null);
     }
@@ -48,7 +54,13 @@ public class TabChain {
 
     private void moveToChainedPosition() {
         Point newDock = getMyChainPositionRelativeTo(mPredecessorTab);
-        mTab.dockTo(newDock);
+        if (View.VISIBLE == mTab.getVisibility()) {
+            mTab.dockTo(newDock);
+        } else {
+            mTab.setDockPosition(newDock);
+            mTab.moveTo(newDock);
+            mTab.appear(null);
+        }
     }
 
     private Point getMyChainPositionRelativeTo(@NonNull Tab tab) {
@@ -66,5 +78,6 @@ public class TabChain {
 
     public void unchain(@Nullable final Runnable onUnchained) {
         mPredecessorTab.removeOnPositionChangeListener(mOnPredecessorPositionChange);
+        mTab.disappear(onUnchained);
     }
 }

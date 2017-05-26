@@ -9,7 +9,7 @@ import android.widget.FrameLayout;
 /**
  * TODO:
  */
-public class Content extends FrameLayout {
+class Content extends FrameLayout {
     public Content(@NonNull Context context) {
         super(context);
     }
