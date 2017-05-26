@@ -33,7 +33,7 @@ import io.mattcarroll.hover.HoverMenu;
 import io.mattcarroll.hover.HoverMenuAdapter;
 import io.mattcarroll.hover.Navigator;
 import io.mattcarroll.hover.defaulthovermenu.ExitListener;
-import io.mattcarroll.hover.defaulthovermenu.HoverView;
+import io.mattcarroll.hover.defaulthovermenu.HoverMenuView;
 
 /**
  * {@link HoverMenu} implementation that displays within a {@code Window}.
@@ -43,7 +43,7 @@ public class WindowHoverMenu implements HoverMenu {
     private static final String TAG = "WindowHoverMenu";
 
     private WindowViewController mWindowViewController; // Shows/hides/positions Views in a Window.
-    private HoverView mHoverView;
+    private HoverMenuView mHoverMenuView;
     private boolean mIsShowingHoverMenu; // Are we currently display mHoverMenuView?
     private boolean mIsInDragMode; // If we're not in drag mode then we're in menu mode.
     private Set<OnExitListener> mOnExitListeners = new HashSet<>();
@@ -51,11 +51,11 @@ public class WindowHoverMenu implements HoverMenu {
     public WindowHoverMenu(@NonNull Context context, @NonNull WindowManager windowManager, @Nullable Navigator navigator, @Nullable String savedVisualState) {
         mWindowViewController = new WindowViewController(windowManager);
 
-        InWindowDragger inWindowDragger = new InWindowDragger(
-                context,
-                mWindowViewController,
-                ViewConfiguration.get(context).getScaledTouchSlop()
-        );
+//        InWindowDragger inWindowDragger = new InWindowDragger(
+//                context,
+//                mWindowViewController,
+//                ViewConfiguration.get(context).getScaledTouchSlop()
+//        );
 
         PointF anchorState = new PointF(2, 0.5f); // Default to right side, half way down. See CollapsedMenuAnchor.
         if (null != savedVisualState) {
@@ -67,8 +67,9 @@ public class WindowHoverMenu implements HoverMenu {
             }
         }
 
-        mHoverView = new HoverView(context);
-        mHoverView.setExitListener(new ExitListener() {
+        mHoverMenuView = HoverMenuView.createForWindow(context, mWindowViewController);
+        mHoverMenuView.enableDebugMode(true);
+        mHoverMenuView.setExitListener(new ExitListener() {
             @Override
             public void onExit() {
                 Log.d(TAG, "Hover menu has exited. Hiding from window.");
@@ -96,7 +97,7 @@ public class WindowHoverMenu implements HoverMenu {
 
     @Override
     public void setAdapter(@Nullable HoverMenuAdapter adapter) {
-        mHoverView.setAdapter(adapter);
+        mHoverMenuView.setAdapter(adapter);
     }
 
     /**
@@ -105,11 +106,11 @@ public class WindowHoverMenu implements HoverMenu {
     @Override
     public void show() {
         if (!mIsShowingHoverMenu) {
-            mWindowViewController.addView(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT, false, mHoverView);
+            mWindowViewController.addView(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT, false, mHoverMenuView);
 
             // Sync our control state with the HoverMenuView state.
 //            if (mHoverMenuView.isExpanded()) {
-                mWindowViewController.makeTouchable(mHoverView);
+                mWindowViewController.makeTouchable(mHoverMenuView);
 //            } else {
 //                collapseMenu();
 //            }
@@ -130,8 +131,8 @@ public class WindowHoverMenu implements HoverMenu {
             notifyOnExitListeners();
 
             // Cleanup the control structures and Views.
-            mWindowViewController.removeView(mHoverView);
-//            mHoverMenuView.release();
+            mWindowViewController.removeView(mHoverMenuView);
+            mHoverMenuView.release();
         }
     }
 

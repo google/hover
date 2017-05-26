@@ -35,7 +35,7 @@ import io.mattcarroll.hover.BuildConfig;
 import io.mattcarroll.hover.HoverMenu;
 import io.mattcarroll.hover.HoverMenuAdapter;
 import io.mattcarroll.hover.R;
-import io.mattcarroll.hover.defaulthovermenu.HoverView;
+import io.mattcarroll.hover.defaulthovermenu.HoverMenuView;
 
 /**
  * {@link HoverMenu} implementation that can be embedded in traditional view hierarchies.
@@ -46,7 +46,7 @@ public class ViewHoverMenu extends FrameLayout implements HoverMenu {
     private static final String PREFS_KEY_ANCHOR_SIDE = "anchor_side";
     private static final String PREFS_KEY_ANCHOR_Y = "anchor_y";
 
-    private HoverView mHoverView;
+    private HoverMenuView mHoverMenuView;
     private InViewGroupDragger mDragger;
     private HoverMenuAdapter mAdapter;
     private SharedPreferences mPrefs;
@@ -72,19 +72,19 @@ public class ViewHoverMenu extends FrameLayout implements HoverMenu {
         int touchDiameter = getResources().getDimensionPixelSize(R.dimen.exit_radius);
         mDragger = new InViewGroupDragger(this, touchDiameter, ViewConfiguration.get(getContext()).getScaledTouchSlop());
         mDragger.enableDebugMode(BuildConfig.DEBUG);
-        mHoverView = new HoverView(getContext());
-        addView(mHoverView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        mHoverMenuView = HoverMenuView.createForView(getContext(), this);
+        addView(mHoverMenuView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
         if (null != mAdapter) {
-            mHoverView.setAdapter(mAdapter);
+            mHoverMenuView.setAdapter(mAdapter);
         }
     }
 
     @Override
     protected void onDetachedFromWindow() {
         saveAnchorState();
-        removeView(mHoverView);
-        mHoverView = null;
+        removeView(mHoverMenuView);
+        mHoverMenuView = null;
         mDragger.deactivate(); // TODO: should be called by HoverMenuView in some kind of release() method.
         super.onDetachedFromWindow();
     }
@@ -111,8 +111,8 @@ public class ViewHoverMenu extends FrameLayout implements HoverMenu {
     @Override
     public void setAdapter(@Nullable HoverMenuAdapter adapter) {
         mAdapter = adapter;
-        if (null != mAdapter && null != mHoverView) {
-            mHoverView.setAdapter(adapter);
+        if (null != mAdapter && null != mHoverMenuView) {
+            mHoverMenuView.setAdapter(adapter);
         }
     }
 

@@ -6,9 +6,15 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewConfiguration;
+import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
 import io.mattcarroll.hover.HoverMenuAdapter;
+import io.mattcarroll.hover.R;
+import io.mattcarroll.hover.defaulthovermenu.view.InViewGroupDragger;
+import io.mattcarroll.hover.defaulthovermenu.window.InWindowDragger;
+import io.mattcarroll.hover.defaulthovermenu.window.WindowViewController;
 
 /**
  * {@code HoverMenuView} is a floating menu implementation. This implementation displays tabs along
@@ -20,12 +26,41 @@ import io.mattcarroll.hover.HoverMenuAdapter;
  * {@code HoverMenuView} cannot be used in XML because it requires additional parameters in its
  * constructor.
  */
-class HoverMenuView extends RelativeLayout {
+public class HoverMenuView extends RelativeLayout {
 
-    private static final String TAG = "HoverMenuView3";
+    private static final String TAG = "HoverMenuView";
+
+    @NonNull
+    public static HoverMenuView createForWindow(@NonNull Context context,
+                                                @NonNull WindowViewController windowViewController) {
+        int touchDiameter = context.getResources().getDimensionPixelSize(R.dimen.exit_radius);
+        int slop = ViewConfiguration.get(context).getScaledTouchSlop();
+        InWindowDragger dragger = new InWindowDragger(
+                context,
+                windowViewController,
+                touchDiameter,
+                slop
+        );
+
+        return new HoverMenuView(context, dragger);
+    }
+
+    @NonNull
+    public static HoverMenuView createForView(@NonNull Context context,
+                                              @NonNull ViewGroup container) {
+        int touchDiameter = context.getResources().getDimensionPixelSize(R.dimen.exit_radius);
+        int slop = ViewConfiguration.get(context).getScaledTouchSlop();
+        InViewGroupDragger dragger = new InViewGroupDragger(
+                container,
+                touchDiameter,
+                slop
+        );
+
+        return new HoverMenuView(context, dragger);
+    }
 
     private final Dragger mDragger;
-    private Screen mScreen;
+    private final Screen mScreen;
     private HoverMenuViewStateCollapsed mCollapsedMenu;
     private Point mCollapsedDock;
     private HoverMenuViewStateExpanded mExpandedMenu;
@@ -35,10 +70,15 @@ class HoverMenuView extends RelativeLayout {
     private ExitListener mExitListener;
     private boolean mIsDebugMode = false;
 
-    public HoverMenuView(Context context, @NonNull Dragger dragger) {
+    private HoverMenuView(Context context, @NonNull Dragger dragger) {
         super(context);
         mDragger = dragger;
         mScreen = new Screen(this);
+    }
+
+    public void release() {
+        mDragger.deactivate();
+        // TODO: should we also release the screen?
     }
 
     @Override
