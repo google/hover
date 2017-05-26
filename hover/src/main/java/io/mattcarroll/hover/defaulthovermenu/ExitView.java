@@ -1,4 +1,4 @@
-package io.mattcarroll.hover.defaulthovermenu.zungle;
+package io.mattcarroll.hover.defaulthovermenu;
 
 import android.content.Context;
 import android.graphics.Point;

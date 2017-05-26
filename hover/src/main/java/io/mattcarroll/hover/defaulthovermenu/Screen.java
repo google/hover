@@ -1,4 +1,4 @@
-package io.mattcarroll.hover.defaulthovermenu.zungle;
+package io.mattcarroll.hover.defaulthovermenu;
 
 import android.support.annotation.NonNull;
 import android.view.View;
@@ -7,7 +7,6 @@ import android.view.WindowManager;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import static android.view.View.GONE;
 

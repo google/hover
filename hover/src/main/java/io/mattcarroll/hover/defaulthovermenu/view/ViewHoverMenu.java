@@ -35,7 +35,7 @@ import io.mattcarroll.hover.BuildConfig;
 import io.mattcarroll.hover.HoverMenu;
 import io.mattcarroll.hover.HoverMenuAdapter;
 import io.mattcarroll.hover.R;
-import io.mattcarroll.hover.defaulthovermenu.HoverMenuView;
+import io.mattcarroll.hover.defaulthovermenu.HoverView;
 
 /**
  * {@link HoverMenu} implementation that can be embedded in traditional view hierarchies.
@@ -46,7 +46,7 @@ public class ViewHoverMenu extends FrameLayout implements HoverMenu {
     private static final String PREFS_KEY_ANCHOR_SIDE = "anchor_side";
     private static final String PREFS_KEY_ANCHOR_Y = "anchor_y";
 
-    private HoverMenuView mHoverMenuView;
+    private HoverView mHoverView;
     private InViewGroupDragger mDragger;
     private HoverMenuAdapter mAdapter;
     private SharedPreferences mPrefs;
@@ -72,47 +72,47 @@ public class ViewHoverMenu extends FrameLayout implements HoverMenu {
         int touchDiameter = getResources().getDimensionPixelSize(R.dimen.exit_radius);
         mDragger = new InViewGroupDragger(this, touchDiameter, ViewConfiguration.get(getContext()).getScaledTouchSlop());
         mDragger.enableDebugMode(BuildConfig.DEBUG);
-        mHoverMenuView = new HoverMenuView(getContext(), null, mDragger, loadSavedAnchorState());
-//        mHoverMenuView = new HoverMenuBuilder(getContext())
-//                .displayWithinView(this)
-//                .build();
-        addView(mHoverMenuView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        mHoverView = new HoverView(getContext());
+        addView(mHoverView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
         if (null != mAdapter) {
-            mHoverMenuView.setAdapter(mAdapter);
+            mHoverView.setAdapter(mAdapter);
         }
     }
 
     @Override
     protected void onDetachedFromWindow() {
         saveAnchorState();
-        removeView(mHoverMenuView);
-        mHoverMenuView = null;
+        removeView(mHoverView);
+        mHoverView = null;
         mDragger.deactivate(); // TODO: should be called by HoverMenuView in some kind of release() method.
         super.onDetachedFromWindow();
     }
 
     @Override
     public String getVisualState() {
-        PointF anchorState = mHoverMenuView.getAnchorState();
-        return new VisualStateMemento((int) anchorState.x, anchorState.y).toJsonString();
+        // TODO: figure out saved state for hover view
+//        PointF anchorState = mHoverView.getAnchorState();
+//        return new VisualStateMemento((int) anchorState.x, anchorState.y).toJsonString();
+        return "";
     }
 
     @Override
     public void restoreVisualState(@NonNull String savedVisualState) {
-        try {
-            VisualStateMemento memento = VisualStateMemento.fromJsonString(savedVisualState);
-            mHoverMenuView.setAnchorState(new PointF(memento.getAnchorSide(), memento.getNormalizedPositionY()));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        // TODO: figure out saved state for hover view
+//        try {
+//            VisualStateMemento memento = VisualStateMemento.fromJsonString(savedVisualState);
+//            mHoverView.setAnchorState(new PointF(memento.getAnchorSide(), memento.getNormalizedPositionY()));
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
     }
 
     @Override
     public void setAdapter(@Nullable HoverMenuAdapter adapter) {
         mAdapter = adapter;
-        if (null != mAdapter && null != mHoverMenuView) {
-            mHoverMenuView.setAdapter(adapter);
+        if (null != mAdapter && null != mHoverView) {
+            mHoverView.setAdapter(adapter);
         }
     }
 
@@ -128,12 +128,14 @@ public class ViewHoverMenu extends FrameLayout implements HoverMenu {
 
     @Override
     public void expandMenu() {
-        mHoverMenuView.expand();
+        // TODO: figure out programmatic expansion/collapse for hover view
+//        mHoverView.expand();
     }
 
     @Override
     public void collapseMenu() {
-        mHoverMenuView.collapse();
+        // TODO: figure out programmatic expansion/collapse for hover view
+//        mHoverView.collapse();
     }
 
     @Override
@@ -153,18 +155,21 @@ public class ViewHoverMenu extends FrameLayout implements HoverMenu {
     }
 
     private void saveAnchorState() {
-        PointF anchorState = mHoverMenuView.getAnchorState();
-        mPrefs.edit()
-            .putFloat(PREFS_KEY_ANCHOR_SIDE, anchorState.x)
-            .putFloat(PREFS_KEY_ANCHOR_Y, anchorState.y)
-            .apply();
+        // TODO: figure out saving state for hover view
+//        PointF anchorState = mHoverView.getAnchorState();
+//        mPrefs.edit()
+//            .putFloat(PREFS_KEY_ANCHOR_SIDE, anchorState.x)
+//            .putFloat(PREFS_KEY_ANCHOR_Y, anchorState.y)
+//            .apply();
     }
 
     private PointF loadSavedAnchorState() {
-        return new PointF(
-                mPrefs.getFloat(PREFS_KEY_ANCHOR_SIDE, 2),
-                mPrefs.getFloat(PREFS_KEY_ANCHOR_Y, 0.5f)
-        );
+        // TODO: figure out saving state for hover view
+//        return new PointF(
+//                mPrefs.getFloat(PREFS_KEY_ANCHOR_SIDE, 2),
+//                mPrefs.getFloat(PREFS_KEY_ANCHOR_Y, 0.5f)
+//        );
+        return null;
     }
 
     private static class VisualStateMemento {

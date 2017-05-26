@@ -1,4 +1,4 @@
-package io.mattcarroll.hover.defaulthovermenu.zungle;
+package io.mattcarroll.hover.defaulthovermenu;
 
 /**
  * TODO

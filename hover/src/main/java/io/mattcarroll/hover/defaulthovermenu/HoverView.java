@@ -1,4 +1,4 @@
-package io.mattcarroll.hover.defaulthovermenu.zungle;
+package io.mattcarroll.hover.defaulthovermenu;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -20,7 +20,7 @@ public class HoverView extends FrameLayout {
 
     private static final String TAG = "HoverView";
 
-    private HoverMenuView3 mHoverMenuView;
+    private HoverMenuView mHoverMenuView;
     private ExitListener mExitListener;
 
     public HoverView(@NonNull Context context) {
@@ -36,7 +36,7 @@ public class HoverView extends FrameLayout {
         int touchDiameter = getResources().getDimensionPixelSize(R.dimen.exit_radius);
         int slop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
         InViewGroupDragger dragger = new InViewGroupDragger(this, touchDiameter, slop);
-        mHoverMenuView = new HoverMenuView3(getContext(), dragger);
+        mHoverMenuView = new HoverMenuView(getContext(), dragger);
         mHoverMenuView.enableDebugMode(true);
         LayoutParams layoutParams = new LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,

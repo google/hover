@@ -32,9 +32,8 @@ import java.util.Set;
 import io.mattcarroll.hover.HoverMenu;
 import io.mattcarroll.hover.HoverMenuAdapter;
 import io.mattcarroll.hover.Navigator;
-import io.mattcarroll.hover.defaulthovermenu.HoverMenuView;
-import io.mattcarroll.hover.defaulthovermenu.zungle.ExitListener;
-import io.mattcarroll.hover.defaulthovermenu.zungle.HoverView;
+import io.mattcarroll.hover.defaulthovermenu.ExitListener;
+import io.mattcarroll.hover.defaulthovermenu.HoverView;
 
 /**
  * {@link HoverMenu} implementation that displays within a {@code Window}.
@@ -44,42 +43,10 @@ public class WindowHoverMenu implements HoverMenu {
     private static final String TAG = "WindowHoverMenu";
 
     private WindowViewController mWindowViewController; // Shows/hides/positions Views in a Window.
-//    private HoverMenuView2 mHoverMenuView; // The visual presentation of the Hover menu.
     private HoverView mHoverView;
     private boolean mIsShowingHoverMenu; // Are we currently display mHoverMenuView?
     private boolean mIsInDragMode; // If we're not in drag mode then we're in menu mode.
     private Set<OnExitListener> mOnExitListeners = new HashSet<>();
-
-    private HoverMenuView.HoverMenuTransitionListener mHoverMenuTransitionListener = new HoverMenuView.HoverMenuTransitionListener() {
-        @Override
-        public void onCollapsing() { }
-
-        @Override
-        public void onCollapsed() {
-            mIsInDragMode = true;
-            // When collapsed, we make mHoverMenuView untouchable so that the WindowDragWatcher can
-            // take over. We do this so that touch events outside the drag area can propagate to
-            // applications on screen.
-            mWindowViewController.makeUntouchable(mHoverView);
-        }
-
-        @Override
-        public void onExpanding() {
-            mIsInDragMode = false;
-        }
-
-        @Override
-        public void onExpanded() {
-            mWindowViewController.makeTouchable(mHoverView);
-        }
-    };
-
-    private HoverMenuView.HoverMenuExitRequestListener mMenuExitRequestListener = new HoverMenuView.HoverMenuExitRequestListener() {
-        @Override
-        public void onExitRequested() {
-            hide();
-        }
-    };
 
     public WindowHoverMenu(@NonNull Context context, @NonNull WindowManager windowManager, @Nullable Navigator navigator, @Nullable String savedVisualState) {
         mWindowViewController = new WindowViewController(windowManager);
@@ -100,15 +67,12 @@ public class WindowHoverMenu implements HoverMenu {
             }
         }
 
-//        mHoverMenuView = new HoverMenuView2(context, navigator, inWindowDragger, anchorState);
-//        mHoverMenuView.setHoverMenuExitRequestListener(mMenuExitRequestListener);
-
         mHoverView = new HoverView(context);
         mHoverView.setExitListener(new ExitListener() {
             @Override
             public void onExit() {
                 Log.d(TAG, "Hover menu has exited. Hiding from window.");
-                mMenuExitRequestListener.onExitRequested();
+                hide();
             }
         });
     }

@@ -1,4 +1,4 @@
-package io.mattcarroll.hover.defaulthovermenu.zungle;
+package io.mattcarroll.hover.defaulthovermenu;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -17,8 +17,6 @@ import android.widget.RelativeLayout;
 import io.mattcarroll.hover.Navigator;
 import io.mattcarroll.hover.NavigatorContent;
 import io.mattcarroll.hover.R;
-import io.mattcarroll.hover.defaulthovermenu.DefaultNavigator;
-import io.mattcarroll.hover.defaulthovermenu.HoverMenuTabSelectorView;
 
 /**
  * TODO

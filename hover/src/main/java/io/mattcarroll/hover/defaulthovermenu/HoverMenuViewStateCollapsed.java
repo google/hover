@@ -1,11 +1,9 @@
-package io.mattcarroll.hover.defaulthovermenu.zungle;
+package io.mattcarroll.hover.defaulthovermenu;
 
 import android.graphics.Point;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
-
-import io.mattcarroll.hover.defaulthovermenu.Dragger;
 
 /**
  * TODO
