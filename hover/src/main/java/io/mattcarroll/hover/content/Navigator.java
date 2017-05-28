@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.mattcarroll.hover;
+package io.mattcarroll.hover.content;
 
 import android.support.annotation.NonNull;
 import android.view.View;

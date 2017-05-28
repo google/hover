@@ -31,7 +31,7 @@ import io.mattcarroll.hover.defaulthovermenu.Dragger;
  */
 public class InWindowDragger implements Dragger {
 
-    private static final String TAG = "WindowDragWatcher";
+    private static final String TAG = "InWindowDragger";
 
     private Context mContext;
     private WindowViewController mWindowViewController;
@@ -41,10 +41,6 @@ public class InWindowDragger implements Dragger {
     private float mTapTouchSlop;
     private boolean mIsActivated;
     private boolean mIsDragging;
-//    private Point mViewOriginalPosition = new Point();
-//    private PointF mTouchOffsetFromCornerOfControlView = new PointF();
-//    private PointF mViewCurrentPosition = new PointF();
-//    private PointF mPrevMotionPosition = new PointF();
     private boolean mIsDebugMode;
 
     private PointF mOriginalViewPosition = new PointF();
@@ -89,9 +85,12 @@ public class InWindowDragger implements Dragger {
 
                     return true;
                 case MotionEvent.ACTION_UP:
+                    Log.d(TAG, "ACTION_UP");
                     if (!mIsDragging) {
+                        Log.d(TAG, "Reporting as a tap.");
                         mDragListener.onTap();
                     } else {
+                        Log.d(TAG, "Reporting as a drag release at: " + mCurrentViewPosition);
                         mDragListener.onReleasedAt(mCurrentViewPosition.x, mCurrentViewPosition.y);
                     }
 
@@ -101,58 +100,6 @@ public class InWindowDragger implements Dragger {
             return false;
         }
     };
-
-//    private View.OnTouchListener mDragTouchListener = new View.OnTouchListener() {
-//        @Override
-//        public boolean onTouch(View view, MotionEvent motionEvent) {
-//            switch (motionEvent.getAction()) {
-//                case MotionEvent.ACTION_DOWN:
-//                    Log.d(TAG, "ACTION_DOWN");
-//                    mIsDragging = false;
-//
-//                    mViewOriginalPosition = mWindowViewController.getViewPosition(mDragView);
-//                    mViewCurrentPosition = new PointF(mViewOriginalPosition.x, mViewOriginalPosition.y);
-//                    mTouchOffsetFromCornerOfControlView = new PointF(mViewOriginalPosition.x - motionEvent.getRawX(), mViewCurrentPosition.y - motionEvent.getRawY());
-//                    mPrevMotionPosition.set(motionEvent.getRawX(), motionEvent.getRawY());
-//
-//                    mDragListener.onPress(mViewCurrentPosition.x, mViewCurrentPosition.y);
-//
-//                    return true;
-//                case MotionEvent.ACTION_MOVE:
-//                    Log.d(TAG, "ACTION_MOVE. motionX: " + motionEvent.getRawX() + ", motionY: " + motionEvent.getRawY());
-//
-//                    mViewCurrentPosition = new PointF(motionEvent.getRawX(), motionEvent.getRawY());
-//                    mViewCurrentPosition.offset(mTouchOffsetFromCornerOfControlView.x, mTouchOffsetFromCornerOfControlView.y);
-//
-//                    mPrevMotionPosition.set((int) motionEvent.getRawX(), (int) motionEvent.getRawY());
-//
-//                    if (mIsDragging || !isTouchWithinSlopOfOriginalTouch()) {
-//                        // Dragging just started
-//                        if(!mIsDragging) {
-//                            Log.d(TAG, "MOVE Start Drag.");
-//                            mIsDragging = true;
-//                            Point dragViewPosition = mWindowViewController.getViewPosition(mDragView);
-//                            mDragListener.onDragStart(dragViewPosition.x, dragViewPosition.y);
-//                        } else {
-//                            mWindowViewController.moveViewTo(mDragView, (int) mViewCurrentPosition.x - (mTouchAreaDiameter / 2), (int) mViewCurrentPosition.y - (mTouchAreaDiameter / 2));
-//                            mDragListener.onDragTo(mViewCurrentPosition.x, mViewCurrentPosition.y);
-//                        }
-//                    }
-//
-//                    return true;
-//                case MotionEvent.ACTION_UP:
-//                    if (!mIsDragging) {
-//                        mDragListener.onTap();
-//                    } else {
-//                        mDragListener.onReleasedAt(mViewCurrentPosition.x, mViewCurrentPosition.y);
-//                    }
-//
-//                    return true;
-//            }
-//
-//            return false;
-//        }
-//    };
 
     /**
      * Note: {@code view} must already be added to the {@code Window}.
@@ -170,21 +117,9 @@ public class InWindowDragger implements Dragger {
         mTapTouchSlop = tapTouchSlop;
     }
 
-//    public void activate(@NonNull DragListener dragListener, @NonNull Rect controlBounds) {
     public void activate(@NonNull DragListener dragListener, @NonNull Point dragStartCenterPosition) {
         if (!mIsActivated) {
             createTouchControlView(dragStartCenterPosition);
-            mDragListener = dragListener;
-            mDragView.setOnTouchListener(mDragTouchListener);
-            mIsActivated = true;
-        }
-    }
-
-    // TODO: here to avoid compilation error. delete this.
-    @Override
-    public void activate(@NonNull DragListener dragListener, @NonNull Rect controlBounds) {
-        if (!mIsActivated) {
-            createTouchControlView(controlBounds);
             mDragListener = dragListener;
             mDragView.setOnTouchListener(mDragTouchListener);
             mIsActivated = true;
@@ -257,6 +192,7 @@ public class InWindowDragger implements Dragger {
         float dx = mCurrentViewPosition.x - mOriginalTouchPosition.x;
         float dy = mCurrentViewPosition.y - mOriginalTouchPosition.y;
         double distance = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+        Log.d(TAG, "Drag distance " + distance + " vs slop allowance " + mTapTouchSlop);
 
         return distance < mTapTouchSlop;
     }

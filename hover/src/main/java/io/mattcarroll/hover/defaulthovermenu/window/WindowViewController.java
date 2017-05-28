@@ -18,6 +18,7 @@ package io.mattcarroll.hover.defaulthovermenu.window;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.support.annotation.NonNull;
+import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
@@ -41,7 +42,7 @@ public class WindowViewController {
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 width,
                 height,
-                WindowManager.LayoutParams.TYPE_PHONE,
+                WindowManager.LayoutParams.TYPE_SYSTEM_ALERT,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS | touchableFlag,
                 PixelFormat.TRANSLUCENT
         );

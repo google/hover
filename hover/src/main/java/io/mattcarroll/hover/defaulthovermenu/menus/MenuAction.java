@@ -18,7 +18,7 @@ package io.mattcarroll.hover.defaulthovermenu.menus;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
-import io.mattcarroll.hover.Navigator;
+import io.mattcarroll.hover.content.Navigator;
 
 /**
  * Represents an action that executes when the user selects an item in a Hover menu.

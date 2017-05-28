@@ -21,7 +21,7 @@ import android.support.annotation.NonNull;
 import android.view.ContextThemeWrapper;
 
 import io.mattcarroll.hover.HoverMenuAdapter;
-import io.mattcarroll.hover.Navigator;
+import io.mattcarroll.hover.content.Navigator;
 import io.mattcarroll.hover.defaulthovermenu.DefaultNavigator;
 import io.mattcarroll.hover.defaulthovermenu.window.HoverMenuService;
 

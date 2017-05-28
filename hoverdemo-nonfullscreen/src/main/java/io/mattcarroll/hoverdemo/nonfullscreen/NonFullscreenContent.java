@@ -6,8 +6,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import io.mattcarroll.hover.Navigator;
-import io.mattcarroll.hover.NavigatorContent;
+import io.mattcarroll.hover.content.Navigator;
+import io.mattcarroll.hover.content.NavigatorContent;
 
 /**
  * A Hover menu screen that does not take up the entire screen.

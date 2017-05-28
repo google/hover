@@ -18,6 +18,8 @@ package io.mattcarroll.hover;
 import android.support.annotation.NonNull;
 import android.view.View;
 
+import io.mattcarroll.hover.content.NavigatorContent;
+
 /**
  * Adapter that provides {@code View}s for the tabs and the content within a Hover menu.
  */

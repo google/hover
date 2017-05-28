@@ -30,9 +30,8 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import io.mattcarroll.hover.R;
-import io.mattcarroll.hover.Navigator;
-import io.mattcarroll.hover.NavigatorContent;
-import io.mattcarroll.hover.defaulthovermenu.toolbar.ToolbarNavigator;
+import io.mattcarroll.hover.content.Navigator;
+import io.mattcarroll.hover.content.NavigatorContent;
 
 import java.util.Stack;
 

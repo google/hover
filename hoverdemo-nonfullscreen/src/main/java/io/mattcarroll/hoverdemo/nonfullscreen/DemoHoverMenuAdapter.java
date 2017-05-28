@@ -10,7 +10,7 @@ import android.util.TypedValue;
 import android.view.View;
 
 import io.mattcarroll.hover.HoverMenuAdapter;
-import io.mattcarroll.hover.NavigatorContent;
+import io.mattcarroll.hover.content.NavigatorContent;
 
 /**
  * A Hover Menu Adapter tells the Hover Menu how many tabs/pages should appear in the Hover menu.  It

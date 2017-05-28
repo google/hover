@@ -118,11 +118,6 @@ public class InViewGroupDragger implements Dragger {
     }
 
     @Override
-    public void activate(@NonNull DragListener dragListener, @NonNull Rect bounds) {
-        // TODO: delete this.
-    }
-
-    @Override
     public void deactivate() {
         if (mIsActivated) {
             destroyTouchControlView();

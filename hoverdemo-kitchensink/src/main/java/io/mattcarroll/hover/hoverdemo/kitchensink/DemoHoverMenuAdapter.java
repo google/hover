@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.Set;
 
 import io.mattcarroll.hover.HoverMenuAdapter;
-import io.mattcarroll.hover.NavigatorContent;
+import io.mattcarroll.hover.content.NavigatorContent;
 import io.mattcarroll.hover.hoverdemo.kitchensink.ui.DemoTabView;
 import io.mattcarroll.hover.hoverdemo.kitchensink.theming.HoverTheme;
 

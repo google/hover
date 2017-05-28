@@ -2,6 +2,7 @@ package io.mattcarroll.hover.defaulthovermenu;
 
 import android.graphics.Point;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.util.ListUpdateCallback;
 import android.util.Log;
 import android.view.View;
@@ -19,7 +20,7 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
     private static final String TAG = "HoverMenuViewStateExpanded";
 
     private boolean mHasControl = false;
-    private HoverMenu.Section mActiveSection;
+    private HoverMenu.Section.SectionId mActiveSectionId;
     private HoverMenu mMenu;
     private Screen mScreen;
     private final List<FloatingTab> mChainedTabs = new ArrayList<>();
@@ -30,8 +31,15 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
 
     HoverMenuViewStateExpanded() { }
 
+    HoverMenuViewStateExpanded(@Nullable String activeSectionId) {
+        if (null != activeSectionId) {
+            mActiveSectionId = new HoverMenu.Section.SectionId(activeSectionId);
+        }
+    }
+
     @Override
     public void takeControl(@NonNull Screen screen) {
+        Log.d(TAG, "Taking control.");
         if (mHasControl) {
             throw new RuntimeException("Cannot take control of a FloatingTab when we already control one.");
         }
@@ -39,7 +47,7 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
         Log.d(TAG, "Taking control.");
         mHasControl = true;
         mScreen = screen;
-        mDock = new Point(mScreen.getWidth() - 100, 100);
+        mDock = new Point(mScreen.getWidth() - 100, 100); // TODO: get rid of magic numbers
         if (null != mMenu) {
             Log.d(TAG, "Already has menu. Expanding.");
             expandMenu();
@@ -102,6 +110,7 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
 
     @Override
     public void giveControlTo(@NonNull HoverMenuViewState otherController) {
+        Log.d(TAG, "Giving up control.");
         if (!mHasControl) {
             throw new RuntimeException("Cannot give control to another HoverMenuController when we don't have the HoverTab.");
         }
@@ -186,11 +195,18 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
             @Override
             public void onMoved(int fromPosition, int toPosition) {
                 Log.d(TAG, "Tab moved. From: " + fromPosition + ", To: " + toPosition);
+                FloatingTab chainedTab = mChainedTabs.remove(fromPosition);
+                mChainedTabs.add(toPosition, chainedTab);
+                TabChain tabChain = mTabChains.remove(fromPosition);
+                mTabChains.add(toPosition, tabChain);
+
+                updateChainedPositions();
             }
 
             @Override
             public void onChanged(int position, int count, Object payload) {
                 Log.d(TAG, "Tab(s) changed. From: " + position + ", To: " + count);
+                // TODO: tell content to update
             }
         });
 
@@ -198,6 +214,10 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
             Log.d(TAG, "Has control.  Expanding menu.");
             expandMenu();
         }
+    }
+
+    public String getActiveSectionId() {
+        return mActiveSectionId.toString();
     }
 
     private void updateChainedPositions() {
@@ -211,28 +231,43 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
     }
 
     private void expandMenu() {
-        // TODO: handle restoration of active tab
-        mActiveSection = mMenu.getSection(0);
-        final FloatingTab activeTab = mScreen.createChainedTab("PRIMARY", null); // TODO:
+//        HoverMenu.Section activeSection = null != mActiveSectionId ?
+//                mMenu.getSection(Integer.valueOf(mActiveSectionId.toString())) : // TODO: change API to take SectionId
+//                mMenu.getSection(0);
+        final FloatingTab firstTab = mScreen.createChainedTab("PRIMARY", null); // TODO:
+
         mScreen.getShadeView().show();
-        mScreen.getContentDisplay().anchorTo(activeTab);
-        mScreen.getContentDisplay().activeTabIs(activeTab);
-        mScreen.getContentDisplay().displayContent(mActiveSection.getContent());
-        activeTab.dockTo(mDock, new Runnable() {
+        mScreen.getContentDisplay().anchorTo(firstTab);
+//        mScreen.getContentDisplay().activeTabIs(activeTab);
+//        mScreen.getContentDisplay().displayContent(activeSection.getContent());
+        firstTab.dockTo(mDock, new Runnable() {
             @Override
             public void run() {
                 createChainedTabs();
                 chainTabs();
+
+                final FloatingTab activeTab;
+                if (null == mActiveSectionId || "0".equals(mActiveSectionId.toString())) {
+                    activeTab = mScreen.createChainedTab("PRIMARY", null); // TODO:
+                } else {
+                    activeTab = mScreen.createChainedTab(mActiveSectionId.toString(), null);
+                }
+                mScreen.getContentDisplay().activeTabIs(activeTab);
+
+                HoverMenu.Section activeSection = null != mActiveSectionId ?
+                        mMenu.getSection(Integer.valueOf(mActiveSectionId.toString())) : // TODO: change API to take SectionId
+                        mMenu.getSection(0);
+                mScreen.getContentDisplay().displayContent(activeSection.getContent());
 
                 if (null != mListener) {
                     mListener.onExpanded();
                 }
             }
         });
-        activeTab.setOnClickListener(new View.OnClickListener() {
+        firstTab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onTabSelected(activeTab);
+                onTabSelected(firstTab);
             }
         });
 
@@ -243,8 +278,8 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
 
     private void onTabSelected(@NonNull FloatingTab selectedTab) {
         HoverMenu.Section section = mSections.get(selectedTab);
-        if (!section.equals(mActiveSection)) {
-            mActiveSection = section;
+        if (!section.getId().equals(mActiveSectionId)) {
+            mActiveSectionId = section.getId();
             ContentDisplay contentDisplay = mScreen.getContentDisplay();
             contentDisplay.activeTabIs(selectedTab);
             contentDisplay.displayContent(section.getContent());

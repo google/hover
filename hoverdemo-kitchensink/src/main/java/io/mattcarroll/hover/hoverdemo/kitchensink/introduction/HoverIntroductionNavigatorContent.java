@@ -23,8 +23,8 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import de.greenrobot.event.EventBus;
-import io.mattcarroll.hover.Navigator;
-import io.mattcarroll.hover.NavigatorContent;
+import io.mattcarroll.hover.content.Navigator;
+import io.mattcarroll.hover.content.NavigatorContent;
 import io.mattcarroll.hover.hoverdemo.kitchensink.R;
 import io.mattcarroll.hover.hoverdemo.kitchensink.theming.HoverTheme;
 

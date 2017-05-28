@@ -20,12 +20,11 @@ import android.support.annotation.NonNull;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 
 import java.util.Stack;
 
-import io.mattcarroll.hover.Navigator;
-import io.mattcarroll.hover.NavigatorContent;
+import io.mattcarroll.hover.content.Navigator;
+import io.mattcarroll.hover.content.NavigatorContent;
 
 /**
  * Implementation of a {@link Navigator} without any decoration or special features.

@@ -46,6 +46,14 @@ public class MainActivity extends AppCompatActivity {
                 startService(startHoverIntent);
             }
         });
+
+        findViewById(R.id.button_launch_hover_reordering_sections).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent startHoverIntent = HelloWorldHoverMenuService.intentForReorderingSections(MainActivity.this);
+                startService(startHoverIntent);
+            }
+        });
     }
 
     @Override

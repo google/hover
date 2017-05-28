@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import de.greenrobot.event.EventBus;
-import io.mattcarroll.hover.NavigatorContent;
+import io.mattcarroll.hover.content.NavigatorContent;
 import io.mattcarroll.hover.defaulthovermenu.menus.DoNothingMenuAction;
 import io.mattcarroll.hover.defaulthovermenu.menus.Menu;
 import io.mattcarroll.hover.defaulthovermenu.menus.MenuItem;

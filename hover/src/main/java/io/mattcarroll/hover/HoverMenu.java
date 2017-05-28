@@ -15,8 +15,12 @@
  */
 package io.mattcarroll.hover;
 
+import android.content.SharedPreferences;
+import android.os.Parcel;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+
+import io.mattcarroll.hover.defaulthovermenu.HoverMenuView;
 
 /**
  * A {@code HoverMenu} is a menu that can appear either in a collapsed, draggable state, or in an expanded
@@ -53,6 +57,8 @@ public interface HoverMenu {
     String getVisualState();
 
     void restoreVisualState(@NonNull String savedVisualState);
+
+    HoverMenuView getHoverMenuView();
 
     void addOnExitListener(@NonNull OnExitListener onExitListener);
 

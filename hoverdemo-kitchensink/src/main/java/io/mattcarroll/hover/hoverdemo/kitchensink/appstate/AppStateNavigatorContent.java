@@ -23,8 +23,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
 
-import io.mattcarroll.hover.Navigator;
-import io.mattcarroll.hover.NavigatorContent;
+import io.mattcarroll.hover.content.Navigator;
+import io.mattcarroll.hover.content.NavigatorContent;
 import io.mattcarroll.hover.hoverdemo.kitchensink.Bus;
 import io.mattcarroll.hover.hoverdemo.kitchensink.R;
 import io.mattcarroll.hover.hoverdemo.kitchensink.theming.HoverTheme;

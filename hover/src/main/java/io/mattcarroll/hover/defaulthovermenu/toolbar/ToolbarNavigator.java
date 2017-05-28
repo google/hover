@@ -17,7 +17,7 @@ package io.mattcarroll.hover.defaulthovermenu.toolbar;
 
 import android.support.v7.widget.Toolbar;
 
-import io.mattcarroll.hover.Navigator;
+import io.mattcarroll.hover.content.Navigator;
 
 /**
  * A {@link Navigator} that offers a {@code Toolbar}.

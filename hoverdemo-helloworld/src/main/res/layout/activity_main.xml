@@ -47,4 +47,13 @@
         android:text="@string/button_launch_hover_changing_sections"
         />
 
+    <Button
+        android:id="@+id/button_launch_hover_reordering_sections"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/button_launch_hover_changing_sections"
+        android:layout_marginTop="16dp"
+        android:text="@string/button_launch_hover_reordering_sections"
+        />
+
 </RelativeLayout>

@@ -5,7 +5,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.0.0-alpha1'
+        classpath 'com.android.tools.build:gradle:3.0.0-alpha2'
 
         // For Bintray publishing
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.2'

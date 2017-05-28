@@ -16,11 +16,13 @@
 package io.mattcarroll.hover.defaulthovermenu.window;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.PointF;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
-import android.view.ViewConfiguration;
+import android.view.Surface;
+import android.view.View;
 import android.view.WindowManager;
 
 import org.json.JSONException;
@@ -31,7 +33,7 @@ import java.util.Set;
 
 import io.mattcarroll.hover.HoverMenu;
 import io.mattcarroll.hover.HoverMenuAdapter;
-import io.mattcarroll.hover.Navigator;
+import io.mattcarroll.hover.content.Navigator;
 import io.mattcarroll.hover.defaulthovermenu.ExitListener;
 import io.mattcarroll.hover.defaulthovermenu.HoverMenuView;
 
@@ -42,20 +44,20 @@ public class WindowHoverMenu implements HoverMenu {
 
     private static final String TAG = "WindowHoverMenu";
 
+    private WindowManager mWindowManager;
     private WindowViewController mWindowViewController; // Shows/hides/positions Views in a Window.
     private HoverMenuView mHoverMenuView;
     private boolean mIsShowingHoverMenu; // Are we currently display mHoverMenuView?
     private boolean mIsInDragMode; // If we're not in drag mode then we're in menu mode.
     private Set<OnExitListener> mOnExitListeners = new HashSet<>();
 
-    public WindowHoverMenu(@NonNull Context context, @NonNull WindowManager windowManager, @Nullable Navigator navigator, @Nullable String savedVisualState) {
+    public WindowHoverMenu(@NonNull Context context,
+                           @NonNull WindowManager windowManager,
+                           @Nullable Navigator navigator,
+                           @Nullable String savedVisualState,
+                           @Nullable SharedPreferences savedInstanceState) {
+        mWindowManager = windowManager;
         mWindowViewController = new WindowViewController(windowManager);
-
-//        InWindowDragger inWindowDragger = new InWindowDragger(
-//                context,
-//                mWindowViewController,
-//                ViewConfiguration.get(context).getScaledTouchSlop()
-//        );
 
         PointF anchorState = new PointF(2, 0.5f); // Default to right side, half way down. See CollapsedMenuAnchor.
         if (null != savedVisualState) {
@@ -67,13 +69,36 @@ public class WindowHoverMenu implements HoverMenu {
             }
         }
 
-        mHoverMenuView = HoverMenuView.createForWindow(context, mWindowViewController);
+        mHoverMenuView = HoverMenuView.createForWindow(context, savedInstanceState, mWindowViewController);
         mHoverMenuView.enableDebugMode(true);
         mHoverMenuView.setExitListener(new ExitListener() {
             @Override
             public void onExit() {
                 Log.d(TAG, "Hover menu has exited. Hiding from window.");
                 hide();
+            }
+        });
+
+        mHoverMenuView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                String rotation = "";
+                switch (mWindowManager.getDefaultDisplay().getRotation()) {
+                    case Surface.ROTATION_0:
+                        rotation = "portrait";
+                        break;
+                    case Surface.ROTATION_90:
+                        rotation = "landscape";
+                        break;
+                    case Surface.ROTATION_180:
+                        rotation = "upside down portrait";
+                        break;
+                    case Surface.ROTATION_270:
+                        rotation = "upside down landscape";
+                        break;
+                }
+
+                Log.d(TAG, "Rotation: " + rotation);
             }
         });
     }
@@ -106,7 +131,12 @@ public class WindowHoverMenu implements HoverMenu {
     @Override
     public void show() {
         if (!mIsShowingHoverMenu) {
-            mWindowViewController.addView(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT, false, mHoverMenuView);
+            mWindowViewController.addView(
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    false,
+                    mHoverMenuView
+            );
 
             // Sync our control state with the HoverMenuView state.
 //            if (mHoverMenuView.isExpanded()) {
@@ -157,6 +187,11 @@ public class WindowHoverMenu implements HoverMenu {
 //            mHoverMenuView.setHoverMenuTransitionListener(mHoverMenuTransitionListener);
 //            mHoverMenuView.collapse();
         }
+    }
+
+    @Override
+    public HoverMenuView getHoverMenuView() {
+        return mHoverMenuView;
     }
 
     @Override

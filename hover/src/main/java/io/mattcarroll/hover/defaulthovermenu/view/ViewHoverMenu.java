@@ -18,9 +18,12 @@ package io.mattcarroll.hover.defaulthovermenu.view;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.PointF;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -42,6 +45,8 @@ import io.mattcarroll.hover.defaulthovermenu.HoverMenuView;
  */
 public class ViewHoverMenu extends FrameLayout implements HoverMenu {
 
+    private static final String TAG = "ViewHoverMenu";
+
     private static final String PREFS_FILE = "viewhovermenu";
     private static final String PREFS_KEY_ANCHOR_SIDE = "anchor_side";
     private static final String PREFS_KEY_ANCHOR_Y = "anchor_y";
@@ -52,32 +57,45 @@ public class ViewHoverMenu extends FrameLayout implements HoverMenu {
     private SharedPreferences mPrefs;
     private Set<OnExitListener> mOnExitListeners = new HashSet<>();
 
-    public ViewHoverMenu(Context context) {
-        this(context, null);
+    public ViewHoverMenu(Context context, @Nullable SharedPreferences savedInstanceState) {
+        super(context);
+        init(savedInstanceState);
     }
 
     public ViewHoverMenu(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init();
+        init(null);
     }
 
-    private void init() {
+    private void init(@Nullable SharedPreferences savedInstanceState) {
         mPrefs = getContext().getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE);
+
+        int touchDiameter = getResources().getDimensionPixelSize(R.dimen.exit_radius);
+        mDragger = new InViewGroupDragger(this, touchDiameter, ViewConfiguration.get(getContext()).getScaledTouchSlop());
+        mDragger.enableDebugMode(BuildConfig.DEBUG);
+        mHoverMenuView = HoverMenuView.createForView(getContext(), savedInstanceState, this);
+        mHoverMenuView.setId(R.id.hovermenu);
+        addView(mHoverMenuView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+        if (null != mAdapter) {
+            mHoverMenuView.setAdapter(mAdapter);
+        }
     }
 
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
 
-        int touchDiameter = getResources().getDimensionPixelSize(R.dimen.exit_radius);
-        mDragger = new InViewGroupDragger(this, touchDiameter, ViewConfiguration.get(getContext()).getScaledTouchSlop());
-        mDragger.enableDebugMode(BuildConfig.DEBUG);
-        mHoverMenuView = HoverMenuView.createForView(getContext(), this);
-        addView(mHoverMenuView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-
-        if (null != mAdapter) {
-            mHoverMenuView.setAdapter(mAdapter);
-        }
+//        int touchDiameter = getResources().getDimensionPixelSize(R.dimen.exit_radius);
+//        mDragger = new InViewGroupDragger(this, touchDiameter, ViewConfiguration.get(getContext()).getScaledTouchSlop());
+//        mDragger.enableDebugMode(BuildConfig.DEBUG);
+//        mHoverMenuView = HoverMenuView.createForView(getContext(), null, this);
+//        mHoverMenuView.setId(R.id.hovermenu);
+//        addView(mHoverMenuView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+//
+//        if (null != mAdapter) {
+//            mHoverMenuView.setAdapter(mAdapter);
+//        }
     }
 
     @Override
@@ -136,6 +154,11 @@ public class ViewHoverMenu extends FrameLayout implements HoverMenu {
     public void collapseMenu() {
         // TODO: figure out programmatic expansion/collapse for hover view
 //        mHoverView.collapse();
+    }
+
+    @Override
+    public HoverMenuView getHoverMenuView() {
+        return mHoverMenuView;
     }
 
     @Override

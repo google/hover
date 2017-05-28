@@ -31,9 +31,6 @@ public interface Dragger {
      */
     void activate(@NonNull DragListener dragListener, @NonNull Point dragStartCenterPosition);
 
-    // TODO: legacy method used to avoid compile errors. delete this.
-    void activate(@NonNull DragListener dragListener, @NonNull Rect bounds);
-
     /**
      * Stops monitoring and reporting user drag behavior.
      */

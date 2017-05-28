@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.mattcarroll.hover.HoverMenuAdapter;
-import io.mattcarroll.hover.NavigatorContent;
+import io.mattcarroll.hover.content.NavigatorContent;
 
 /**
  * TODO:
@@ -112,7 +112,7 @@ class HoverMenu {
 
             private String mId;
 
-            private SectionId(@NonNull String id) {
+            public SectionId(@NonNull String id) {
                 mId = id;
             }
 

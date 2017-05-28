@@ -6,8 +6,8 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.TextView;
 
-import io.mattcarroll.hover.Navigator;
-import io.mattcarroll.hover.NavigatorContent;
+import io.mattcarroll.hover.content.Navigator;
+import io.mattcarroll.hover.content.NavigatorContent;
 
 /**
  * A screen that is displayed in our Hello World Hover Menu.

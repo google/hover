@@ -16,6 +16,7 @@
 package io.mattcarroll.hover.defaulthovermenu;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.ViewGroup;
@@ -23,7 +24,7 @@ import android.view.WindowManager;
 
 import io.mattcarroll.hover.HoverMenu;
 import io.mattcarroll.hover.HoverMenuAdapter;
-import io.mattcarroll.hover.Navigator;
+import io.mattcarroll.hover.content.Navigator;
 import io.mattcarroll.hover.defaulthovermenu.view.ViewHoverMenu;
 import io.mattcarroll.hover.defaulthovermenu.window.WindowHoverMenu;
 
@@ -41,6 +42,7 @@ public class HoverMenuBuilder {
     private Navigator mNavigator;
     private HoverMenuAdapter mAdapter;
     private String mSavedVisualState = null;
+    private SharedPreferences mSavedInstanceState = null;
 
     public HoverMenuBuilder(@NonNull Context context) {
         mContext = context;
@@ -72,13 +74,24 @@ public class HoverMenuBuilder {
         return this;
     }
 
+    public HoverMenuBuilder restoreState(@NonNull SharedPreferences savedInstanceState) {
+        mSavedInstanceState = savedInstanceState;
+        return this;
+    }
+
     public HoverMenu build() {
         if (DISPLAY_MODE_WINDOW == mDisplayMode) {
-            WindowHoverMenu windowHoverMenu = new WindowHoverMenu(mContext, mWindowManager, mNavigator, mSavedVisualState);
+            WindowHoverMenu windowHoverMenu = new WindowHoverMenu(
+                    mContext,
+                    mWindowManager,
+                    mNavigator,
+                    mSavedVisualState,
+                    mSavedInstanceState
+            );
             windowHoverMenu.setAdapter(mAdapter);
             return windowHoverMenu;
         } else {
-            ViewHoverMenu viewHoverMenu = new ViewHoverMenu(mContext);
+            ViewHoverMenu viewHoverMenu = new ViewHoverMenu(mContext, mSavedInstanceState);
             viewHoverMenu.setAdapter(mAdapter);
             return viewHoverMenu;
         }

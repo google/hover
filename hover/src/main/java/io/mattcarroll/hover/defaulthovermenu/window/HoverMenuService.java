@@ -26,7 +26,7 @@ import android.util.Log;
 
 import io.mattcarroll.hover.HoverMenu;
 import io.mattcarroll.hover.HoverMenuAdapter;
-import io.mattcarroll.hover.Navigator;
+import io.mattcarroll.hover.content.Navigator;
 import io.mattcarroll.hover.defaulthovermenu.HoverMenuBuilder;
 import io.mattcarroll.hover.overlay.OverlayPermission;
 
@@ -115,6 +115,7 @@ public abstract class HoverMenuService extends Service {
                 .useNavigator(createNavigator())
                 .useAdapter(adapter)
                 .restoreVisualState(loadPreferredLocation())
+                .restoreState(mPrefs)
                 .build();
         mHoverMenu.addOnExitListener(mWindowHoverMenuMenuExitListener);
     }
@@ -157,8 +158,10 @@ public abstract class HoverMenuService extends Service {
     }
 
     private void savePreferredLocation() {
-        String memento = mHoverMenu.getVisualState();
-        mPrefs.edit().putString(PREF_HOVER_MENU_VISUAL_STATE, memento).apply();
+        mHoverMenu.getHoverMenuView().saveStateToBundle(mPrefs.edit());
+
+//        String memento = mHoverMenu.getVisualState();
+//        mPrefs.edit().putString(PREF_HOVER_MENU_VISUAL_STATE, memento).apply();
     }
 
     private String loadPreferredLocation() {

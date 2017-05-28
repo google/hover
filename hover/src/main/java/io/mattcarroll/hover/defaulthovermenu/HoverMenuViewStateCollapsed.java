@@ -4,6 +4,9 @@ import android.graphics.Point;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.View;
+
+import static io.mattcarroll.hover.defaulthovermenu.SideDock.LEFT;
 
 /**
  * TODO
@@ -16,13 +19,26 @@ class HoverMenuViewStateCollapsed implements HoverMenuViewState {
     private Screen mScreen;
     private FloatingTab mFloatingTab;
     private Point mDropPoint; // Where the floating tab is dropped before seeking its initial dock.
-    private Point mDock;
+    private SideDock mSideDock;
     private boolean mHasControl = false;
+    private boolean mIsDocked = false;
     private Dragger.DragListener mDragListener;
     private Listener mListener;
 
+    private final View.OnLayoutChangeListener mOnLayoutChangeListener = new View.OnLayoutChangeListener() {
+        @Override
+        public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+            if (mHasControl && mIsDocked) {
+                // We're docked. Adjust the tab position in case the screen was rotated. This should
+                // only be a concern when displaying as a window overlay, but not when displaying
+                // within a view hierarchy.
+                moveToDock();
+            }
+        }
+    };
+
     public HoverMenuViewStateCollapsed(@NonNull Dragger dragger) {
-        this(dragger, null);
+        mDragger = dragger;
     }
 
     public HoverMenuViewStateCollapsed(@NonNull Dragger dragger, @Nullable Point dropPoint) {
@@ -30,8 +46,14 @@ class HoverMenuViewStateCollapsed implements HoverMenuViewState {
         mDropPoint = dropPoint;
     }
 
+    public HoverMenuViewStateCollapsed(@NonNull Dragger dragger, @Nullable SideDock sideDock) {
+        mDragger = dragger;
+        mSideDock = sideDock;
+    }
+
     @Override
     public void takeControl(@NonNull Screen screen) {
+        Log.d(TAG, "Taking control.");
         if (mHasControl) {
             throw new RuntimeException("Cannot take control of a FloatingTab when we already control one.");
         }
@@ -42,16 +64,23 @@ class HoverMenuViewStateCollapsed implements HoverMenuViewState {
         mFloatingTab = screen.createChainedTab("PRIMARY", null); // TODO:
         mDragListener = new FloatingTabDragListener(this);
         createDock();
+//        moveToDock();
         sendToDock();
+
+        mFloatingTab.addOnLayoutChangeListener(mOnLayoutChangeListener);
     }
 
     @Override
     public void giveControlTo(@NonNull HoverMenuViewState otherController) {
+        Log.d(TAG, "Giving up control.");
         if (!mHasControl) {
             throw new RuntimeException("Cannot give control to another HoverMenuController when we don't have the HoverTab.");
         }
 
+        mFloatingTab.removeOnLayoutChangeListener(mOnLayoutChangeListener);
+
         mHasControl = false;
+        mIsDocked = false;
         mDragger.deactivate();
         mDragListener = null;
         otherController.takeControl(mScreen);
@@ -60,8 +89,8 @@ class HoverMenuViewStateCollapsed implements HoverMenuViewState {
     }
 
     @NonNull
-    public Point getDock() {
-        return mDock;
+    public SideDock getDock() {
+        return mSideDock;
     }
 
     public void setListener(@Nullable Listener listener) {
@@ -70,26 +99,33 @@ class HoverMenuViewStateCollapsed implements HoverMenuViewState {
 
     private void onPickedUpByUser() {
         if (null != mListener) {
+            mIsDocked = false;
             mListener.onDragStart();
         }
     }
 
     private void onDroppedByUser() {
-        mDock = calculateDockPosition(mFloatingTab.getPosition());
-
         if (null != mListener) {
             mListener.onDragEnd();
         }
 
         boolean droppedOnExit = mScreen.getExitView().isInExitZone(mFloatingTab.getPosition());
         if (droppedOnExit && null != mListener) {
+            Log.d(TAG, "User dropped floating tab on exit.");
             mListener.onDroppedOnExit();
         } else {
+            mSideDock = new SideDock(
+                    mFloatingTab.getPosition(),
+                    new Point(mScreen.getWidth(), mScreen.getHeight())
+            );
+            Log.d(TAG, "User dropped tab. Sending to new dock: " + mSideDock);
+
             sendToDock();
         }
     }
 
     private void onTap() {
+        Log.d(TAG, "Floating tab was tapped.");
         if (null != mListener) {
             mListener.onTap();
         }
@@ -97,7 +133,11 @@ class HoverMenuViewStateCollapsed implements HoverMenuViewState {
 
     private void sendToDock() {
         deactivateDragger();
-        mFloatingTab.dockTo(mDock, new Runnable() {
+        Point dockPosition = mSideDock.calculateDockPosition(
+                new Point(mScreen.getWidth(), mScreen.getHeight()),
+                mFloatingTab.getTabSize()
+        );
+        mFloatingTab.dockTo(dockPosition, new Runnable() {
             @Override
             public void run() {
                 onDocked();
@@ -105,33 +145,37 @@ class HoverMenuViewStateCollapsed implements HoverMenuViewState {
         });
     }
 
+    private void moveToDock() {
+        deactivateDragger();
+        Point dockPosition = mSideDock.calculateDockPosition(
+                new Point(mScreen.getWidth(), mScreen.getHeight()),
+                mFloatingTab.getTabSize()
+        );
+        mFloatingTab.moveTo(dockPosition);
+
+//        mFloatingTab.post(new Runnable() {
+//            @Override
+//            public void run() {
+                onDocked();
+//            }
+//        });
+    }
+
     private void createDock() {
-        if (null == mDock) {
-            mDock = null != mDropPoint ?
-                    calculateDockPosition(mDropPoint) :
+        if (null == mSideDock) {
+            mSideDock = null != mDropPoint ?
+                    new SideDock(mDropPoint, new Point(mScreen.getWidth(), mScreen.getHeight())):
                     createInitialDock();
         }
     }
 
-    private Point createInitialDock() {
-        Point artificialInitialDropPoint = new Point(0, mScreen.getHeight() / 2);
-        Log.d(TAG, "Initial dock.  Screen height: " + mScreen.getHeight()
-                + ", artificial drop point: " + artificialInitialDropPoint);
-        return calculateDockPosition(artificialInitialDropPoint);
-    }
-
-    private Point calculateDockPosition(@NonNull Point dropPosition) {
-        Point newAnchorPosition;
-        int dockInset = mFloatingTab.getTabSize() / 4;
-        if (dropPosition.x < (mScreen.getWidth() / 2)) {
-            newAnchorPosition = new Point(dockInset, dropPosition.y);
-        } else {
-            newAnchorPosition = new Point(mScreen.getWidth() - dockInset, dropPosition.y);
-        }
-        return newAnchorPosition;
+    private SideDock createInitialDock() {
+        return new SideDock(0.5f, LEFT);
     }
 
     private void onDocked() {
+        Log.d(TAG, "Docked. Activating dragger.");
+        mIsDocked = true;
         activateDragger();
 
         if (null != mListener) {

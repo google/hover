@@ -3,6 +3,7 @@ package io.mattcarroll.hover.defaulthovermenu;
 import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Point;
@@ -23,7 +24,6 @@ import io.mattcarroll.hover.R;
 /**
  * TODO
  */
-
 class FloatingTab extends FrameLayout implements Tab {
 
     private static final String TAG = "FloatingTab";
@@ -81,7 +81,6 @@ class FloatingTab extends FrameLayout implements Tab {
         scaleY.setDuration(250);
         animatorSet.playTogether(scaleX, scaleY);
         animatorSet.start();
-
 
         animatorSet.addListener(new Animator.AnimatorListener() {
             @Override
@@ -186,19 +185,6 @@ class FloatingTab extends FrameLayout implements Tab {
         return mDock;
     }
 
-    @NonNull
-    public Rect getBounds() {
-        Point cornerPosition = getCornerPosition();
-        return new Rect(cornerPosition.x, cornerPosition.y, cornerPosition.x + getTabSize(), cornerPosition.y + getTabSize());
-    }
-
-    private Point getCornerPosition() {
-        return new Point(
-                (int) getX(),
-                (int) getY()
-        );
-    }
-
     public void setDockPosition(@NonNull Point dock) {
         mDock = dock;
     }
@@ -208,6 +194,13 @@ class FloatingTab extends FrameLayout implements Tab {
     }
 
     public void dockTo(@NonNull Point dock, @Nullable final Runnable onDocked) {
+        if (dock.equals(mDock)) {
+            if (null != onDocked) {
+                onDocked.run();
+            }
+            return;
+        }
+
         mDock = dock;
         Point destinationCornerPosition = convertCenterToCorner(mDock);
         Log.d(TAG, "Docking to destination point: " + destinationCornerPosition);
@@ -222,23 +215,31 @@ class FloatingTab extends FrameLayout implements Tab {
         animatorSet.play(xAnimation).with(yAnimation);
         animatorSet.start();
 
-        if (null != onDocked) {
-            animatorSet.addListener(new Animator.AnimatorListener() {
-                @Override
-                public void onAnimationStart(Animator animation) { }
+        animatorSet.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) { }
 
-                @Override
-                public void onAnimationEnd(Animator animation) {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (null != onDocked) {
                     onDocked.run();
                 }
+                notifyOnPositionChangeListeners();
+            }
 
-                @Override
-                public void onAnimationCancel(Animator animation) { }
+            @Override
+            public void onAnimationCancel(Animator animation) { }
 
-                @Override
-                public void onAnimationRepeat(Animator animation) { }
-            });
-        }
+            @Override
+            public void onAnimationRepeat(Animator animation) { }
+        });
+
+        xAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                notifyOnPositionChangeListeners();
+            }
+        });
     }
 
     public void moveTo(@NonNull Point floatPosition) {
