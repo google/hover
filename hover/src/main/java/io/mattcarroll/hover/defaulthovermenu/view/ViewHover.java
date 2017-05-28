@@ -28,15 +28,15 @@ import java.util.HashSet;
 import java.util.Set;
 
 import io.mattcarroll.hover.BuildConfig;
-import io.mattcarroll.hover.Hover;
 import io.mattcarroll.hover.R;
+import io.mattcarroll.hover.defaulthovermenu.ExitListener;
 import io.mattcarroll.hover.defaulthovermenu.HoverMenu;
 import io.mattcarroll.hover.defaulthovermenu.HoverMenuView;
 
 /**
  * {@link Hover} implementation that can be embedded in traditional view hierarchies.
  */
-public class ViewHover extends FrameLayout implements Hover {
+public class ViewHover extends FrameLayout {
 
     private static final String TAG = "ViewHover";
 
@@ -46,7 +46,7 @@ public class ViewHover extends FrameLayout implements Hover {
     private InViewGroupDragger mDragger;
     private HoverMenu mMenu;
     private SharedPreferences mPrefs;
-    private Set<OnExitListener> mOnExitListeners = new HashSet<>();
+    private Set<ExitListener> mOnExitListeners = new HashSet<>();
 
     public ViewHover(Context context, @Nullable SharedPreferences savedInstanceState) {
         super(context);
@@ -81,7 +81,6 @@ public class ViewHover extends FrameLayout implements Hover {
         super.onDetachedFromWindow();
     }
 
-    @Override
     public void setMenu(@Nullable io.mattcarroll.hover.defaulthovermenu.HoverMenu menu) {
         mMenu = menu;
         if (null != mMenu && null != mHoverMenuView) {
@@ -89,46 +88,39 @@ public class ViewHover extends FrameLayout implements Hover {
         }
     }
 
-    @Override
     public void show() {
         // TODO:
     }
 
-    @Override
     public void hide() {
         // TODO:
     }
 
-    @Override
     public void expandMenu() {
         // TODO: figure out programmatic expansion/collapse for hover view
 //        mHoverView.expand();
     }
 
-    @Override
     public void collapseMenu() {
         // TODO: figure out programmatic expansion/collapse for hover view
 //        mHoverView.collapse();
     }
 
-    @Override
     public HoverMenuView getHoverMenuView() {
         return mHoverMenuView;
     }
 
-    @Override
-    public void addOnExitListener(@NonNull OnExitListener onExitListener) {
+    public void addOnExitListener(@NonNull ExitListener onExitListener) {
         mOnExitListeners.add(onExitListener);
     }
 
-    @Override
-    public void removeOnExitListener(@NonNull OnExitListener onExitListener) {
+    public void removeOnExitListener(@NonNull ExitListener onExitListener) {
         mOnExitListeners.remove(onExitListener);
     }
 
     private void notifyOnExitListeners() {
-        for (OnExitListener listener : mOnExitListeners) {
-            listener.onExitByUserRequest();
+        for (ExitListener listener : mOnExitListeners) {
+            listener.onExit();
         }
     }
 

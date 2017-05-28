@@ -23,11 +23,12 @@ import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.WindowManager;
 
-import io.mattcarroll.hover.Hover;
 import io.mattcarroll.hover.HoverMenuAdapter;
 import io.mattcarroll.hover.content.Navigator;
-import io.mattcarroll.hover.defaulthovermenu.HoverMenuBuilder;
+import io.mattcarroll.hover.defaulthovermenu.ExitListener;
+import io.mattcarroll.hover.defaulthovermenu.HoverMenuView;
 import io.mattcarroll.hover.overlay.OverlayPermission;
 
 /**
@@ -47,15 +48,15 @@ public abstract class HoverMenuService extends Service {
     private static final String PREF_FILE = "hover_menu";
     private static final String PREF_HOVER_MENU_VISUAL_STATE = "hover_menu_visual_state";
 
-    private Hover mHover;
+    private HoverMenuView mHoverMenuView;
     private boolean mIsRunning;
     private SharedPreferences mPrefs;
-    private Hover.OnExitListener mWindowHoverMenuMenuExitListener = new Hover.OnExitListener() {
+    private ExitListener mOnMenuExitListener = new ExitListener() {
         @Override
-        public void onExitByUserRequest() {
-            Log.d(TAG, "Menu exit requested.");
+        public void onExit() {
+            Log.d(TAG, "Menu exit requested. Exiting.");
             savePreferredLocation();
-            mHover.hide();
+            mHoverMenuView.removeFromWindow();
             onHoverMenuExitingByUserRequest();
             stopSelf();
         }
@@ -87,7 +88,7 @@ public abstract class HoverMenuService extends Service {
             Log.d(TAG, "onStartCommand() - showing Hover menu.");
             mIsRunning = true;
             initHoverMenu(intent);
-            mHover.show();
+            mHoverMenuView.addToWindow();
         }
 
         return START_STICKY;
@@ -97,7 +98,7 @@ public abstract class HoverMenuService extends Service {
     public void onDestroy() {
         Log.d(TAG, "onDestroy()");
         if (mIsRunning) {
-            mHover.hide();
+            mHoverMenuView.removeFromWindow();
             mIsRunning = false;
         }
     }
@@ -111,15 +112,14 @@ public abstract class HoverMenuService extends Service {
     private void initHoverMenu(@NonNull Intent intent) {
         HoverMenuAdapter adapter = createHoverMenuAdapter(intent);
         io.mattcarroll.hover.defaulthovermenu.HoverMenu menu = new io.mattcarroll.hover.defaulthovermenu.HoverMenu(adapter);
-        mHover = new HoverMenuBuilder(getContextForHoverMenu())
-                .displayWithinWindow()
-                .useNavigator(createNavigator())
-//                .useAdapter(adapter)
-                .useMenu(menu)
-                .restoreVisualState(loadPreferredLocation())
-                .restoreState(mPrefs)
-                .build();
-        mHover.addOnExitListener(mWindowHoverMenuMenuExitListener);
+
+        mHoverMenuView = HoverMenuView.createForWindow(
+                this,
+                mPrefs,
+                new WindowViewController((WindowManager) getSystemService(Context.WINDOW_SERVICE))
+        );
+        mHoverMenuView.setMenu(menu);
+        mHoverMenuView.setExitListener(mOnMenuExitListener);
     }
 
     /**
@@ -160,7 +160,8 @@ public abstract class HoverMenuService extends Service {
     }
 
     private void savePreferredLocation() {
-        mHover.getHoverMenuView().saveStateToBundle(mPrefs.edit());
+//        mHover.getHoverMenuView().saveStateToBundle(mPrefs.edit());
+        mHoverMenuView.saveStateToBundle(mPrefs.edit());
 
 //        String memento = mHoverMenu.getVisualState();
 //        mPrefs.edit().putString(PREF_HOVER_MENU_VISUAL_STATE, memento).apply();

@@ -91,6 +91,7 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
             for (int i = 0; i < mMenu.getSectionCount(); ++i) {
                 HoverMenu.Section section = mMenu.getSection(i);
                 View tabView = section.getTabView();
+                Log.d(TAG, "Creating tab view for: " + section.getId().toString());
                 final FloatingTab chainedTab = mScreen.createChainedTab(section.getId().toString(), tabView);
                 Log.d(TAG, "Created FloatingTab for ID " + section.getId().toString());
 

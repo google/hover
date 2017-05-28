@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.RelativeLayout;
 
 import io.mattcarroll.hover.R;
@@ -74,6 +75,7 @@ public class HoverMenuView extends RelativeLayout {
     private HoverMenuViewStateExpanded mExpandedMenu;
     private String mSelectedSectionId;
     private HoverMenu mMenu;
+    private boolean mIsAddedToWindow;
     private boolean mIsExpanded = false;
     private ExitListener mExitListener;
     private boolean mIsDebugMode = false;
@@ -115,6 +117,9 @@ public class HoverMenuView extends RelativeLayout {
         // Start collapsed.
         if (null != mWindowViewController) {
             mWindowViewController.makeUntouchable(this);
+        }
+        if (null == mSelectedSectionId) {
+            mSelectedSectionId = mMenu.getSection(0).getId().toString();
         }
         createCollapsedMenu();
         mCollapsedMenu.takeControl(mScreen, mSelectedSectionId);
@@ -274,6 +279,27 @@ public class HoverMenuView extends RelativeLayout {
                 }
             }
         });
+    }
+
+    // Only call this if using HoverMenuView directly in a window.
+    public void addToWindow() {
+        if (!mIsAddedToWindow) {
+            mWindowViewController.addView(
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    false,
+                    this
+            );
+
+            mIsAddedToWindow = true;
+        }
+    }
+
+    // Only call this if using HoverMenuView directly in a window.
+    public void removeFromWindow() {
+        if (null != mWindowViewController) {
+            mWindowViewController.removeView(this);
+        }
     }
 
     private static class SavedState extends BaseSavedState {

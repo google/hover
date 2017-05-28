@@ -1,6 +1,7 @@
 package io.mattcarroll.hover.defaulthovermenu;
 
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -14,6 +15,8 @@ import static android.view.View.GONE;
  * TODO:
  */
 class Screen {
+
+    private static final String TAG = "Screen";
 
     private ViewGroup mContainer;
     private ContentDisplay mContentDisplay;
@@ -62,6 +65,10 @@ class Screen {
     }
 
     public FloatingTab createChainedTab(@NonNull String tabId, @NonNull View tabView) {
+        Log.d(TAG, "Existing tabs...");
+        for (String existingTabId : mTabs.keySet()) {
+            Log.d(TAG, existingTabId);
+        }
         if (mTabs.containsKey(tabId)) {
             return mTabs.get(tabId);
         } else {

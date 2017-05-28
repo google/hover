@@ -62,9 +62,12 @@ class HoverMenuViewStateCollapsed implements HoverMenuViewState {
 
         Log.d(TAG, "Instructing tab to dock itself.");
         mHasControl = true;
-        mPrimaryTabId = primaryTabId;
         mScreen = screen;
-        mFloatingTab = screen.createChainedTab(mPrimaryTabId, mMenu.getSection(new HoverMenu.Section.SectionId(mPrimaryTabId)).getTabView());
+        mPrimaryTabId = primaryTabId;
+        Log.d(TAG, "Taking control with primary tab: " + mPrimaryTabId);
+        HoverMenu.Section section = mMenu.getSection(new HoverMenu.Section.SectionId(mPrimaryTabId));
+        section = null != section ? section : mMenu.getSection(0);
+        mFloatingTab = screen.createChainedTab(mPrimaryTabId, section.getTabView());
         mDragListener = new FloatingTabDragListener(this);
         createDock();
         sendToDock();
