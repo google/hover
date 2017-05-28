@@ -15,11 +15,10 @@
  */
 package io.mattcarroll.hover;
 
-import android.content.SharedPreferences;
-import android.os.Parcel;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import io.mattcarroll.hover.defaulthovermenu.HoverMenu;
 import io.mattcarroll.hover.defaulthovermenu.HoverMenuView;
 
 /**
@@ -30,7 +29,7 @@ import io.mattcarroll.hover.defaulthovermenu.HoverMenuView;
  * Content in the {@code HoverMenu} is provided by a given {@link HoverMenuAdapter}. {@code HoverMenuAdapter}s
  * work in a similar fashion to a traditional Android {@code ListAdapter}.
  */
-public interface HoverMenu {
+public interface Hover {
 
     void show();
 
@@ -47,16 +46,11 @@ public interface HoverMenu {
     void collapseMenu();
 
     /**
-     * Sets the {@link HoverMenuAdapter} that is used to determine what tabs and content should be
-     * displayed in this {@code HoverMenu}.
-     *
-     * @param adapter adapter to provide content for this {@code HoverMenu}
+     * Sets the {@link Hover} that is used to determine what tabs and content should be displayed
+     * in this {@code HoverMenu}.
+     * @param menu
      */
-    void setAdapter(@Nullable HoverMenuAdapter adapter);
-
-    String getVisualState();
-
-    void restoreVisualState(@NonNull String savedVisualState);
+    void setMenu(@Nullable HoverMenu menu);
 
     HoverMenuView getHoverMenuView();
 

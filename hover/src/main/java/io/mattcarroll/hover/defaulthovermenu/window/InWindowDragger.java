@@ -119,6 +119,7 @@ public class InWindowDragger implements Dragger {
 
     public void activate(@NonNull DragListener dragListener, @NonNull Point dragStartCenterPosition) {
         if (!mIsActivated) {
+            Log.d(TAG, "Activating.");
             createTouchControlView(dragStartCenterPosition);
             mDragListener = dragListener;
             mDragView.setOnTouchListener(mDragTouchListener);
@@ -128,6 +129,7 @@ public class InWindowDragger implements Dragger {
 
     public void deactivate() {
         if (mIsActivated) {
+            Log.d(TAG, "Deactivating.");
             mDragView.setOnTouchListener(null);
             destroyTouchControlView();
             mIsActivated = false;

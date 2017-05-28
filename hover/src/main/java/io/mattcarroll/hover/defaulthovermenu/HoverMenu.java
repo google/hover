@@ -16,7 +16,7 @@ import io.mattcarroll.hover.content.NavigatorContent;
 /**
  * TODO:
  */
-class HoverMenu {
+public class HoverMenu {
 
     private static final String TAG = "HoverMenu";
 

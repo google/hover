@@ -59,7 +59,7 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
         if (null != mMenu) {
             // TODO: it doesn't look like the initial tabs are being chained...
             // TODO: We shouldn't need to treat the first tab differently any more...
-            FloatingTab firstTab = mScreen.createChainedTab("PRIMARY", null);
+            FloatingTab firstTab = mScreen.createChainedTab("0", null);
             mChainedTabs.add(firstTab);
             mTabChains.add(new TabChain(firstTab));
             mSections.put(firstTab, mMenu.getSection(0)); // TODO: we need to use an ID with the menu, not an index
@@ -234,7 +234,7 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
 //        HoverMenu.Section activeSection = null != mActiveSectionId ?
 //                mMenu.getSection(Integer.valueOf(mActiveSectionId.toString())) : // TODO: change API to take SectionId
 //                mMenu.getSection(0);
-        final FloatingTab firstTab = mScreen.createChainedTab("PRIMARY", null); // TODO:
+        final FloatingTab firstTab = mScreen.createChainedTab("0", null); // TODO:
 
         mScreen.getShadeView().show();
         mScreen.getContentDisplay().anchorTo(firstTab);
@@ -248,7 +248,7 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
 
                 final FloatingTab activeTab;
                 if (null == mActiveSectionId || "0".equals(mActiveSectionId.toString())) {
-                    activeTab = mScreen.createChainedTab("PRIMARY", null); // TODO:
+                    activeTab = mScreen.createChainedTab("0", null); // TODO:
                 } else {
                     activeTab = mScreen.createChainedTab(mActiveSectionId.toString(), null);
                 }

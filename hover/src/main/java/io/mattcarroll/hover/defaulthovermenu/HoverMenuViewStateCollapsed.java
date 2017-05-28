@@ -61,10 +61,9 @@ class HoverMenuViewStateCollapsed implements HoverMenuViewState {
         Log.d(TAG, "Instructing tab to dock itself.");
         mHasControl = true;
         mScreen = screen;
-        mFloatingTab = screen.createChainedTab("PRIMARY", null); // TODO:
+        mFloatingTab = screen.createChainedTab("0", null); // TODO:
         mDragListener = new FloatingTabDragListener(this);
         createDock();
-//        moveToDock();
         sendToDock();
 
         mFloatingTab.addOnLayoutChangeListener(mOnLayoutChangeListener);
@@ -132,6 +131,7 @@ class HoverMenuViewStateCollapsed implements HoverMenuViewState {
     }
 
     private void sendToDock() {
+        Log.d(TAG, "Sending floating tab to dock.");
         deactivateDragger();
         Point dockPosition = mSideDock.calculateDockPosition(
                 new Point(mScreen.getWidth(), mScreen.getHeight()),
@@ -146,19 +146,14 @@ class HoverMenuViewStateCollapsed implements HoverMenuViewState {
     }
 
     private void moveToDock() {
+        Log.d(TAG, "Moving floating tag to dock.");
         deactivateDragger();
         Point dockPosition = mSideDock.calculateDockPosition(
                 new Point(mScreen.getWidth(), mScreen.getHeight()),
                 mFloatingTab.getTabSize()
         );
         mFloatingTab.moveTo(dockPosition);
-
-//        mFloatingTab.post(new Runnable() {
-//            @Override
-//            public void run() {
-                onDocked();
-//            }
-//        });
+        activateDragger();
     }
 
     private void createDock() {

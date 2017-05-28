@@ -22,7 +22,8 @@ import android.view.ContextThemeWrapper;
 
 import java.io.IOException;
 
-import io.mattcarroll.hover.defaulthovermenu.view.ViewHoverMenu;
+import io.mattcarroll.hover.defaulthovermenu.HoverMenu;
+import io.mattcarroll.hover.defaulthovermenu.view.ViewHover;
 
 /**
  * Presents a Hover menu within an Activity (instead of presenting it on top of all other Windows).
@@ -31,7 +32,7 @@ public class DemoHoverMenuActivity extends Activity {
 
     private static final String TAG = "HoverMenuActivity";
 
-    private ViewHoverMenu mHoverMenuView;
+    private ViewHover mHoverMenuView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,10 +43,9 @@ public class DemoHoverMenuActivity extends Activity {
         try {
             final ContextThemeWrapper contextThemeWrapper = new ContextThemeWrapper(this, R.style.AppTheme);
             DemoHoverMenuAdapter adapter = new DemoHoverMenuFactory().createDemoMenuFromCode(contextThemeWrapper, Bus.getInstance());
-//            DemoHoverMenuAdapter adapter = new DemoHoverMenuFactory().createDemoMenuFromFile(contextThemeWrapper);
 
-            mHoverMenuView = (ViewHoverMenu) findViewById(R.id.hovermenu);
-            mHoverMenuView.setAdapter(adapter);
+            mHoverMenuView = (ViewHover) findViewById(R.id.hovermenu);
+            mHoverMenuView.setMenu(new HoverMenu(adapter));
         } catch (IOException e) {
             Log.e(TAG, "Failed to create demo menu from file.");
             e.printStackTrace();

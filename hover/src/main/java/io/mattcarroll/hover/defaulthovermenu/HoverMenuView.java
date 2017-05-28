@@ -2,8 +2,6 @@ package io.mattcarroll.hover.defaulthovermenu;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Point;
-import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
@@ -14,7 +12,6 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
-import io.mattcarroll.hover.HoverMenuAdapter;
 import io.mattcarroll.hover.R;
 import io.mattcarroll.hover.defaulthovermenu.view.InViewGroupDragger;
 import io.mattcarroll.hover.defaulthovermenu.window.InWindowDragger;
@@ -76,7 +73,7 @@ public class HoverMenuView extends RelativeLayout {
     private SideDock mCollapsedDock;
     private HoverMenuViewStateExpanded mExpandedMenu;
     private String mSelectedSectionId;
-    private HoverMenuAdapter mAdapter;
+    private HoverMenu mMenu;
     private boolean mIsInitialized;
     private boolean mIsExpanded = false;
     private ExitListener mExitListener;
@@ -119,8 +116,8 @@ public class HoverMenuView extends RelativeLayout {
         Log.d(TAG, "initAfterInitialLayout() " + hashCode());
         mIsInitialized = true;
 
-        if (null != mAdapter) {
-            applyAdapter();
+        if (null != mMenu) {
+            applyMenu();
         }
 
         // Start collapsed.
@@ -194,16 +191,16 @@ public class HoverMenuView extends RelativeLayout {
         mExitListener = listener;
     }
 
-    public void setAdapter(@Nullable HoverMenuAdapter adapter) {
-        mAdapter = adapter;
+    public void setMenu(@Nullable HoverMenu menu) {
+        mMenu = menu;
         if (mIsInitialized) {
-            applyAdapter();
+            applyMenu();
         }
     }
 
-    private void applyAdapter() {
-        View floatingTabView = mAdapter.getTabView(0);
-        mScreen.createChainedTab("PRIMARY", floatingTabView);
+    private void applyMenu() {
+        View floatingTabView = mMenu.getSection(0).getTabView();
+        mScreen.createChainedTab("0", floatingTabView);
     }
 
     private void expand() {
@@ -238,7 +235,7 @@ public class HoverMenuView extends RelativeLayout {
                 collapse();
             }
         });
-        mExpandedMenu.setMenu(new HoverMenu(mAdapter));
+        mExpandedMenu.setMenu(mMenu);
     }
 
     private void collapse() {

@@ -274,7 +274,7 @@ public class HelloWorldHoverMenuService extends HoverMenuService {
 
         MutatingAdapter(@NonNull Context context) {
             mContext = context;
-            mTabIds.add("PRIMARY");
+            mTabIds.add("0");
             mTabViews.add(createTabView());
             mTabContents.add(new HoverMenuScreen(mContext, "Screen 1"));
 
@@ -389,7 +389,7 @@ public class HelloWorldHoverMenuService extends HoverMenuService {
 
         ReorderingSectionHoverMenuAdapter(@NonNull Context context) {
             mContext = context;
-            mTabIds.add("PRIMARY");
+            mTabIds.add("0");
             mTabViews.add(createTabView());
             mTabContents.add(new HoverMenuScreen(mContext, "Screen 1"));
 

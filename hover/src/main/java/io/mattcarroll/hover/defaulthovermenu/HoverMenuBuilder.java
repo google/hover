@@ -22,14 +22,13 @@ import android.support.annotation.Nullable;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 
-import io.mattcarroll.hover.HoverMenu;
-import io.mattcarroll.hover.HoverMenuAdapter;
+import io.mattcarroll.hover.Hover;
 import io.mattcarroll.hover.content.Navigator;
-import io.mattcarroll.hover.defaulthovermenu.view.ViewHoverMenu;
-import io.mattcarroll.hover.defaulthovermenu.window.WindowHoverMenu;
+import io.mattcarroll.hover.defaulthovermenu.view.ViewHover;
+import io.mattcarroll.hover.defaulthovermenu.window.WindowHover;
 
 /**
- * Builds a {@link HoverMenu}.
+ * Builds a {@link Hover}.
  */
 public class HoverMenuBuilder {
 
@@ -40,7 +39,7 @@ public class HoverMenuBuilder {
     private int mDisplayMode = DISPLAY_MODE_WINDOW;
     private WindowManager mWindowManager;
     private Navigator mNavigator;
-    private HoverMenuAdapter mAdapter;
+    private io.mattcarroll.hover.defaulthovermenu.HoverMenu mMenu;
     private String mSavedVisualState = null;
     private SharedPreferences mSavedInstanceState = null;
 
@@ -64,8 +63,8 @@ public class HoverMenuBuilder {
         return this;
     }
 
-    public HoverMenuBuilder useAdapter(@Nullable HoverMenuAdapter adapter) {
-        mAdapter = adapter;
+    public HoverMenuBuilder useMenu(@Nullable io.mattcarroll.hover.defaulthovermenu.HoverMenu menu) {
+        mMenu = menu;
         return this;
     }
 
@@ -79,20 +78,19 @@ public class HoverMenuBuilder {
         return this;
     }
 
-    public HoverMenu build() {
+    public Hover build() {
         if (DISPLAY_MODE_WINDOW == mDisplayMode) {
-            WindowHoverMenu windowHoverMenu = new WindowHoverMenu(
+            WindowHover windowHoverMenu = new WindowHover(
                     mContext,
                     mWindowManager,
                     mNavigator,
-                    mSavedVisualState,
                     mSavedInstanceState
             );
-            windowHoverMenu.setAdapter(mAdapter);
+            windowHoverMenu.setMenu(mMenu);
             return windowHoverMenu;
         } else {
-            ViewHoverMenu viewHoverMenu = new ViewHoverMenu(mContext, mSavedInstanceState);
-            viewHoverMenu.setAdapter(mAdapter);
+            ViewHover viewHoverMenu = new ViewHover(mContext, mSavedInstanceState);
+            viewHoverMenu.setMenu(mMenu);
             return viewHoverMenu;
         }
     }

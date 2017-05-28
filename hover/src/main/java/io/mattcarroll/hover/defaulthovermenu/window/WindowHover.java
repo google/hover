@@ -17,7 +17,6 @@ package io.mattcarroll.hover.defaulthovermenu.window;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.PointF;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -25,22 +24,18 @@ import android.view.Surface;
 import android.view.View;
 import android.view.WindowManager;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.HashSet;
 import java.util.Set;
 
-import io.mattcarroll.hover.HoverMenu;
-import io.mattcarroll.hover.HoverMenuAdapter;
+import io.mattcarroll.hover.Hover;
 import io.mattcarroll.hover.content.Navigator;
 import io.mattcarroll.hover.defaulthovermenu.ExitListener;
 import io.mattcarroll.hover.defaulthovermenu.HoverMenuView;
 
 /**
- * {@link HoverMenu} implementation that displays within a {@code Window}.
+ * {@link Hover} implementation that displays within a {@code Window}.
  */
-public class WindowHoverMenu implements HoverMenu {
+public class WindowHover implements Hover {
 
     private static final String TAG = "WindowHoverMenu";
 
@@ -48,26 +43,14 @@ public class WindowHoverMenu implements HoverMenu {
     private WindowViewController mWindowViewController; // Shows/hides/positions Views in a Window.
     private HoverMenuView mHoverMenuView;
     private boolean mIsShowingHoverMenu; // Are we currently display mHoverMenuView?
-    private boolean mIsInDragMode; // If we're not in drag mode then we're in menu mode.
     private Set<OnExitListener> mOnExitListeners = new HashSet<>();
 
-    public WindowHoverMenu(@NonNull Context context,
-                           @NonNull WindowManager windowManager,
-                           @Nullable Navigator navigator,
-                           @Nullable String savedVisualState,
-                           @Nullable SharedPreferences savedInstanceState) {
+    public WindowHover(@NonNull Context context,
+                       @NonNull WindowManager windowManager,
+                       @Nullable Navigator navigator,
+                       @Nullable SharedPreferences savedInstanceState) {
         mWindowManager = windowManager;
         mWindowViewController = new WindowViewController(windowManager);
-
-        PointF anchorState = new PointF(2, 0.5f); // Default to right side, half way down. See CollapsedMenuAnchor.
-        if (null != savedVisualState) {
-            try {
-                VisualStateMemento visualStateMemento = VisualStateMemento.fromJsonString(savedVisualState);
-                anchorState.set(visualStateMemento.getAnchorSide(), visualStateMemento.getNormalizedPositionY());
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
 
         mHoverMenuView = HoverMenuView.createForWindow(context, savedInstanceState, mWindowViewController);
         mHoverMenuView.enableDebugMode(true);
@@ -104,25 +87,8 @@ public class WindowHoverMenu implements HoverMenu {
     }
 
     @Override
-    public String getVisualState() {
-//        PointF anchor = mHoverMenuView.getAnchorState();
-//        return new VisualStateMemento((int) anchor.x, anchor.y).toJsonString();
-        return null;
-    }
-
-    @Override
-    public void restoreVisualState(@NonNull String savedVisualState) {
-//        try {
-//            VisualStateMemento memento = VisualStateMemento.fromJsonString(savedVisualState);
-//            mHoverMenuView.setAnchorState(new PointF(memento.getAnchorSide(), memento.getNormalizedPositionY()));
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-    }
-
-    @Override
-    public void setAdapter(@Nullable HoverMenuAdapter adapter) {
-        mHoverMenuView.setAdapter(adapter);
+    public void setMenu(@Nullable io.mattcarroll.hover.defaulthovermenu.HoverMenu menu) {
+        mHoverMenuView.setMenu(menu);
     }
 
     /**
@@ -137,13 +103,6 @@ public class WindowHoverMenu implements HoverMenu {
                     false,
                     mHoverMenuView
             );
-
-            // Sync our control state with the HoverMenuView state.
-//            if (mHoverMenuView.isExpanded()) {
-                mWindowViewController.makeTouchable(mHoverMenuView);
-//            } else {
-//                collapseMenu();
-//            }
 
             mIsShowingHoverMenu = true;
         }
@@ -172,9 +131,9 @@ public class WindowHoverMenu implements HoverMenu {
      */
     @Override
     public void expandMenu() {
-        if (mIsInDragMode) {
+//        if (mIsInDragMode) {
 //            mHoverMenuView.expand();
-        }
+//        }
     }
 
     /**
@@ -183,10 +142,10 @@ public class WindowHoverMenu implements HoverMenu {
      */
     @Override
     public void collapseMenu() {
-        if (!mIsInDragMode) {
+//        if (!mIsInDragMode) {
 //            mHoverMenuView.setHoverMenuTransitionListener(mHoverMenuTransitionListener);
 //            mHoverMenuView.collapse();
-        }
+//        }
     }
 
     @Override
@@ -210,44 +169,4 @@ public class WindowHoverMenu implements HoverMenu {
         }
     }
 
-    private static class VisualStateMemento {
-
-        private static final String JSON_KEY_ANCHOR_SIDE = "anchor_side";
-        private static final String JSON_KEY_NORMALIZED_POSITION_Y = "normalized_position_y";
-
-        public static VisualStateMemento fromJsonString(@NonNull String jsonString) throws JSONException {
-            JSONObject jsonObject = new JSONObject(jsonString);
-            int anchorSide = jsonObject.getInt(JSON_KEY_ANCHOR_SIDE);
-            float normalizedPositionY = (float) jsonObject.getDouble(JSON_KEY_NORMALIZED_POSITION_Y);
-            return new VisualStateMemento(anchorSide, normalizedPositionY);
-        }
-
-        private int mAnchorSide;
-        private float mNormalizedPositionY;
-
-        public VisualStateMemento(int anchorSide, float normalizedPositionY) {
-            mAnchorSide = anchorSide;
-            mNormalizedPositionY = normalizedPositionY;
-        }
-
-        public int getAnchorSide() {
-            return mAnchorSide;
-        }
-
-        public float getNormalizedPositionY() {
-            return mNormalizedPositionY;
-        }
-
-        public String toJsonString() {
-            try {
-                JSONObject jsonObject = new JSONObject();
-                jsonObject.put(JSON_KEY_ANCHOR_SIDE, mAnchorSide);
-                jsonObject.put(JSON_KEY_NORMALIZED_POSITION_Y, mNormalizedPositionY);
-                return jsonObject.toString();
-            } catch (JSONException e) {
-                e.printStackTrace();
-                return null;
-            }
-        }
-    }
 }
