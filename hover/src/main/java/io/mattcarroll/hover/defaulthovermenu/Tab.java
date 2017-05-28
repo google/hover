@@ -19,6 +19,8 @@ interface Tab {
     @Nullable
     Point getDockPosition();
 
+    int getTabSize();
+
     void setTabView(@Nullable View view);
 
     void addOnPositionChangeListener(@NonNull OnPositionChangeListener listener);
@@ -27,6 +29,8 @@ interface Tab {
 
     interface OnPositionChangeListener {
         void onPositionChange(@NonNull Point position);
+
+        void onDockChange(@NonNull Point dock);
     }
 
 }

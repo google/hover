@@ -72,8 +72,19 @@ public class HoverMenu {
         return mSections.size();
     }
 
+    @Nullable
     public Section getSection(int index) {
         return mSections.get(index);
+    }
+
+    @Nullable
+    public Section getSection(@NonNull Section.SectionId sectionId) {
+        for (Section section : mSections) {
+            if (sectionId.equals(section.getId())) {
+                return section;
+            }
+        }
+        return null;
     }
 
     public void setUpdatedCallback(@Nullable ListUpdateCallback listUpdatedCallback) {

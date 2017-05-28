@@ -17,11 +17,13 @@ class HoverMenuViewStateCollapsed implements HoverMenuViewState {
 
     private final Dragger mDragger;
     private Screen mScreen;
+    private HoverMenu mMenu;
     private FloatingTab mFloatingTab;
     private Point mDropPoint; // Where the floating tab is dropped before seeking its initial dock.
     private SideDock mSideDock;
     private boolean mHasControl = false;
     private boolean mIsDocked = false;
+    private String mPrimaryTabId = null;
     private Dragger.DragListener mDragListener;
     private Listener mListener;
 
@@ -52,7 +54,7 @@ class HoverMenuViewStateCollapsed implements HoverMenuViewState {
     }
 
     @Override
-    public void takeControl(@NonNull Screen screen) {
+    public void takeControl(@NonNull Screen screen, @NonNull String primaryTabId) {
         Log.d(TAG, "Taking control.");
         if (mHasControl) {
             throw new RuntimeException("Cannot take control of a FloatingTab when we already control one.");
@@ -60,8 +62,9 @@ class HoverMenuViewStateCollapsed implements HoverMenuViewState {
 
         Log.d(TAG, "Instructing tab to dock itself.");
         mHasControl = true;
+        mPrimaryTabId = primaryTabId;
         mScreen = screen;
-        mFloatingTab = screen.createChainedTab("0", null); // TODO:
+        mFloatingTab = screen.createChainedTab(mPrimaryTabId, mMenu.getSection(new HoverMenu.Section.SectionId(mPrimaryTabId)).getTabView());
         mDragListener = new FloatingTabDragListener(this);
         createDock();
         sendToDock();
@@ -82,9 +85,13 @@ class HoverMenuViewStateCollapsed implements HoverMenuViewState {
         mIsDocked = false;
         mDragger.deactivate();
         mDragListener = null;
-        otherController.takeControl(mScreen);
+        otherController.takeControl(mScreen, mPrimaryTabId);
         mScreen = null;
         mFloatingTab = null;
+    }
+
+    public void setMenu(@NonNull HoverMenu menu) {
+        mMenu = menu;
     }
 
     @NonNull

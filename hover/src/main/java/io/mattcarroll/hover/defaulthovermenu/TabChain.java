@@ -17,13 +17,19 @@ class TabChain {
     private static final String TAG = "TabChain";
 
     private FloatingTab mTab;
+    private Point mLockedPosition;
     private Tab mPredecessorTab;
     private final Set<Tab.OnPositionChangeListener> mOnPositionChangeListeners = new CopyOnWriteArraySet<Tab.OnPositionChangeListener>();
 
     private final Tab.OnPositionChangeListener mOnPredecessorPositionChange = new Tab.OnPositionChangeListener() {
         @Override
         public void onPositionChange(@NonNull Point position) {
-            Log.d(TAG, hashCode() + "'s predecessor moved to: " + position);
+            // No-op. We only care when our predecessor's dock changes.
+        }
+
+        @Override
+        public void onDockChange(@NonNull Point dock) {
+            Log.d(TAG, hashCode() + "'s predecessor dock moved to: " + dock);
             moveToChainedPosition();
         }
     };
@@ -46,19 +52,41 @@ class TabChain {
             mPredecessorTab.removeOnPositionChangeListener(mOnPredecessorPositionChange);
         }
 
-        Log.d(TAG, hashCode() + " is now chained to " + tab.hashCode());
+        Log.d(TAG, mTab.getTabId() + " is now chained to " + tab.getTabId());
         mPredecessorTab = tab;
+        mLockedPosition = null;
+        mTab.setDockPosition(getMyChainPositionRelativeTo(mPredecessorTab));
+    }
+
+    public void chainTo(@NonNull Point lockedPosition) {
+        chainTo(lockedPosition, null);
+    }
+
+    public void chainTo(@NonNull Point lockedPosition, @Nullable Runnable onChained) {
+        if (null != mPredecessorTab) {
+            mPredecessorTab.removeOnPositionChangeListener(mOnPredecessorPositionChange);
+        }
+
+        Log.d(TAG, mTab.getTabId() + " is now chained to position " + lockedPosition);
+        mPredecessorTab = null;
+        mLockedPosition = lockedPosition;
+        mTab.setDockPosition(mLockedPosition);
+    }
+
+    public void tightenChain() {
         moveToChainedPosition();
-        mPredecessorTab.addOnPositionChangeListener(mOnPredecessorPositionChange);
+
+        if (null != mPredecessorTab) {
+            // TODO: need to only add this once.
+            mPredecessorTab.addOnPositionChangeListener(mOnPredecessorPositionChange);
+        }
     }
 
     private void moveToChainedPosition() {
-        Point newDock = getMyChainPositionRelativeTo(mPredecessorTab);
         if (View.VISIBLE == mTab.getVisibility()) {
-            mTab.dockTo(newDock);
+            mTab.dockTo(mTab.getDockPosition());
         } else {
-            mTab.setDockPosition(newDock);
-            mTab.moveTo(newDock);
+            mTab.moveTo(mTab.getDockPosition());
             mTab.appear(null);
         }
     }
@@ -77,7 +105,9 @@ class TabChain {
     }
 
     public void unchain(@Nullable final Runnable onUnchained) {
-        mPredecessorTab.removeOnPositionChangeListener(mOnPredecessorPositionChange);
+        if (null != mPredecessorTab) {
+            mPredecessorTab.removeOnPositionChangeListener(mOnPredecessorPositionChange);
+        }
         mTab.disappear(onUnchained);
     }
 }

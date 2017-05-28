@@ -74,7 +74,6 @@ public class HoverMenuView extends RelativeLayout {
     private HoverMenuViewStateExpanded mExpandedMenu;
     private String mSelectedSectionId;
     private HoverMenu mMenu;
-    private boolean mIsInitialized;
     private boolean mIsExpanded = false;
     private ExitListener mExitListener;
     private boolean mIsDebugMode = false;
@@ -113,19 +112,12 @@ public class HoverMenuView extends RelativeLayout {
     }
 
     private void initAfterInitialLayout() {
-        Log.d(TAG, "initAfterInitialLayout() " + hashCode());
-        mIsInitialized = true;
-
-        if (null != mMenu) {
-            applyMenu();
-        }
-
         // Start collapsed.
         if (null != mWindowViewController) {
             mWindowViewController.makeUntouchable(this);
         }
         createCollapsedMenu();
-        mCollapsedMenu.takeControl(mScreen);
+        mCollapsedMenu.takeControl(mScreen, mSelectedSectionId);
     }
 
     @Override
@@ -193,14 +185,6 @@ public class HoverMenuView extends RelativeLayout {
 
     public void setMenu(@Nullable HoverMenu menu) {
         mMenu = menu;
-        if (mIsInitialized) {
-            applyMenu();
-        }
-    }
-
-    private void applyMenu() {
-        View floatingTabView = mMenu.getSection(0).getTabView();
-        mScreen.createChainedTab("0", floatingTabView);
     }
 
     private void expand() {
@@ -258,6 +242,7 @@ public class HoverMenuView extends RelativeLayout {
     private void createCollapsedMenu() {
         Log.d(TAG, "Creating collapsed menu. Dock: " + mCollapsedDock);
         mCollapsedMenu = new HoverMenuViewStateCollapsed(mDragger, mCollapsedDock);
+        mCollapsedMenu.setMenu(mMenu);
         mCollapsedMenu.setListener(new HoverMenuViewStateCollapsed.Listener() {
             @Override
             public void onDragStart() {

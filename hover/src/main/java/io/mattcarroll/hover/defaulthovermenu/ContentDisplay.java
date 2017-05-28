@@ -54,8 +54,15 @@ class ContentDisplay extends RelativeLayout {
             Log.d(TAG, mSelectedTab + " tab moved to " + position);
             updateTabSelectorPosition();
 
+            setPadding(0, position.y + (mSelectedTab.getTabSize() / 2), 0, 0);
+
             // We have received an affirmative position for the selected tab. Show tab selector.
             mTabSelectorView.setVisibility(VISIBLE);
+        }
+
+        @Override
+        public void onDockChange(@NonNull Point dock) {
+            // No-op.
         }
     };
 
@@ -139,18 +146,6 @@ class ContentDisplay extends RelativeLayout {
         } else {
             wrapContent();
         }
-    }
-
-    public void anchorTo(@NonNull final View anchor) {
-        setPadding(0, anchor.getBottom(), 0, 0);
-
-        anchor.addOnLayoutChangeListener(new OnLayoutChangeListener() {
-            @Override
-            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                Log.d(TAG, "Updating anchor position to: " + (anchor.getY() + anchor.getHeight()));
-                setPadding(0, anchor.getBottom(), 0, 0);
-            }
-        });
     }
 
     public void expandToScreenBounds() {

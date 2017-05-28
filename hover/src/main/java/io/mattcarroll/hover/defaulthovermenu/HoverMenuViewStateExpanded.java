@@ -21,6 +21,8 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
 
     private boolean mHasControl = false;
     private HoverMenu.Section.SectionId mActiveSectionId;
+    private String mPrimaryTabId; // TODO: temporary ref to 1st tab until we get tab equality
+    private FloatingTab mPrimaryTab;
     private HoverMenu mMenu;
     private Screen mScreen;
     private final List<FloatingTab> mChainedTabs = new ArrayList<>();
@@ -28,6 +30,23 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
     private final Map<FloatingTab, HoverMenu.Section> mSections = new HashMap<>();
     private Point mDock;
     private Listener mListener;
+
+    private final Runnable mShowTabsRunnable = new Runnable() {
+        @Override
+        public void run() {
+            mScreen.getShadeView().show();
+            mScreen.getContentDisplay().activeTabIs(mPrimaryTab);
+
+            HoverMenu.Section activeSection = null != mActiveSectionId ?
+                    mMenu.getSection(Integer.valueOf(mActiveSectionId.toString())) : // TODO: change API to take SectionId
+                    mMenu.getSection(0);
+            mScreen.getContentDisplay().displayContent(activeSection.getContent());
+
+            if (null != mListener) {
+                mListener.onExpanded();
+            }
+        }
+    };
 
     HoverMenuViewStateExpanded() { }
 
@@ -38,7 +57,7 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
     }
 
     @Override
-    public void takeControl(@NonNull Screen screen) {
+    public void takeControl(@NonNull Screen screen, @NonNull String primaryTabId) {
         Log.d(TAG, "Taking control.");
         if (mHasControl) {
             throw new RuntimeException("Cannot take control of a FloatingTab when we already control one.");
@@ -46,6 +65,8 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
 
         Log.d(TAG, "Taking control.");
         mHasControl = true;
+        mActiveSectionId = new HoverMenu.Section.SectionId(primaryTabId);
+        mPrimaryTabId = primaryTabId;
         mScreen = screen;
         mDock = new Point(mScreen.getWidth() - 100, 100); // TODO: get rid of magic numbers
         if (null != mMenu) {
@@ -54,25 +75,35 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
         }
     }
 
+    private void expandMenu() {
+        createChainedTabs();
+        chainTabs();
+        mPrimaryTab.dockTo(mPrimaryTab.getDockPosition(), mShowTabsRunnable);
+
+        if (null != mListener) {
+            mListener.onExpanding();
+        }
+    }
+
     private void createChainedTabs() {
         Log.d(TAG, "Creating chained tabs");
         if (null != mMenu) {
-            // TODO: it doesn't look like the initial tabs are being chained...
-            // TODO: We shouldn't need to treat the first tab differently any more...
-            FloatingTab firstTab = mScreen.createChainedTab("0", null);
-            mChainedTabs.add(firstTab);
-            mTabChains.add(new TabChain(firstTab));
-            mSections.put(firstTab, mMenu.getSection(0)); // TODO: we need to use an ID with the menu, not an index
-            Log.d(TAG, "Created primary tab");
-            for (int i = 1; i < mMenu.getSectionCount(); ++i) {
+            for (int i = 0; i < mMenu.getSectionCount(); ++i) {
                 HoverMenu.Section section = mMenu.getSection(i);
                 View tabView = section.getTabView();
                 final FloatingTab chainedTab = mScreen.createChainedTab(section.getId().toString(), tabView);
-                chainedTab.disappearImmediate();
+                Log.d(TAG, "Created FloatingTab for ID " + section.getId().toString());
+
+                if (!mPrimaryTabId.equals(section.getId().toString())) {
+                    chainedTab.disappearImmediate();
+                } else {
+                    mPrimaryTab = chainedTab;
+                }
+
                 Log.d(TAG, "Adding tabView: " + tabView + ". Its parent is: " + tabView.getParent());
                 mChainedTabs.add(chainedTab);
-                mTabChains.add(new TabChain(chainedTab));
                 mSections.put(chainedTab, section);
+                mTabChains.add(new TabChain(chainedTab));
 
                 chainedTab.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -85,26 +116,38 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
         }
     }
 
-    private void destroyChainedTabs() {
-
-    }
-
     private void chainTabs() {
+        Log.d(TAG, "Chaining tabs.");
         Tab predecessorTab = mChainedTabs.get(0);
-        int displayDelay = 0;
-        for (int i = 1; i < mChainedTabs.size(); ++i) {
-            FloatingTab chainedTab = mChainedTabs.get(i);
+        int primaryTabIndex = 0;
+        for (int i = 0; i < mChainedTabs.size(); ++i) {
+            if (mPrimaryTab == mChainedTabs.get(i)) {
+                primaryTabIndex = i;
+                break;
+            }
+        }
+
+        for (int i = 0; i < mChainedTabs.size(); ++i) {
+            final FloatingTab chainedTab = mChainedTabs.get(i);
             final TabChain tabChain = mTabChains.get(i);
-            final Tab currentPredecessor = predecessorTab;
-            chainedTab.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    tabChain.chainTo(currentPredecessor);
-                }
-            }, displayDelay);
+
+            if (i == 0) {
+                tabChain.chainTo(mDock);
+                tabChain.tightenChain();
+            } else {
+                final Tab currentPredecessor = predecessorTab;
+                int displayDelayInMillis = (int) (Math.abs(primaryTabIndex - i) * 100);
+                tabChain.chainTo(currentPredecessor);
+                chainedTab.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.d(TAG, "Chaining " + chainedTab.getTabId() + " to " + currentPredecessor.getTabId());
+                        tabChain.tightenChain();
+                    }
+                }, displayDelayInMillis);
+            }
 
             predecessorTab = chainedTab;
-            displayDelay += 100;
         }
     }
 
@@ -120,29 +163,40 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
         mMenu = null;
         unchainTabs();
         mScreen.getShadeView().hide();
-        otherController.takeControl(mScreen);
+        otherController.takeControl(mScreen, mPrimaryTabId);
     }
 
     private void unchainTabs() {
-        int displayDelay = 0;
-        for (int i = 1; i < mChainedTabs.size(); ++i) {
+        int primaryTabIndex = 0;
+        for (int i = 0; i < mChainedTabs.size(); ++i) {
+            if (mPrimaryTab == mChainedTabs.get(i)) {
+                primaryTabIndex = i;
+                break;
+            }
+        }
+
+        for (int i = 0; i < mChainedTabs.size(); ++i) {
             final FloatingTab chainedTab = mChainedTabs.get(i);
             final TabChain tabChain = mTabChains.get(i);
-            chainedTab.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    tabChain.unchain(new Runnable() {
-                        @Override
-                        public void run() {
-                            Log.d(TAG, "Destroying chained tab: " + chainedTab);
-                            mScreen.destroyChainedTab(chainedTab);
-                        }
-                    });
-                }
-            }, displayDelay);
 
-            displayDelay += 100;
+            if (mPrimaryTab != chainedTab) {
+                int displayDelayInMillis = (int) (Math.abs(primaryTabIndex - i) * 100);
+                chainedTab.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        tabChain.unchain(new Runnable() {
+                            @Override
+                            public void run() {
+                                Log.d(TAG, "Destroying chained tab: " + chainedTab);
+                                mScreen.destroyChainedTab(chainedTab);
+                            }
+                        });
+                    }
+                }, displayDelayInMillis);
+            }
         }
+        mChainedTabs.clear();
+        mTabChains.clear();
     }
 
     public void setMenu(@NonNull HoverMenu menu) {
@@ -230,56 +284,12 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
         }
     }
 
-    private void expandMenu() {
-//        HoverMenu.Section activeSection = null != mActiveSectionId ?
-//                mMenu.getSection(Integer.valueOf(mActiveSectionId.toString())) : // TODO: change API to take SectionId
-//                mMenu.getSection(0);
-        final FloatingTab firstTab = mScreen.createChainedTab("0", null); // TODO:
-
-        mScreen.getShadeView().show();
-        mScreen.getContentDisplay().anchorTo(firstTab);
-//        mScreen.getContentDisplay().activeTabIs(activeTab);
-//        mScreen.getContentDisplay().displayContent(activeSection.getContent());
-        firstTab.dockTo(mDock, new Runnable() {
-            @Override
-            public void run() {
-                createChainedTabs();
-                chainTabs();
-
-                final FloatingTab activeTab;
-                if (null == mActiveSectionId || "0".equals(mActiveSectionId.toString())) {
-                    activeTab = mScreen.createChainedTab("0", null); // TODO:
-                } else {
-                    activeTab = mScreen.createChainedTab(mActiveSectionId.toString(), null);
-                }
-                mScreen.getContentDisplay().activeTabIs(activeTab);
-
-                HoverMenu.Section activeSection = null != mActiveSectionId ?
-                        mMenu.getSection(Integer.valueOf(mActiveSectionId.toString())) : // TODO: change API to take SectionId
-                        mMenu.getSection(0);
-                mScreen.getContentDisplay().displayContent(activeSection.getContent());
-
-                if (null != mListener) {
-                    mListener.onExpanded();
-                }
-            }
-        });
-        firstTab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onTabSelected(firstTab);
-            }
-        });
-
-        if (null != mListener) {
-            mListener.onExpanding();
-        }
-    }
-
     private void onTabSelected(@NonNull FloatingTab selectedTab) {
         HoverMenu.Section section = mSections.get(selectedTab);
         if (!section.getId().equals(mActiveSectionId)) {
             mActiveSectionId = section.getId();
+            mPrimaryTabId = mActiveSectionId.toString();
+            mPrimaryTab = selectedTab;
             ContentDisplay contentDisplay = mScreen.getContentDisplay();
             contentDisplay.activeTabIs(selectedTab);
             contentDisplay.displayContent(section.getContent());

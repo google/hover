@@ -7,7 +7,6 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -36,7 +35,7 @@ class FloatingTab extends FrameLayout implements Tab {
     private final OnLayoutChangeListener mOnLayoutChangeListener = new OnLayoutChangeListener() {
         @Override
         public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-            notifyOnPositionChangeListeners();
+            notifyListenersOfPositionChange();
         }
     };
 
@@ -187,6 +186,7 @@ class FloatingTab extends FrameLayout implements Tab {
 
     public void setDockPosition(@NonNull Point dock) {
         mDock = dock;
+        notifyListenersOfDockChange();
     }
 
     public void dockTo(@NonNull Point dock) {
@@ -194,12 +194,10 @@ class FloatingTab extends FrameLayout implements Tab {
     }
 
     public void dockTo(@NonNull Point dock, @Nullable final Runnable onDocked) {
-        if (dock.equals(mDock)) {
-            if (null != onDocked) {
-                onDocked.run();
-            }
-            return;
-        }
+        // TODO: the dock can be changed independent of position, so we can't ignore the incoming
+        // TODO: dock just because it matches our existing one.  figure out a way to not do needless
+        // TODO: dock animations if the same/similar value is provided.  Should probably have a
+        // TODO: dockTo(newDock) like this, but also a sendToDock() or maybe just dock().
 
         mDock = dock;
         Point destinationCornerPosition = convertCenterToCorner(mDock);
@@ -224,7 +222,7 @@ class FloatingTab extends FrameLayout implements Tab {
                 if (null != onDocked) {
                     onDocked.run();
                 }
-                notifyOnPositionChangeListeners();
+                notifyListenersOfPositionChange();
             }
 
             @Override
@@ -237,7 +235,7 @@ class FloatingTab extends FrameLayout implements Tab {
         xAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                notifyOnPositionChangeListeners();
+                notifyListenersOfPositionChange();
             }
         });
     }
@@ -265,10 +263,16 @@ class FloatingTab extends FrameLayout implements Tab {
         mOnPositionChangeListeners.remove(listener);
     }
 
-    private void notifyOnPositionChangeListeners() {
+    private void notifyListenersOfPositionChange() {
         Point position = getPosition();
         for (OnPositionChangeListener listener : mOnPositionChangeListeners) {
             listener.onPositionChange(position);
+        }
+    }
+
+    private void notifyListenersOfDockChange() {
+        for (OnPositionChangeListener listener : mOnPositionChangeListeners) {
+            listener.onDockChange(mDock);
         }
     }
 
