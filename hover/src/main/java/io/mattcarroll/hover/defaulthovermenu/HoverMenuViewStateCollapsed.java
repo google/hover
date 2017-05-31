@@ -65,7 +65,7 @@ class HoverMenuViewStateCollapsed implements HoverMenuViewState {
         mScreen = screen;
         mPrimaryTabId = primaryTabId;
         Log.d(TAG, "Taking control with primary tab: " + mPrimaryTabId);
-        HoverMenu.Section section = mMenu.getSection(new HoverMenu.Section.SectionId(mPrimaryTabId));
+        HoverMenu.Section section = mMenu.getSection(new HoverMenu.SectionId(mPrimaryTabId));
         section = null != section ? section : mMenu.getSection(0);
         mFloatingTab = screen.createChainedTab(mPrimaryTabId, section.getTabView());
         mDragListener = new FloatingTabDragListener(this);

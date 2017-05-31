@@ -73,7 +73,7 @@ public class HoverMenuView extends RelativeLayout {
     private HoverMenuViewStateCollapsed mCollapsedMenu;
     private SideDock mCollapsedDock;
     private HoverMenuViewStateExpanded mExpandedMenu;
-    private String mSelectedSectionId;
+    private HoverMenu.SectionId mSelectedSectionId;
     private HoverMenu mMenu;
     private boolean mIsAddedToWindow;
     private boolean mIsExpanded = false;
@@ -119,10 +119,10 @@ public class HoverMenuView extends RelativeLayout {
             mWindowViewController.makeUntouchable(this);
         }
         if (null == mSelectedSectionId) {
-            mSelectedSectionId = mMenu.getSection(0).getId().toString();
+            mSelectedSectionId = mMenu.getSection(0).getId();
         }
         createCollapsedMenu();
-        mCollapsedMenu.takeControl(mScreen, mSelectedSectionId);
+        mCollapsedMenu.takeControl(mScreen, mSelectedSectionId.toString());
     }
 
     @Override
@@ -144,9 +144,17 @@ public class HoverMenuView extends RelativeLayout {
         SavedState savedState = (SavedState) state;
         super.onRestoreInstanceState(savedState.getSuperState());
         mCollapsedDock = savedState.getCollapsedDock();
-        mSelectedSectionId = savedState.getSelectedSectionId();
+        HoverMenu.SectionId savedSelectedSectionId = savedState.getSelectedSectionId();
         Log.d(TAG, "onRestoreInstanceState(). Dock: " + mCollapsedDock
-                + ", Selected section: " + mSelectedSectionId);
+                + ", Selected section: " + savedSelectedSectionId);
+
+        // If no menu is set on this HoverMenuView then we should hold onto this saved section
+        // selection in case we get a menu that has this section.  If we do have a menu set on
+        // this HoverMenuView, then we should only restore this selection if the given section
+        // exists in our menu.
+        if (null == mMenu || (null != savedSelectedSectionId && null != mMenu.getSection(savedSelectedSectionId))) {
+            mSelectedSectionId = savedSelectedSectionId;
+        }
     }
 
     public void saveStateToBundle(@NonNull SharedPreferences.Editor editor) {
@@ -155,7 +163,7 @@ public class HoverMenuView extends RelativeLayout {
         }
         editor.putFloat(SAVED_STATE_DOCK_POSITION, mCollapsedDock.getVerticalDockPositionPercentage());
         editor.putInt(SAVED_STATE_DOCKS_SIDE, mCollapsedDock.getSide());
-        editor.putString(SAVED_STATE_SELECTED_SECTION, mSelectedSectionId);
+        editor.putString(SAVED_STATE_SELECTED_SECTION, null != mSelectedSectionId ? mSelectedSectionId.toString() : null);
         editor.commit();
 
         Log.d(TAG, "saveStateToBundle(). Position: "
@@ -169,7 +177,9 @@ public class HoverMenuView extends RelativeLayout {
                 prefs.getFloat(SAVED_STATE_DOCK_POSITION, 0.5f),
                 prefs.getInt(SAVED_STATE_DOCKS_SIDE, SideDock.LEFT)
         );
-        mSelectedSectionId = prefs.getString(SAVED_STATE_SELECTED_SECTION, mSelectedSectionId);
+        mSelectedSectionId = prefs.contains(SAVED_STATE_SELECTED_SECTION) ?
+                new HoverMenu.SectionId(prefs.getString(SAVED_STATE_SELECTED_SECTION, null)) :
+                null;
 
         Log.d(TAG, "restoreStateFromBundle(). Position: "
                 + mCollapsedDock.getVerticalDockPositionPercentage()
@@ -190,6 +200,10 @@ public class HoverMenuView extends RelativeLayout {
 
     public void setMenu(@Nullable HoverMenu menu) {
         mMenu = menu;
+
+        if (null == mSelectedSectionId || null == mMenu.getSection(mSelectedSectionId)) {
+            mSelectedSectionId = mMenu.getSection(0).getId();
+        }
     }
 
     private void expand() {
@@ -317,7 +331,7 @@ public class HoverMenuView extends RelativeLayout {
         };
 
         private SideDock mCollapsedDock;
-        private String mSelectedSectionId;
+        private HoverMenu.SectionId mSelectedSectionId;
 
         SavedState(Parcelable superState) {
             super(superState);
@@ -332,10 +346,11 @@ public class HoverMenuView extends RelativeLayout {
                 mCollapsedDock = new SideDock(dockVerticalPositionPercent, side);
             }
             if (in.dataAvail() > 0) {
-                mSelectedSectionId = in.readString();
+                mSelectedSectionId = new HoverMenu.SectionId(in.readString());
             }
         }
 
+        @Nullable
         public SideDock getCollapsedDock() {
             return mCollapsedDock;
         }
@@ -344,11 +359,12 @@ public class HoverMenuView extends RelativeLayout {
             mCollapsedDock = collapsedDock;
         }
 
-        public String getSelectedSectionId() {
+        @Nullable
+        public HoverMenu.SectionId getSelectedSectionId() {
             return mSelectedSectionId;
         }
 
-        public void setSelectedSectionId(@Nullable String selectedSectionId) {
+        public void setSelectedSectionId(@Nullable HoverMenu.SectionId selectedSectionId) {
             mSelectedSectionId = selectedSectionId;
         }
 

@@ -72,6 +72,7 @@ class Screen {
         if (mTabs.containsKey(tabId)) {
             return mTabs.get(tabId);
         } else {
+            Log.d(TAG, "Creating new tab with ID: " + tabId);
             FloatingTab chainedTab = new FloatingTab(mContainer.getContext(), tabId);
             chainedTab.setTabView(tabView);
             chainedTab.enableDebugMode(mIsDebugMode);

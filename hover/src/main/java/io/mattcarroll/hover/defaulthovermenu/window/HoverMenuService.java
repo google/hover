@@ -25,9 +25,9 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.WindowManager;
 
-import io.mattcarroll.hover.HoverMenuAdapter;
 import io.mattcarroll.hover.content.Navigator;
 import io.mattcarroll.hover.defaulthovermenu.ExitListener;
+import io.mattcarroll.hover.defaulthovermenu.HoverMenu;
 import io.mattcarroll.hover.defaulthovermenu.HoverMenuView;
 import io.mattcarroll.hover.overlay.OverlayPermission;
 
@@ -110,16 +110,15 @@ public abstract class HoverMenuService extends Service {
     }
 
     private void initHoverMenu(@NonNull Intent intent) {
-        HoverMenuAdapter adapter = createHoverMenuAdapter(intent);
-        io.mattcarroll.hover.defaulthovermenu.HoverMenu menu = new io.mattcarroll.hover.defaulthovermenu.HoverMenu(adapter);
-
         mHoverMenuView = HoverMenuView.createForWindow(
                 this,
                 mPrefs,
                 new WindowViewController((WindowManager) getSystemService(Context.WINDOW_SERVICE))
         );
-        mHoverMenuView.setMenu(menu);
         mHoverMenuView.setExitListener(mOnMenuExitListener);
+
+        HoverMenu hoverMenu = createHoverMenu(intent);
+        mHoverMenuView.setMenu(hoverMenu);
     }
 
     /**
@@ -149,7 +148,7 @@ public abstract class HoverMenuService extends Service {
         return null; // Subclasses can override this to provide a custom Navigator.
     }
 
-    abstract protected HoverMenuAdapter createHoverMenuAdapter(@NonNull Intent intent);
+    abstract protected HoverMenu createHoverMenu(@NonNull Intent intent);
 
     /**
      * Hook method for subclasses to take action when the user exits the HoverMenu. This method runs

@@ -20,9 +20,9 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.view.ContextThemeWrapper;
 
-import io.mattcarroll.hover.HoverMenuAdapter;
 import io.mattcarroll.hover.content.Navigator;
 import io.mattcarroll.hover.defaulthovermenu.DefaultNavigator;
+import io.mattcarroll.hover.defaulthovermenu.HoverMenu;
 import io.mattcarroll.hover.defaulthovermenu.window.HoverMenuService;
 
 /**
@@ -52,8 +52,8 @@ public class DemoHoverMenuService extends HoverMenuService {
     }
 
     @Override
-    protected HoverMenuAdapter createHoverMenuAdapter(@NonNull Intent intent) {
-        return new DemoHoverMenuAdapter(getApplicationContext());
+    protected HoverMenu createHoverMenu(@NonNull Intent intent) {
+        return new DemoHoverMenu(getApplicationContext());
     }
 
     @Override

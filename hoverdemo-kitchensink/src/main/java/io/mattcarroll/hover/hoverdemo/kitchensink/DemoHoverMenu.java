@@ -21,25 +21,24 @@ import android.os.Build;
 import android.support.annotation.ColorInt;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.TypedValue;
 import android.view.View;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import io.mattcarroll.hover.HoverMenuAdapter;
 import io.mattcarroll.hover.content.NavigatorContent;
-import io.mattcarroll.hover.hoverdemo.kitchensink.ui.DemoTabView;
+import io.mattcarroll.hover.defaulthovermenu.HoverMenu;
 import io.mattcarroll.hover.hoverdemo.kitchensink.theming.HoverTheme;
+import io.mattcarroll.hover.hoverdemo.kitchensink.ui.DemoTabView;
 
 /**
- * Demo implementation of a {@link HoverMenuAdapter}.
+ * Demo implementation of a {@link HoverMenu}.
  */
-public class DemoHoverMenuAdapter implements HoverMenuAdapter {
+public class DemoHoverMenu extends HoverMenu {
 
     public static final String INTRO_ID = "intro";
     public static final String SELECT_COLOR_ID = "select_color";
@@ -49,73 +48,42 @@ public class DemoHoverMenuAdapter implements HoverMenuAdapter {
 
     private final Context mContext;
     private HoverTheme mTheme;
-    private final List<String> mTabIds;
-    private final Map<String, NavigatorContent> mData;
-    private final Set<ContentChangeListener> mContentChangeListeners = new HashSet<>();
+    private final List<Section> mSections = new ArrayList<>();
 
-    public DemoHoverMenuAdapter(@NonNull Context context, @NonNull Map<String, NavigatorContent> data, @NonNull HoverTheme theme) throws IOException {
+    public DemoHoverMenu(@NonNull Context context,
+                         @NonNull Map<String, NavigatorContent> data,
+                         @NonNull HoverTheme theme) throws IOException {
         mContext = context;
-        mData = data;
         mTheme = theme;
 
-        mTabIds = new ArrayList<>();
-        for (String tabId : mData.keySet()) {
-            mTabIds.add(tabId);
+        for (String tabId : data.keySet()) {
+            mSections.add(new Section(
+                    new SectionId(tabId),
+                    createTabView(tabId),
+                    data.get(tabId)
+            ));
         }
     }
 
     public void setTheme(@NonNull HoverTheme theme) {
         mTheme = theme;
-        notifyDataSetChanged();
+        // TODO: need to make theme changes work again with refactored menu
+        notifyMenuChanged();
     }
 
-    @Override
-    public int getTabCount() {
-        return mTabIds.size();
-    }
-
-    @Override
-    public View getTabView(int index) {
-        String menuItemId = mTabIds.get(index);
-        if (INTRO_ID.equals(menuItemId)) {
+    private View createTabView(String sectionId) {
+        if (INTRO_ID.equals(sectionId)) {
             return createTabView(R.drawable.ic_orange_circle, mTheme.getAccentColor(), null);
-        } else if (SELECT_COLOR_ID.equals(menuItemId)) {
+        } else if (SELECT_COLOR_ID.equals(sectionId)) {
             return createTabView(R.drawable.ic_paintbrush, mTheme.getAccentColor(), mTheme.getBaseColor());
-        } else if (APP_STATE_ID.equals(menuItemId)) {
+        } else if (APP_STATE_ID.equals(sectionId)) {
             return createTabView(R.drawable.ic_stack, mTheme.getAccentColor(), mTheme.getBaseColor());
-        } else if (MENU_ID.equals(menuItemId)) {
+        } else if (MENU_ID.equals(sectionId)) {
             return createTabView(R.drawable.ic_menu, mTheme.getAccentColor(), mTheme.getBaseColor());
-        } else if (PLACEHOLDER_ID.equals(menuItemId)) {
+        } else if (PLACEHOLDER_ID.equals(sectionId)) {
             return createTabView(R.drawable.ic_pen, mTheme.getAccentColor(), mTheme.getBaseColor());
         } else {
-            throw new RuntimeException("Unknown tab selected: " + index);
-        }
-    }
-
-    @Override
-    public String getTabId(int position) {
-        return Integer.toString(position);
-    }
-
-    @Override
-    public NavigatorContent getNavigatorContent(int index) {
-        String tabId = mTabIds.get(index);
-        return mData.get(tabId);
-    }
-
-    @Override
-    public void addContentChangeListener(@NonNull ContentChangeListener listener) {
-        mContentChangeListeners.add(listener);
-    }
-
-    @Override
-    public void removeContentChangeListener(@NonNull ContentChangeListener listener) {
-        mContentChangeListeners.remove(listener);
-    }
-
-    protected void notifyDataSetChanged() {
-        for (ContentChangeListener listener : mContentChangeListeners) {
-            listener.onContentChange(this);
+            throw new RuntimeException("Unknown tab selected: " + sectionId);
         }
     }
 
@@ -131,5 +99,33 @@ public class DemoHoverMenuAdapter implements HoverMenuAdapter {
             view.setElevation(padding);
         }
         return view;
+    }
+
+    @Override
+    public int getSectionCount() {
+        return mSections.size();
+    }
+
+    @Nullable
+    @Override
+    public Section getSection(int index) {
+        return mSections.get(index);
+    }
+
+    @Nullable
+    @Override
+    public Section getSection(@NonNull SectionId sectionId) {
+        for (Section section : mSections) {
+            if (section.getId().equals(sectionId)) {
+                return section;
+            }
+        }
+        return null;
+    }
+
+    @NonNull
+    @Override
+    public List<Section> getSections() {
+        return new ArrayList<>(mSections);
     }
 }

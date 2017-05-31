@@ -22,7 +22,7 @@ import android.view.ContextThemeWrapper;
 
 import java.io.IOException;
 
-import io.mattcarroll.hover.HoverMenuAdapter;
+import io.mattcarroll.hover.defaulthovermenu.HoverMenu;
 import io.mattcarroll.hover.defaulthovermenu.window.HoverMenuService;
 import io.mattcarroll.hover.hoverdemo.kitchensink.theming.HoverTheme;
 
@@ -37,7 +37,7 @@ public class DemoHoverMenuService extends HoverMenuService {
         context.startService(new Intent(context, DemoHoverMenuService.class));
     }
 
-    private DemoHoverMenuAdapter mDemoHoverMenuAdapter;
+    private DemoHoverMenu mDemoHoverMenu;
 
     @Override
     public void onCreate() {
@@ -57,18 +57,18 @@ public class DemoHoverMenuService extends HoverMenuService {
     }
 
     @Override
-    protected HoverMenuAdapter createHoverMenuAdapter(@NonNull Intent intent) {
+    protected HoverMenu createHoverMenu(@NonNull Intent intent) {
         try {
-            mDemoHoverMenuAdapter = new DemoHoverMenuFactory().createDemoMenuFromCode(getContextForHoverMenu(), Bus.getInstance());
+            mDemoHoverMenu = new DemoHoverMenuFactory().createDemoMenuFromCode(getContextForHoverMenu(), Bus.getInstance());
 //            mDemoHoverMenuAdapter = new DemoHoverMenuFactory().createDemoMenuFromFile(getContextForHoverMenu());
-            return mDemoHoverMenuAdapter;
+            return mDemoHoverMenu;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     public void onEventMainThread(@NonNull HoverTheme newTheme) {
-        mDemoHoverMenuAdapter.setTheme(newTheme);
+        mDemoHoverMenu.setTheme(newTheme);
     }
 
 }

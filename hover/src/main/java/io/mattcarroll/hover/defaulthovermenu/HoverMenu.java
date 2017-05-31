@@ -4,59 +4,41 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.util.ListUpdateCallback;
-import android.util.Log;
 import android.view.View;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import io.mattcarroll.hover.HoverMenuAdapter;
 import io.mattcarroll.hover.content.NavigatorContent;
 
 /**
  * TODO:
  */
-public class HoverMenu {
+public abstract class HoverMenu {
 
     private static final String TAG = "HoverMenu";
 
-    private HoverMenuAdapter mAdapter;
     private List<Section> mSections = new ArrayList<>();
     private ListUpdateCallback mListUpdateCallback;
 
-    public HoverMenu(@NonNull HoverMenuAdapter adapter) {
-        mAdapter = adapter;
-        mSections = createSections(mAdapter);
+    abstract public int getSectionCount();
 
-        mAdapter.addContentChangeListener(new HoverMenuAdapter.ContentChangeListener() {
-            @Override
-            public void onContentChange(@NonNull HoverMenuAdapter adapter) {
-                updateSections();
-            }
-        });
+    @Nullable
+    abstract public Section getSection(int index);
+
+    @Nullable
+    abstract public Section getSection(@NonNull SectionId sectionId);
+
+    @NonNull
+    abstract public List<Section> getSections();
+
+    void setUpdatedCallback(@Nullable ListUpdateCallback listUpdatedCallback) {
+        mListUpdateCallback = listUpdatedCallback;
     }
 
-    private List<Section> createSections(@NonNull HoverMenuAdapter adapter) {
-        List<Section> sections = new ArrayList<>();
-        for (int i = 0; i < adapter.getTabCount(); ++i) {
-            Section section = new Section(
-                    new Section.SectionId(adapter.getTabId(i)),
-                    adapter.getTabView(i),
-                    adapter.getNavigatorContent(i)
-            );
-
-            Log.d(TAG, "Creating new Section: " + (i) + ", ID: " + section.getId());
-            Log.d(TAG, " - tab View: " + section.getTabView().hashCode());
-            Log.d(TAG, " - screen: " + section.getContent().hashCode());
-
-            sections.add(section);
-        }
-        return sections;
-    }
-
-    private void updateSections() {
+    public void notifyMenuChanged() {
         List<Section> oldSections = mSections;
-        List<Section> newSections = createSections(mAdapter);
+        List<Section> newSections = getSections();
         mSections = newSections;
 
         if (null != mListUpdateCallback) {
@@ -68,27 +50,34 @@ public class HoverMenu {
         }
     }
 
-    public int getSectionCount() {
-        return mSections.size();
-    }
+    public static class SectionId {
 
-    @Nullable
-    public Section getSection(int index) {
-        return mSections.get(index);
-    }
+        private String mId;
 
-    @Nullable
-    public Section getSection(@NonNull Section.SectionId sectionId) {
-        for (Section section : mSections) {
-            if (sectionId.equals(section.getId())) {
-                return section;
-            }
+        public SectionId(@NonNull String id) {
+            mId = id;
         }
-        return null;
-    }
 
-    public void setUpdatedCallback(@Nullable ListUpdateCallback listUpdatedCallback) {
-        mListUpdateCallback = listUpdatedCallback;
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            SectionId sectionId = (SectionId) o;
+
+            return mId.equals(sectionId.mId);
+
+        }
+
+        @Override
+        public int hashCode() {
+            return mId.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            return mId;
+        }
     }
 
     public static class Section {
@@ -97,12 +86,11 @@ public class HoverMenu {
         private final View mTabView;
         private final NavigatorContent mContent;
 
-        private Section(@NonNull SectionId id, @NonNull View tabView, @NonNull NavigatorContent content) {
+        public Section(@NonNull SectionId id, @NonNull View tabView, @NonNull NavigatorContent content) {
             mId = id;
             mTabView = tabView;
             mContent = content;
         }
-
 
         @NonNull
         public SectionId getId() {
@@ -117,36 +105,6 @@ public class HoverMenu {
         @NonNull
         public NavigatorContent getContent() {
             return mContent;
-        }
-
-        public static class SectionId {
-
-            private String mId;
-
-            public SectionId(@NonNull String id) {
-                mId = id;
-            }
-
-            @Override
-            public boolean equals(Object o) {
-                if (this == o) return true;
-                if (o == null || getClass() != o.getClass()) return false;
-
-                SectionId sectionId = (SectionId) o;
-
-                return mId.equals(sectionId.mId);
-
-            }
-
-            @Override
-            public int hashCode() {
-                return mId.hashCode();
-            }
-
-            @Override
-            public String toString() {
-                return mId;
-            }
         }
     }
 
