@@ -11,7 +11,7 @@ import android.view.View;
 import java.util.Collections;
 import java.util.List;
 
-import io.mattcarroll.hover.defaulthovermenu.HoverMenu;
+import io.mattcarroll.hover.HoverMenu;
 
 /**
  * A HoverMenu provides the Sections that are displayed in the HoverMenuView. Each Section has an

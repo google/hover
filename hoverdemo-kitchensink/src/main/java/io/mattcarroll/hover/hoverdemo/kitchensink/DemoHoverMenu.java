@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.mattcarroll.hover.content.NavigatorContent;
-import io.mattcarroll.hover.defaulthovermenu.HoverMenu;
+import io.mattcarroll.hover.HoverMenu;
 import io.mattcarroll.hover.hoverdemo.kitchensink.theming.HoverTheme;
 import io.mattcarroll.hover.hoverdemo.kitchensink.ui.DemoTabView;
 

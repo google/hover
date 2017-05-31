@@ -22,8 +22,8 @@ import android.view.ContextThemeWrapper;
 
 import java.io.IOException;
 
-import io.mattcarroll.hover.defaulthovermenu.HoverMenu;
-import io.mattcarroll.hover.defaulthovermenu.window.HoverMenuService;
+import io.mattcarroll.hover.HoverMenu;
+import io.mattcarroll.hover.window.HoverMenuService;
 import io.mattcarroll.hover.hoverdemo.kitchensink.theming.HoverTheme;
 
 /**

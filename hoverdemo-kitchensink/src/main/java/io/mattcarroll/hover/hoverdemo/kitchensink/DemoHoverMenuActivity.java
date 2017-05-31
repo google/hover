@@ -22,7 +22,7 @@ import android.view.ContextThemeWrapper;
 
 import java.io.IOException;
 
-import io.mattcarroll.hover.defaulthovermenu.view.ViewHover;
+import io.mattcarroll.hover.view.ViewHover;
 
 /**
  * Presents a Hover menu within an Activity (instead of presenting it on top of all other Windows).

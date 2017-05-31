@@ -18,8 +18,8 @@ import java.util.Collections;
 import java.util.List;
 
 import io.mattcarroll.hover.content.NavigatorContent;
-import io.mattcarroll.hover.defaulthovermenu.HoverMenu;
-import io.mattcarroll.hover.defaulthovermenu.window.HoverMenuService;
+import io.mattcarroll.hover.HoverMenu;
+import io.mattcarroll.hover.window.HoverMenuService;
 
 /**
  * Extend {@link HoverMenuService} to get a Hover menu that displays the tabs and content

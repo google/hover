@@ -26,12 +26,12 @@ import java.util.UUID;
 
 import de.greenrobot.event.EventBus;
 import io.mattcarroll.hover.content.NavigatorContent;
-import io.mattcarroll.hover.defaulthovermenu.menus.DoNothingMenuAction;
-import io.mattcarroll.hover.defaulthovermenu.menus.Menu;
-import io.mattcarroll.hover.defaulthovermenu.menus.MenuItem;
-import io.mattcarroll.hover.defaulthovermenu.menus.MenuListNavigatorContent;
-import io.mattcarroll.hover.defaulthovermenu.menus.ShowSubmenuMenuAction;
-import io.mattcarroll.hover.defaulthovermenu.toolbar.ToolbarNavigatorContent;
+import io.mattcarroll.hover.content.menus.DoNothingMenuAction;
+import io.mattcarroll.hover.content.menus.Menu;
+import io.mattcarroll.hover.content.menus.MenuItem;
+import io.mattcarroll.hover.content.menus.MenuListNavigatorContent;
+import io.mattcarroll.hover.content.menus.ShowSubmenuMenuAction;
+import io.mattcarroll.hover.content.toolbar.ToolbarNavigatorContent;
 import io.mattcarroll.hover.hoverdemo.kitchensink.appstate.AppStateNavigatorContent;
 import io.mattcarroll.hover.hoverdemo.kitchensink.colorselection.ColorSelectionNavigatorContent;
 import io.mattcarroll.hover.hoverdemo.kitchensink.introduction.HoverIntroductionNavigatorContent;

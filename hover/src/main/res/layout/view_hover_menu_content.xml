@@ -6,12 +6,12 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     >
-    <io.mattcarroll.hover.defaulthovermenu.HoverMenuTabSelectorView
+    <io.mattcarroll.hover.HoverMenuTabSelectorView
         android:id="@+id/tabselector"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         />
-    <!--<io.mattcarroll.hover.defaulthovermenu.toolbar.ToolbarNavigatorContent-->
+    <!--<io.mattcarroll.hover.content.toolbar.ToolbarNavigatorContent>-->
         <!--android:id="@+id/view_content_container"-->
         <!--android:layout_width="match_parent"-->
         <!--android:layout_height="0dp"-->
