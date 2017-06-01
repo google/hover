@@ -2,8 +2,10 @@ package io.mattcarroll.hover;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.TypedArray;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
@@ -15,6 +17,8 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.RelativeLayout;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -39,6 +43,12 @@ public class HoverMenuView extends RelativeLayout {
     private static final String SAVED_STATE_DOCK_POSITION = "dock_position";
     private static final String SAVED_STATE_DOCKS_SIDE = "dock_side";
     private static final String SAVED_STATE_SELECTED_SECTION = "selected_section";
+
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({ LEFT, RIGHT })
+    private @interface DockSide { }
+    private static final int LEFT = 0;
+    private static final int RIGHT = 1;
 
     @NonNull
     public static HoverMenuView createForWindow(@NonNull Context context,
@@ -78,8 +88,13 @@ public class HoverMenuView extends RelativeLayout {
 
     // Constructor used for inflating from XML.
     public HoverMenuView(@NonNull Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
+        this(context, attrs, null);
+    }
 
+    private HoverMenuView(@NonNull Context context,
+                          @Nullable AttributeSet attrs,
+                          @Nullable SharedPreferences savedInstanceState) {
+        super(context, attrs);
         int touchDiameter = context.getResources().getDimensionPixelSize(R.dimen.exit_radius);
         int slop = ViewConfiguration.get(context).getScaledTouchSlop();
         mDragger = new InViewDragger(
@@ -90,13 +105,10 @@ public class HoverMenuView extends RelativeLayout {
         mScreen = new Screen(this);
         mWindowViewController = null;
 
-        init(null);
-    }
+        if (null != attrs) {
+            applyAttributes(attrs);
+        }
 
-    private HoverMenuView(@NonNull Context context,
-                          @Nullable AttributeSet attrs,
-                          @Nullable SharedPreferences savedInstanceState) {
-        this(context, attrs);
         init(savedInstanceState);
     }
 
@@ -111,6 +123,19 @@ public class HoverMenuView extends RelativeLayout {
         init(savedInstanceState);
     }
 
+    private void applyAttributes(@NonNull AttributeSet attrs) {
+        TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.HoverMenuView);
+
+        try {
+            @DockSide
+            int dockSide = a.getInt(R.styleable.HoverMenuView_dockSide, LEFT);
+            float dockPosition = a.getFraction(R.styleable.HoverMenuView_dockPosition, 1, 1, 0.5f);
+            mCollapsedDock = new SideDock(dockPosition, LEFT == dockSide ? SideDock.LEFT : SideDock.RIGHT);
+        } finally {
+            a.recycle();
+        }
+    }
+
     private void init(@Nullable SharedPreferences savedInstanceState) {
         if (null != savedInstanceState) {
             restoreStateFromBundle(savedInstanceState);
@@ -118,6 +143,7 @@ public class HoverMenuView extends RelativeLayout {
         setFocusableInTouchMode(true); // For handling hardware back button presses.
     }
 
+    // TODO: when to call this?
     public void release() {
         Log.d(TAG, "Released.");
         mDragger.deactivate();
