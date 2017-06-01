@@ -236,9 +236,9 @@ public class HoverMenuView extends RelativeLayout {
                 prefs.getFloat(SAVED_STATE_DOCK_POSITION, 0.5f),
                 prefs.getInt(SAVED_STATE_DOCKS_SIDE, SideDock.LEFT)
         );
-        mSelectedSectionId = prefs.contains(SAVED_STATE_SELECTED_SECTION) ?
-                new HoverMenu.SectionId(prefs.getString(SAVED_STATE_SELECTED_SECTION, null)) :
-                null;
+        mSelectedSectionId = prefs.contains(SAVED_STATE_SELECTED_SECTION)
+                ? new HoverMenu.SectionId(prefs.getString(SAVED_STATE_SELECTED_SECTION, null))
+                : null;
 
         Log.d(TAG, "restoreStateFromBundle(). Position: "
                 + mCollapsedDock.getVerticalDockPositionPercentage()

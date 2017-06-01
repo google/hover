@@ -169,9 +169,9 @@ class HoverMenuViewStateCollapsed implements HoverMenuViewState {
 
     private void createDock() {
         if (null == mSideDock) {
-            mSideDock = null != mDropPoint ?
-                    new SideDock(mDropPoint, new Point(mScreen.getWidth(), mScreen.getHeight())):
-                    createInitialDock();
+            mSideDock = null != mDropPoint
+                    ? new SideDock(mDropPoint, new Point(mScreen.getWidth(), mScreen.getHeight()))
+                    : createInitialDock();
         }
     }
 

@@ -58,4 +58,8 @@ public class OverlayPermission {
                 Uri.parse("package:" + context.getPackageName())
         );
     }
+
+    private OverlayPermission() {
+        // Utility class.
+    }
 }

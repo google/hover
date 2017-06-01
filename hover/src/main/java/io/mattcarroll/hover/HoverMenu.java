@@ -19,16 +19,16 @@ public abstract class HoverMenu {
     private List<Section> mSections = new ArrayList<>();
     private ListUpdateCallback mListUpdateCallback;
 
-    abstract public int getSectionCount();
+    public abstract int getSectionCount();
 
     @Nullable
-    abstract public Section getSection(int index);
+    public abstract Section getSection(int index);
 
     @Nullable
-    abstract public Section getSection(@NonNull SectionId sectionId);
+    public abstract Section getSection(@NonNull SectionId sectionId);
 
     @NonNull
-    abstract public List<Section> getSections();
+    public abstract List<Section> getSections();
 
     void setUpdatedCallback(@Nullable ListUpdateCallback listUpdatedCallback) {
         mListUpdateCallback = listUpdatedCallback;
@@ -136,8 +136,8 @@ public abstract class HoverMenu {
             Section oldSection = mOldList.get(oldItemPosition);
             Section newSection = mNewList.get(newItemPosition);
 
-            return oldSection.mTabView.equals(newSection.getTabView()) &&
-                    oldSection.getContent().equals(newSection.getContent());
+            return oldSection.mTabView.equals(newSection.getTabView())
+                    && oldSection.getContent().equals(newSection.getContent());
         }
     }
 }

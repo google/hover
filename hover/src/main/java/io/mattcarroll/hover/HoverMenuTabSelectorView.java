@@ -24,8 +24,6 @@ import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
 
-import io.mattcarroll.hover.R;
-
 /**
  * {@code View} that draws a triangle selector icon at a given horizontal position within its bounds.
  */
@@ -57,7 +55,7 @@ public class HoverMenuTabSelectorView extends View {
     private void init() {
         mSelectorWidthPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, DEFAULT_SELECTOR_WIDTH_DP, getResources().getDisplayMetrics());
         mSelectorHeightPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, DEFAULT_SELECTOR_HEIGHT_DP, getResources().getDisplayMetrics());
-        setSelectorPosition(mSelectorWidthPx/2);
+        setSelectorPosition(mSelectorWidthPx / 2);
 
         mSelectorPaint = new Paint();
         mSelectorPaint.setColor(getResources().getColor(R.color.floatingmenu_popup_color));

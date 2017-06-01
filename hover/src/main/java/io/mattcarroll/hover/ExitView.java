@@ -10,8 +10,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.RelativeLayout;
 
-import io.mattcarroll.hover.R;
-
 /**
  * Fullscreen View that provides an exit "drop zone" for users to exit the Hover Menu.
  */

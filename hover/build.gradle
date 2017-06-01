@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply plugin: 'checkstyle'
 
 version = '0.9.7'
 
@@ -65,3 +66,24 @@ afterEvaluate {
 // This disabled Javadoc tasks because its breaking the release build.  Since Javadocs are
 // not mission critical, they will remain disabled until the issue can be debugged.
 tasks.withType(Javadoc).all { enabled = false }
+
+//------ Checkstyle -------
+task checkstyle(type: Checkstyle) {
+    showViolations = true
+    configFile file("../config/checkstyle.xml")
+
+    source 'src/main/java'
+    include '**/*.java'
+    exclude '**/gen/**'
+    exclude '**/R.java'
+    exclude '**/BuildConfig.java'
+
+    // empty classpath
+    classpath = files()
+}
+
+project.afterEvaluate {
+    preBuild.dependsOn('checkstyle')
+    assemble.dependsOn('lint')
+    check.dependsOn('checkstyle')
+}

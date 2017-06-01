@@ -70,7 +70,7 @@ public class InViewDragger implements Dragger {
                     );
 
                     if (mIsDragging || !isTouchWithinSlopOfOriginalTouch()) {
-                        if(!mIsDragging) {
+                        if (!mIsDragging) {
                             // Dragging just started
                             Log.d(TAG, "MOVE Start Drag.");
                             mIsDragging = true;
@@ -92,9 +92,9 @@ public class InViewDragger implements Dragger {
                     }
 
                     return true;
+                default:
+                    return false;
             }
-
-            return false;
         }
     };
 

@@ -132,7 +132,7 @@ public abstract class HoverMenuService extends Service {
         return this;
     }
 
-    abstract protected HoverMenu createHoverMenu(@NonNull Intent intent);
+    protected abstract HoverMenu createHoverMenu(@NonNull Intent intent);
 
     /**
      * Hook method for subclasses to take action when the user exits the HoverMenu. This method runs

@@ -33,9 +33,9 @@ public class SideDock {
     }
 
     public Point calculateDockPosition(@NonNull Point screenSize, int tabSize) {
-        int x = LEFT == mSide ?
-                ((int) (tabSize * 0.25)) :
-                screenSize.x - ((int) (tabSize * 0.25));
+        int x = LEFT == mSide
+                ? ((int) (tabSize * 0.25))
+                : screenSize.x - ((int) (tabSize * 0.25));
 
         int y = (int) (screenSize.y * mVerticalDockPositionPercentage);
 

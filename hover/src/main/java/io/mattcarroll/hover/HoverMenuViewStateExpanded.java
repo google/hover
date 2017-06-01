@@ -37,9 +37,9 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
             mScreen.getShadeView().show();
             mScreen.getContentDisplay().activeTabIs(mPrimaryTab);
 
-            HoverMenu.Section activeSection = null != mActiveSectionId ?
-                    mMenu.getSection(mActiveSectionId) :
-                    mMenu.getSection(0);
+            HoverMenu.Section activeSection = null != mActiveSectionId
+                    ? mMenu.getSection(mActiveSectionId)
+                    : mMenu.getSection(0);
             mScreen.getContentDisplay().displayContent(activeSection.getContent());
 
             if (null != mListener) {

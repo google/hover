@@ -18,7 +18,6 @@ package io.mattcarroll.hover.window;
 import android.content.Context;
 import android.graphics.Point;
 import android.graphics.PointF;
-import android.graphics.Rect;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -72,7 +71,7 @@ public class InWindowDragger implements Dragger {
                     );
 
                     if (mIsDragging || !isTouchWithinSlopOfOriginalTouch()) {
-                        if(!mIsDragging) {
+                        if (!mIsDragging) {
                             // Dragging just started
                             Log.d(TAG, "MOVE Start Drag.");
                             mIsDragging = true;
@@ -95,9 +94,9 @@ public class InWindowDragger implements Dragger {
                     }
 
                     return true;
+                default:
+                    return false;
             }
-
-            return false;
         }
     };
 

@@ -16,7 +16,6 @@
 package io.mattcarroll.hover;
 
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.support.annotation.NonNull;
 
 /**
