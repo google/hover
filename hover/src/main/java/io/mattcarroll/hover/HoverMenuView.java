@@ -13,7 +13,10 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.RelativeLayout;
 
-import io.mattcarroll.hover.view.InViewGroupDragger;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
+
+import io.mattcarroll.hover.view.InViewDragger;
 import io.mattcarroll.hover.window.InWindowDragger;
 import io.mattcarroll.hover.window.WindowViewController;
 
@@ -57,7 +60,7 @@ public class HoverMenuView extends RelativeLayout {
                                               @NonNull ViewGroup container) {
         int touchDiameter = context.getResources().getDimensionPixelSize(R.dimen.exit_radius);
         int slop = ViewConfiguration.get(context).getScaledTouchSlop();
-        InViewGroupDragger dragger = new InViewGroupDragger(
+        InViewDragger dragger = new InViewDragger(
                 container,
                 touchDiameter,
                 slop
@@ -76,8 +79,9 @@ public class HoverMenuView extends RelativeLayout {
     private HoverMenu mMenu;
     private boolean mIsAddedToWindow;
     private boolean mIsExpanded = false;
-    private ExitListener mExitListener;
     private boolean mIsDebugMode = false;
+    private OnExitListener mOnExitListener;
+    private final Set<OnExpandAndCollapseListener> mOnExpandAndCollapseListeners = new CopyOnWriteArraySet<>();
 
     private HoverMenuView(@NonNull Context context,
                           @NonNull Dragger dragger,
@@ -193,10 +197,6 @@ public class HoverMenuView extends RelativeLayout {
         mScreen.enableDrugMode(debugMode);
     }
 
-    public void setExitListener(@Nullable ExitListener listener) {
-        mExitListener = listener;
-    }
-
     public void setMenu(@Nullable HoverMenu menu) {
         mMenu = menu;
 
@@ -223,13 +223,17 @@ public class HoverMenuView extends RelativeLayout {
     private void createExpandedMenu() {
         Log.d(TAG, "Creating expanded menu. Selected section: " + mSelectedSectionId);
         mExpandedMenu = new HoverMenuViewStateExpanded(mSelectedSectionId);
+        mExpandedMenu.setMenu(mMenu);
         mExpandedMenu.setListener(new HoverMenuViewStateExpanded.Listener() {
             @Override
-            public void onExpanding() { }
+            public void onExpanding() {
+                notifyListenersExpanding();
+            }
 
             @Override
             public void onExpanded() {
                 mScreen.getContentDisplay().setVisibility(VISIBLE);
+                notifyListenersExpanded();
             }
 
             @Override
@@ -237,7 +241,6 @@ public class HoverMenuView extends RelativeLayout {
                 collapse();
             }
         });
-        mExpandedMenu.setMenu(mMenu);
     }
 
     private void collapse() {
@@ -263,6 +266,16 @@ public class HoverMenuView extends RelativeLayout {
         mCollapsedMenu.setMenu(mMenu);
         mCollapsedMenu.setListener(new HoverMenuViewStateCollapsed.Listener() {
             @Override
+            public void onCollapsing() {
+                notifyListenersCollapsing();
+            }
+
+            @Override
+            public void onCollapsed() {
+                notifyListenersCollapsed();
+            }
+
+            @Override
             public void onDragStart() {
                 mScreen.getExitView().setVisibility(VISIBLE);
             }
@@ -287,11 +300,51 @@ public class HoverMenuView extends RelativeLayout {
             @Override
             public void onDroppedOnExit() {
                 Log.d(TAG, "Floating tab dropped on exit.");
-                if (null != mExitListener) {
-                    mExitListener.onExit();
+                if (null != mOnExitListener) {
+                    mOnExitListener.onExit();
                 }
             }
         });
+    }
+
+    public void setOnExitListener(@Nullable OnExitListener listener) {
+        mOnExitListener = listener;
+    }
+
+    public void addOnExpandAndCollapseListener(@NonNull OnExpandAndCollapseListener listener) {
+        mOnExpandAndCollapseListeners.add(listener);
+    }
+
+    public void removeOnExpandAndCollapseListener(@NonNull OnExpandAndCollapseListener listener) {
+        mOnExpandAndCollapseListeners.remove(listener);
+    }
+
+    private void notifyListenersExpanding() {
+        Log.i(TAG, "Notifying listeners that Hover is expanding.");
+        for (OnExpandAndCollapseListener listener : mOnExpandAndCollapseListeners) {
+            listener.onExpanding();
+        }
+    }
+
+    private void notifyListenersExpanded() {
+        Log.i(TAG, "Notifying listeners that Hover is now expanded.");
+        for (OnExpandAndCollapseListener listener : mOnExpandAndCollapseListeners) {
+            listener.onExpanded();
+        }
+    }
+
+    private void notifyListenersCollapsing() {
+        Log.i(TAG, "Notifying listeners that Hover is collapsing.");
+        for (OnExpandAndCollapseListener listener : mOnExpandAndCollapseListeners) {
+            listener.onCollapsing();
+        }
+    }
+
+    private void notifyListenersCollapsed() {
+        Log.i(TAG, "Notifying listeners that Hover is now collapsed.");
+        for (OnExpandAndCollapseListener listener : mOnExpandAndCollapseListeners) {
+            listener.onCollapsed();
+        }
     }
 
     // Only call this if using HoverMenuView directly in a window.

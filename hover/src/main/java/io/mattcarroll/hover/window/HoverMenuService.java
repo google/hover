@@ -26,7 +26,7 @@ import android.util.Log;
 import android.view.WindowManager;
 
 import io.mattcarroll.hover.content.Navigator;
-import io.mattcarroll.hover.ExitListener;
+import io.mattcarroll.hover.OnExitListener;
 import io.mattcarroll.hover.HoverMenu;
 import io.mattcarroll.hover.HoverMenuView;
 import io.mattcarroll.hover.overlay.OverlayPermission;
@@ -51,7 +51,7 @@ public abstract class HoverMenuService extends Service {
     private HoverMenuView mHoverMenuView;
     private boolean mIsRunning;
     private SharedPreferences mPrefs;
-    private ExitListener mOnMenuExitListener = new ExitListener() {
+    private OnExitListener mOnMenuOnExitListener = new OnExitListener() {
         @Override
         public void onExit() {
             Log.d(TAG, "Menu exit requested. Exiting.");
@@ -115,7 +115,7 @@ public abstract class HoverMenuService extends Service {
                 mPrefs,
                 new WindowViewController((WindowManager) getSystemService(Context.WINDOW_SERVICE))
         );
-        mHoverMenuView.setExitListener(mOnMenuExitListener);
+        mHoverMenuView.setOnExitListener(mOnMenuOnExitListener);
 
         HoverMenu hoverMenu = createHoverMenu(intent);
         mHoverMenuView.setMenu(hoverMenu);

@@ -20,6 +20,7 @@ class HoverMenuViewStateCollapsed implements HoverMenuViewState {
     private Point mDropPoint; // Where the floating tab is dropped before seeking its initial dock.
     private SideDock mSideDock;
     private boolean mHasControl = false;
+    private boolean mIsCollapsed = false;
     private boolean mIsDocked = false;
     private String mPrimaryTabId = null;
     private Dragger.DragListener mDragListener;
@@ -67,6 +68,10 @@ class HoverMenuViewStateCollapsed implements HoverMenuViewState {
         section = null != section ? section : mMenu.getSection(0);
         mFloatingTab = screen.createChainedTab(mPrimaryTabId, section.getTabView());
         mDragListener = new FloatingTabDragListener(this);
+        mIsCollapsed = false; // We're collapsing, not yet collapsed.
+        if (null != mListener) {
+            mListener.onCollapsing();
+        }
         createDock();
         sendToDock();
 
@@ -84,7 +89,7 @@ class HoverMenuViewStateCollapsed implements HoverMenuViewState {
 
         mHasControl = false;
         mIsDocked = false;
-        mDragger.deactivate();
+        deactivateDragger();
         mDragListener = null;
         otherController.takeControl(mScreen, mPrimaryTabId);
         mScreen = null;
@@ -155,13 +160,11 @@ class HoverMenuViewStateCollapsed implements HoverMenuViewState {
 
     private void moveToDock() {
         Log.d(TAG, "Moving floating tag to dock.");
-        deactivateDragger();
         Point dockPosition = mSideDock.calculateDockPosition(
                 new Point(mScreen.getWidth(), mScreen.getHeight()),
                 mFloatingTab.getTabSize()
         );
         mFloatingTab.moveTo(dockPosition);
-        activateDragger();
     }
 
     private void createDock() {
@@ -181,7 +184,13 @@ class HoverMenuViewStateCollapsed implements HoverMenuViewState {
         mIsDocked = true;
         activateDragger();
 
+        // We consider ourselves having gone from "collapsing" to "collapsed" upon the very first dock.
+        boolean didJustCollapse = !mIsCollapsed;
+        mIsCollapsed = true;
         if (null != mListener) {
+            if (didJustCollapse) {
+                mListener.onCollapsed();
+            }
             mListener.onDocked();
         }
     }
@@ -199,6 +208,10 @@ class HoverMenuViewStateCollapsed implements HoverMenuViewState {
     }
 
     public interface Listener {
+        void onCollapsing();
+
+        void onCollapsed();
+
         void onDragStart();
 
         void onDragEnd();

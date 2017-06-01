@@ -29,7 +29,7 @@ import java.util.Set;
 
 import io.mattcarroll.hover.BuildConfig;
 import io.mattcarroll.hover.R;
-import io.mattcarroll.hover.ExitListener;
+import io.mattcarroll.hover.OnExitListener;
 import io.mattcarroll.hover.HoverMenu;
 import io.mattcarroll.hover.HoverMenuView;
 
@@ -43,10 +43,10 @@ public class ViewHover extends FrameLayout {
     private static final String PREFS_FILE = "viewhovermenu";
 
     private HoverMenuView mHoverMenuView;
-    private InViewGroupDragger mDragger;
+//    private InViewDragger mDragger;
     private HoverMenu mMenu;
     private SharedPreferences mPrefs;
-    private Set<ExitListener> mOnExitListeners = new HashSet<>();
+    private Set<OnExitListener> mOnOnExitListeners = new HashSet<>();
 
     public ViewHover(Context context, @Nullable SharedPreferences savedInstanceState) {
         super(context);
@@ -61,9 +61,9 @@ public class ViewHover extends FrameLayout {
     private void init(@Nullable SharedPreferences savedInstanceState) {
         mPrefs = getContext().getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE);
 
-        int touchDiameter = getResources().getDimensionPixelSize(R.dimen.exit_radius);
-        mDragger = new InViewGroupDragger(this, touchDiameter, ViewConfiguration.get(getContext()).getScaledTouchSlop());
-        mDragger.enableDebugMode(BuildConfig.DEBUG);
+//        int touchDiameter = getResources().getDimensionPixelSize(R.dimen.exit_radius);
+//        mDragger = new InViewDragger(this, touchDiameter, ViewConfiguration.get(getContext()).getScaledTouchSlop());
+//        mDragger.enableDebugMode(BuildConfig.DEBUG);
         mHoverMenuView = HoverMenuView.createForView(getContext(), savedInstanceState, this);
         mHoverMenuView.setId(R.id.hovermenu);
         addView(mHoverMenuView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
@@ -75,9 +75,9 @@ public class ViewHover extends FrameLayout {
 
     @Override
     protected void onDetachedFromWindow() {
-        removeView(mHoverMenuView);
-        mHoverMenuView = null;
-        mDragger.deactivate(); // TODO: should be called by HoverMenuView in some kind of release() method.
+//        removeView(mHoverMenuView);
+//        mHoverMenuView = null;
+//        mDragger.deactivate(); // TODO: should be called by HoverMenuView in some kind of release() method.
         super.onDetachedFromWindow();
     }
 
@@ -110,16 +110,16 @@ public class ViewHover extends FrameLayout {
         return mHoverMenuView;
     }
 
-    public void addOnExitListener(@NonNull ExitListener onExitListener) {
-        mOnExitListeners.add(onExitListener);
+    public void addOnExitListener(@NonNull OnExitListener onOnExitListener) {
+        mOnOnExitListeners.add(onOnExitListener);
     }
 
-    public void removeOnExitListener(@NonNull ExitListener onExitListener) {
-        mOnExitListeners.remove(onExitListener);
+    public void removeOnExitListener(@NonNull OnExitListener onOnExitListener) {
+        mOnOnExitListeners.remove(onOnExitListener);
     }
 
     private void notifyOnExitListeners() {
-        for (ExitListener listener : mOnExitListeners) {
+        for (OnExitListener listener : mOnOnExitListeners) {
             listener.onExit();
         }
     }

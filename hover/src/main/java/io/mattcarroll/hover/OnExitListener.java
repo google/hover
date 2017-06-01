@@ -3,6 +3,6 @@ package io.mattcarroll.hover;
 /**
  * TODO
  */
-public interface ExitListener {
+public interface OnExitListener {
     void onExit();
 }
