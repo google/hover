@@ -28,6 +28,7 @@ import android.view.WindowManager;
 import io.mattcarroll.hover.HoverMenu;
 import io.mattcarroll.hover.HoverMenuView;
 import io.mattcarroll.hover.OnExitListener;
+import io.mattcarroll.hover.SideDock;
 import io.mattcarroll.hover.overlay.OverlayPermission;
 
 /**
@@ -111,8 +112,9 @@ public abstract class HoverMenuService extends Service {
     private void initHoverMenu(@NonNull Intent intent) {
         mHoverMenuView = HoverMenuView.createForWindow(
                 this,
+                new WindowViewController((WindowManager) getSystemService(Context.WINDOW_SERVICE)),
                 mPrefs,
-                new WindowViewController((WindowManager) getSystemService(Context.WINDOW_SERVICE))
+                new SideDock(0.5f, SideDock.RIGHT)
         );
         mHoverMenuView.setOnExitListener(mOnMenuOnExitListener);
 

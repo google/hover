@@ -13,7 +13,6 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.RelativeLayout;
 
@@ -52,8 +51,16 @@ public class HoverMenuView extends RelativeLayout {
 
     @NonNull
     public static HoverMenuView createForWindow(@NonNull Context context,
+                                                @NonNull WindowViewController windowViewController,
+                                                @Nullable SharedPreferences savedInstanceState) {
+        return createForWindow(context, windowViewController, savedInstanceState, null);
+    }
+
+    @NonNull
+    public static HoverMenuView createForWindow(@NonNull Context context,
+                                                @NonNull WindowViewController windowViewController,
                                                 @Nullable SharedPreferences savedInstanceState,
-                                                @NonNull WindowViewController windowViewController) {
+                                                @Nullable SideDock initialDock) {
         int touchDiameter = context.getResources().getDimensionPixelSize(R.dimen.exit_radius);
         int slop = ViewConfiguration.get(context).getScaledTouchSlop();
         InWindowDragger dragger = new InWindowDragger(
@@ -63,7 +70,7 @@ public class HoverMenuView extends RelativeLayout {
                 slop
         );
 
-        return new HoverMenuView(context, dragger, savedInstanceState, windowViewController);
+        return new HoverMenuView(context, dragger, windowViewController, savedInstanceState, initialDock);
     }
 
     @NonNull
@@ -114,12 +121,14 @@ public class HoverMenuView extends RelativeLayout {
 
     private HoverMenuView(@NonNull Context context,
                           @NonNull Dragger dragger,
+                          @Nullable WindowViewController windowViewController,
                           @Nullable SharedPreferences savedInstanceState,
-                          @Nullable WindowViewController windowViewController) {
+                          @Nullable SideDock initialDockPosition) {
         super(context);
         mDragger = dragger;
         mScreen = new Screen(this);
         mWindowViewController = windowViewController;
+        mCollapsedDock = initialDockPosition;
         init(savedInstanceState);
     }
 
