@@ -6,7 +6,9 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.AttributeSet;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
@@ -56,17 +58,8 @@ public class HoverMenuView extends RelativeLayout {
 
     @NonNull
     public static HoverMenuView createForView(@NonNull Context context,
-                                              @Nullable SharedPreferences savedInstanceState,
-                                              @NonNull ViewGroup container) {
-        int touchDiameter = context.getResources().getDimensionPixelSize(R.dimen.exit_radius);
-        int slop = ViewConfiguration.get(context).getScaledTouchSlop();
-        InViewDragger dragger = new InViewDragger(
-                container,
-                touchDiameter,
-                slop
-        );
-
-        return new HoverMenuView(context, dragger, savedInstanceState, null);
+                                              @Nullable SharedPreferences savedInstanceState) {
+        return new HoverMenuView(context, null, savedInstanceState);
     }
 
     private final WindowViewController mWindowViewController;
@@ -83,6 +76,30 @@ public class HoverMenuView extends RelativeLayout {
     private OnExitListener mOnExitListener;
     private final Set<OnExpandAndCollapseListener> mOnExpandAndCollapseListeners = new CopyOnWriteArraySet<>();
 
+    // Constructor used for inflating from XML.
+    public HoverMenuView(@NonNull Context context, @Nullable AttributeSet attrs) {
+        super(context, attrs);
+
+        int touchDiameter = context.getResources().getDimensionPixelSize(R.dimen.exit_radius);
+        int slop = ViewConfiguration.get(context).getScaledTouchSlop();
+        mDragger = new InViewDragger(
+                this,
+                touchDiameter,
+                slop
+        );
+        mScreen = new Screen(this);
+        mWindowViewController = null;
+
+        init(null);
+    }
+
+    private HoverMenuView(@NonNull Context context,
+                          @Nullable AttributeSet attrs,
+                          @Nullable SharedPreferences savedInstanceState) {
+        this(context, attrs);
+        init(savedInstanceState);
+    }
+
     private HoverMenuView(@NonNull Context context,
                           @NonNull Dragger dragger,
                           @Nullable SharedPreferences savedInstanceState,
@@ -91,10 +108,14 @@ public class HoverMenuView extends RelativeLayout {
         mDragger = dragger;
         mScreen = new Screen(this);
         mWindowViewController = windowViewController;
+        init(savedInstanceState);
+    }
 
+    private void init(@Nullable SharedPreferences savedInstanceState) {
         if (null != savedInstanceState) {
             restoreStateFromBundle(savedInstanceState);
         }
+        setFocusableInTouchMode(true); // For handling hardware back button presses.
     }
 
     public void release() {
@@ -190,6 +211,29 @@ public class HoverMenuView extends RelativeLayout {
                 + ", Section ID: " + mSelectedSectionId);
     }
 
+    @Override
+    public boolean dispatchKeyEventPreIme(KeyEvent event) {
+        // Intercept the hardware back button press if we're expanded. When it's
+        // pressed, we'll collapse.
+        if (mIsExpanded && KeyEvent.KEYCODE_BACK == event.getKeyCode()) {
+            KeyEvent.DispatcherState state = getKeyDispatcherState();
+            if (state != null) {
+                if (KeyEvent.ACTION_DOWN == event.getAction()) {
+                    state.startTracking(event, this);
+                    return true;
+                } else if (KeyEvent.ACTION_UP == event.getAction()) {
+                    onBackPressed();
+                    return true;
+                }
+            }
+        }
+        return super.dispatchKeyEventPreIme(event);
+    }
+
+    private void onBackPressed() {
+        collapse();
+    }
+
     public void enableDebugMode(boolean debugMode) {
         mIsDebugMode = debugMode;
 
@@ -211,6 +255,7 @@ public class HoverMenuView extends RelativeLayout {
             if (null != mWindowViewController) {
                 mWindowViewController.makeTouchable(this);
             }
+            requestFocus(); // For handling hardware back button presses.
 
             createExpandedMenu();
 
@@ -249,6 +294,7 @@ public class HoverMenuView extends RelativeLayout {
             if (null != mWindowViewController) {
                 mWindowViewController.makeUntouchable(this);
             }
+            clearFocus(); // For handling hardware back button presses.
 
             createCollapsedMenu();
 
