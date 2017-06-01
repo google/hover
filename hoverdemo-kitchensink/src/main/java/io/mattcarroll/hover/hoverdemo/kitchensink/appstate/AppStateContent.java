@@ -23,21 +23,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
 
-import io.mattcarroll.hover.content.Navigator;
-import io.mattcarroll.hover.content.NavigatorContent;
+import io.mattcarroll.hover.Content;
 import io.mattcarroll.hover.hoverdemo.kitchensink.Bus;
 import io.mattcarroll.hover.hoverdemo.kitchensink.R;
 import io.mattcarroll.hover.hoverdemo.kitchensink.theming.HoverTheme;
 import io.mattcarroll.hover.hoverdemo.kitchensink.theming.HoverThemeManager;
 
 /**
- * {@link NavigatorContent} that displays the Activity and Service state of the app.
+ * {@link Content} that displays the Activity and Service state of the app.
  */
-public class AppStateNavigatorContent extends FrameLayout implements NavigatorContent {
+public class AppStateContent extends FrameLayout implements Content {
 
     private AppStateAdapter mAppStateAdapter;
 
-    public AppStateNavigatorContent(Context context) {
+    public AppStateContent(Context context) {
         super(context);
         init();
     }
@@ -83,7 +82,7 @@ public class AppStateNavigatorContent extends FrameLayout implements NavigatorCo
     }
 
     @Override
-    public void onShown(@NonNull Navigator navigator) {
+    public void onShown() {
         mAppStateAdapter.setServiceStates(AppStateTracker.getInstance().getServiceStates());
     }
 

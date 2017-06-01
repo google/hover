@@ -29,7 +29,7 @@ public class ShowSubmenuMenuAction implements MenuAction {
 
     private final Menu mMenu;
     private final View mEmptyView;
-    private MenuListNavigatorContent mNavigatorContent;
+    private MenuListContent mNavigatorContent;
 
     public ShowSubmenuMenuAction(@NonNull Menu menu) {
         this(menu, null);
@@ -44,7 +44,7 @@ public class ShowSubmenuMenuAction implements MenuAction {
     public void execute(@NonNull Context context, @NonNull Navigator navigator) {
         if (null == mNavigatorContent) {
             // This is our first time being activated. Create our menu display.
-            mNavigatorContent = new MenuListNavigatorContent(context, mMenu, mEmptyView);
+            mNavigatorContent = new MenuListContent(context, mMenu, mEmptyView);
         }
 
         navigator.pushContent(mNavigatorContent);

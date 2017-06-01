@@ -9,8 +9,6 @@ import android.view.View;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.mattcarroll.hover.content.NavigatorContent;
-
 /**
  * TODO:
  */
@@ -84,9 +82,9 @@ public abstract class HoverMenu {
 
         private final SectionId mId;
         private final View mTabView;
-        private final NavigatorContent mContent;
+        private final Content mContent;
 
-        public Section(@NonNull SectionId id, @NonNull View tabView, @NonNull NavigatorContent content) {
+        public Section(@NonNull SectionId id, @NonNull View tabView, @NonNull Content content) {
             mId = id;
             mTabView = tabView;
             mContent = content;
@@ -103,7 +101,7 @@ public abstract class HoverMenu {
         }
 
         @NonNull
-        public NavigatorContent getContent() {
+        public Content getContent() {
             return mContent;
         }
     }

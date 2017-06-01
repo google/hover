@@ -31,18 +31,18 @@ import android.widget.LinearLayout;
 
 import io.mattcarroll.hover.R;
 import io.mattcarroll.hover.content.Navigator;
-import io.mattcarroll.hover.content.NavigatorContent;
+import io.mattcarroll.hover.Content;
 
 import java.util.Stack;
 
 /**
  * {@link Navigator} implementation  that displays content with a {@link Toolbar} on top..
  */
-public class ToolbarNavigatorContent extends LinearLayout implements ToolbarNavigator, NavigatorContent {
+public class ToolbarNavigatorContent extends LinearLayout implements ToolbarNavigator, Content {
 
     private Toolbar mToolbar;
     private Drawable mBackArrowDrawable;
-    private Stack<NavigatorContent> mContentStack;
+    private Stack<Content> mContentStack;
     private FrameLayout mContentContainer;
     private LayoutParams mContentLayoutParams;
 
@@ -92,7 +92,7 @@ public class ToolbarNavigatorContent extends LinearLayout implements ToolbarNavi
     }
 
     @Override
-    public void pushContent(@NonNull NavigatorContent content) {
+    public void pushContent(@NonNull Content content) {
         // Remove the currently visible content (if there is any).
         if (!mContentStack.isEmpty()) {
             mContentContainer.removeView(mContentStack.peek().getView());
@@ -142,13 +142,13 @@ public class ToolbarNavigatorContent extends LinearLayout implements ToolbarNavi
         removeCurrentContent();
     }
 
-    private void showContent(@NonNull NavigatorContent content) {
+    private void showContent(@NonNull Content content) {
         mContentContainer.addView(content.getView(), mContentLayoutParams);
-        content.onShown(this);
+        content.onShown();
     }
 
     private void removeCurrentContent() {
-        NavigatorContent visibleContent = mContentStack.pop();
+        Content visibleContent = mContentStack.pop();
         mContentContainer.removeView(visibleContent.getView());
         visibleContent.onHidden();
     }
@@ -175,7 +175,7 @@ public class ToolbarNavigatorContent extends LinearLayout implements ToolbarNavi
     }
 
     @Override
-    public void onShown(@NonNull Navigator navigator) {
+    public void onShown() {
         // Do nothing.
     }
 

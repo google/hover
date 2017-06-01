@@ -23,20 +23,19 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import de.greenrobot.event.EventBus;
-import io.mattcarroll.hover.content.Navigator;
-import io.mattcarroll.hover.content.NavigatorContent;
+import io.mattcarroll.hover.Content;
 import io.mattcarroll.hover.hoverdemo.kitchensink.R;
 import io.mattcarroll.hover.hoverdemo.kitchensink.theming.HoverTheme;
 
 /**
  * Use this class to try adding your own content to the Hover menu.
  */
-public class PlaceholderNavigatorContent extends FrameLayout implements NavigatorContent {
+public class PlaceholderContent extends FrameLayout implements Content {
 
     private final EventBus mBus;
     private TextView mTitleTextView;
 
-    public PlaceholderNavigatorContent(@NonNull Context context, @NonNull EventBus bus) {
+    public PlaceholderContent(@NonNull Context context, @NonNull EventBus bus) {
         super(context);
         mBus = bus;
         init();
@@ -71,7 +70,7 @@ public class PlaceholderNavigatorContent extends FrameLayout implements Navigato
     }
 
     @Override
-    public void onShown(@NonNull Navigator navigator) {
+    public void onShown() {
 
     }
 

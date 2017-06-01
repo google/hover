@@ -15,10 +15,6 @@ import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
-import io.mattcarroll.hover.content.Navigator;
-import io.mattcarroll.hover.content.NavigatorContent;
-import io.mattcarroll.hover.content.DefaultNavigator;
-
 /**
  * TODO
  */
@@ -31,7 +27,7 @@ class ContentDisplay extends RelativeLayout {
     private Drawable mContentBackground;
     private HoverMenuTabSelectorView mTabSelectorView;
     private Tab mSelectedTab;
-    private Navigator mNavigator;
+    private Content mContent;
     private boolean mIsVisible = false;
 
     private final ViewTreeObserver.OnGlobalLayoutListener mMyVisibilityWatcher = new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -85,9 +81,6 @@ class ContentDisplay extends RelativeLayout {
         mContentBackground = ContextCompat.getDrawable(getContext(), R.drawable.round_rect_white);
         mContentView.setBackgroundDrawable(mContentBackground);
 
-        mNavigator = new DefaultNavigator(getContext(), true);
-        mContentView.addView(mNavigator.getView());
-
         getViewTreeObserver().addOnGlobalLayoutListener(mMyVisibilityWatcher);
     }
 
@@ -132,19 +125,20 @@ class ContentDisplay extends RelativeLayout {
         mTabSelectorView.setSelectorPosition(tabPosition.x);
     }
 
-    // TODO: change to Content after Navigator is working
-//    void displayContent(@NonNull Content content) {
-//        // TODO:
-//    }
+    public void displayContent(@Nullable Content content) {
+        if (null != mContent) {
+            mContentView.removeView(mContent.getView());
+        }
 
-    public void displayContent(@Nullable NavigatorContent content) {
-        mNavigator.clearContent();
-        mNavigator.pushContent(content);
+        mContent = content;
+        if (null != mContent) {
+            mContentView.addView(mContent.getView());
 
-        if (content.isFullscreen()) {
-            expandToScreenBounds();
-        } else {
-            wrapContent();
+            if (content.isFullscreen()) {
+                expandToScreenBounds();
+            } else {
+                wrapContent();
+            }
         }
     }
 

@@ -6,13 +6,12 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.TextView;
 
-import io.mattcarroll.hover.content.Navigator;
-import io.mattcarroll.hover.content.NavigatorContent;
+import io.mattcarroll.hover.Content;
 
 /**
  * A screen that is displayed in our Hello World Hover Menu.
  */
-public class HoverMenuScreen implements NavigatorContent {
+public class HoverMenuScreen implements Content {
 
     private final Context mContext;
     private final String mPageTitle;
@@ -46,7 +45,7 @@ public class HoverMenuScreen implements NavigatorContent {
     }
 
     @Override
-    public void onShown(@NonNull Navigator navigator) {
+    public void onShown() {
         // No-op.
     }
 

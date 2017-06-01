@@ -18,13 +18,15 @@ package io.mattcarroll.hover.content;
 import android.support.annotation.NonNull;
 import android.view.View;
 
+import io.mattcarroll.hover.Content;
+
 /**
  * A visual display that can push and pop {@code View}s in a content area. The size and location of
  * the content area is chosen by implementing classes.
  *
  * A {@code Navigator} also displays a title that can be set by a client.
  *
- * The content to display in a {@code Navigator} must be provided as a {@link NavigatorContent}. Each
+ * The content to display in a {@code Navigator} must be provided as a {@link Content}. Each
  * pushed {@code NavigatorContent} is retained in a navigation stack until a corresponding
  * {@link #popContent()} is called.  Therefore, {@code NavigatorContent}s must retain their {@code View}
  * and state until garbage collected.
@@ -42,7 +44,7 @@ public interface Navigator {
      *
      * @param content Content to display
      */
-    void pushContent(@NonNull NavigatorContent content);
+    void pushContent(@NonNull Content content);
 
     /**
      * Removes the current content {@code View} and restores the previous content {@code View}. If

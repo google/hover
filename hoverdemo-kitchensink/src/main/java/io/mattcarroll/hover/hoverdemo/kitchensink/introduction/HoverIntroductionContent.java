@@ -23,15 +23,14 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import de.greenrobot.event.EventBus;
-import io.mattcarroll.hover.content.Navigator;
-import io.mattcarroll.hover.content.NavigatorContent;
+import io.mattcarroll.hover.Content;
 import io.mattcarroll.hover.hoverdemo.kitchensink.R;
 import io.mattcarroll.hover.hoverdemo.kitchensink.theming.HoverTheme;
 
 /**
- * {@link NavigatorContent} that displays an introduction to Hover.
+ * {@link Content} that displays an introduction to Hover.
  */
-public class HoverIntroductionNavigatorContent extends FrameLayout implements NavigatorContent {
+public class HoverIntroductionContent extends FrameLayout implements Content {
 
     private final EventBus mBus;
     private View mLogo;
@@ -39,7 +38,7 @@ public class HoverIntroductionNavigatorContent extends FrameLayout implements Na
     private TextView mHoverTitleTextView;
     private TextView mGoalsTitleTextView;
 
-    public HoverIntroductionNavigatorContent(@NonNull Context context, @NonNull EventBus bus) {
+    public HoverIntroductionContent(@NonNull Context context, @NonNull EventBus bus) {
         super(context);
         mBus = bus;
         init();
@@ -78,7 +77,7 @@ public class HoverIntroductionNavigatorContent extends FrameLayout implements Na
     }
 
     @Override
-    public void onShown(@NonNull Navigator navigator) {
+    public void onShown() {
         mHoverMotion.start(mLogo);
     }
 

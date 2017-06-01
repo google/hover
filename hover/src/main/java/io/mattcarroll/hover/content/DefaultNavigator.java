@@ -23,8 +23,7 @@ import android.widget.FrameLayout;
 
 import java.util.Stack;
 
-import io.mattcarroll.hover.content.Navigator;
-import io.mattcarroll.hover.content.NavigatorContent;
+import io.mattcarroll.hover.Content;
 
 /**
  * Implementation of a {@link Navigator} without any decoration or special features.
@@ -32,7 +31,7 @@ import io.mattcarroll.hover.content.NavigatorContent;
 public class DefaultNavigator extends FrameLayout implements Navigator {
 
     private final boolean mIsFullscreen;
-    private Stack<NavigatorContent> mContentStack;
+    private Stack<Content> mContentStack;
     private ViewGroup.LayoutParams mContentLayoutParams;
 
     public DefaultNavigator(@NonNull Context context) {
@@ -53,7 +52,7 @@ public class DefaultNavigator extends FrameLayout implements Navigator {
     }
 
     @Override
-    public void pushContent(@NonNull NavigatorContent content) {
+    public void pushContent(@NonNull Content content) {
         // Remove the currently visible content (if there is any).
         if (!mContentStack.isEmpty()) {
             removeView(mContentStack.peek().getView());
@@ -105,13 +104,13 @@ public class DefaultNavigator extends FrameLayout implements Navigator {
         return this;
     }
 
-    private void showContent(@NonNull NavigatorContent content) {
+    private void showContent(@NonNull Content content) {
         addView(content.getView(), mContentLayoutParams);
-        content.onShown(this);
+        content.onShown();
     }
 
     private void removeCurrentContent() {
-        NavigatorContent visibleContent = mContentStack.pop();
+        Content visibleContent = mContentStack.pop();
         removeView(visibleContent.getView());
         visibleContent.onHidden();
     }

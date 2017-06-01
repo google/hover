@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import io.mattcarroll.hover.content.NavigatorContent;
+import io.mattcarroll.hover.Content;
 import io.mattcarroll.hover.HoverMenu;
 import io.mattcarroll.hover.window.HoverMenuService;
 
@@ -98,7 +98,7 @@ public class HelloWorldHoverMenuService extends HoverMenuService {
             return tabView;
         }
 
-        private NavigatorContent createScreen() {
+        private Content createScreen() {
             return new HoverMenuScreen(mContext, "Screen 1");
         }
 

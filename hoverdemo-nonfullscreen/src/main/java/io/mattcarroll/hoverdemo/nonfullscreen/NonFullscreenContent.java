@@ -6,13 +6,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import io.mattcarroll.hover.content.Navigator;
-import io.mattcarroll.hover.content.NavigatorContent;
+import io.mattcarroll.hover.Content;
 
 /**
  * A Hover menu screen that does not take up the entire screen.
  */
-public class NonFullscreenContent implements NavigatorContent {
+public class NonFullscreenContent implements Content {
 
     private final Context mContext;
     private View mContent;
@@ -41,7 +40,7 @@ public class NonFullscreenContent implements NavigatorContent {
     }
 
     @Override
-    public void onShown(@NonNull Navigator navigator) {
+    public void onShown() {
         // No-op.
     }
 

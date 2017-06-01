@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import io.mattcarroll.hover.content.NavigatorContent;
+import io.mattcarroll.hover.Content;
 import io.mattcarroll.hover.HoverMenu;
 import io.mattcarroll.hover.hoverdemo.kitchensink.theming.HoverTheme;
 import io.mattcarroll.hover.hoverdemo.kitchensink.ui.DemoTabView;
@@ -51,7 +51,7 @@ public class DemoHoverMenu extends HoverMenu {
     private final List<Section> mSections = new ArrayList<>();
 
     public DemoHoverMenu(@NonNull Context context,
-                         @NonNull Map<String, NavigatorContent> data,
+                         @NonNull Map<String, Content> data,
                          @NonNull HoverTheme theme) throws IOException {
         mContext = context;
         mTheme = theme;

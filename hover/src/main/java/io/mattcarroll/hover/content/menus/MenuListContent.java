@@ -21,13 +21,13 @@ import android.support.annotation.Nullable;
 import android.view.View;
 
 import io.mattcarroll.hover.content.Navigator;
-import io.mattcarroll.hover.content.NavigatorContent;
+import io.mattcarroll.hover.Content;
 import io.mattcarroll.hover.content.toolbar.ToolbarNavigator;
 
 /**
- * Implementation of {@link NavigatorContent} that displays a {@link MenuItem} as a list.
+ * Implementation of {@link Content} that displays a {@link MenuItem} as a list.
  */
-public class MenuListNavigatorContent implements NavigatorContent {
+public class MenuListContent implements Content {
 
     private static final String TAG = "MenuListNavigatorContent";
 
@@ -35,11 +35,11 @@ public class MenuListNavigatorContent implements NavigatorContent {
     private MenuListView mMenuListView;
     private Navigator mNavigator;
 
-    public MenuListNavigatorContent(@NonNull Context context, @NonNull final Menu menu) {
+    public MenuListContent(@NonNull Context context, @NonNull final Menu menu) {
         this(context, menu, null);
     }
 
-    public MenuListNavigatorContent(@NonNull Context context, @NonNull final Menu menu, @Nullable View emptyView) {
+    public MenuListContent(@NonNull Context context, @NonNull final Menu menu, @Nullable View emptyView) {
         mMenu = menu;
         mMenuListView = new MenuListView(context);
         mMenuListView.setMenu(menu);
@@ -69,11 +69,12 @@ public class MenuListNavigatorContent implements NavigatorContent {
     }
 
     @Override
-    public void onShown(@NonNull Navigator navigator) {
-        mNavigator = navigator;
-        if (navigator instanceof ToolbarNavigator) {
-            ((ToolbarNavigator) navigator).getToolbar().setTitle(mMenu.getTitle());
-        }
+    public void onShown() {
+        // TODO: bring back when we figure where Navigator belongs.
+//        mNavigator = navigator;
+//        if (navigator instanceof ToolbarNavigator) {
+//            ((ToolbarNavigator) navigator).getToolbar().setTitle(mMenu.getTitle());
+//        }
     }
 
     @Override

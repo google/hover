@@ -28,17 +28,16 @@ import com.larswerkman.holocolorpicker.SaturationBar;
 import com.larswerkman.holocolorpicker.ValueBar;
 
 import de.greenrobot.event.EventBus;
-import io.mattcarroll.hover.content.Navigator;
-import io.mattcarroll.hover.content.NavigatorContent;
+import io.mattcarroll.hover.Content;
 import io.mattcarroll.hover.hoverdemo.kitchensink.R;
 import io.mattcarroll.hover.hoverdemo.kitchensink.theming.HoverTheme;
 import io.mattcarroll.hover.hoverdemo.kitchensink.theming.HoverThemer;
 
 /**
- * {@link NavigatorContent} that displays a color chooser and applies the color selection to the
+ * {@link Content} that displays a color chooser and applies the color selection to the
  * Hover menu UI.
  */
-public class ColorSelectionNavigatorContent extends FrameLayout implements NavigatorContent {
+public class ColorSelectionContent extends FrameLayout implements Content {
 
     private static final int MODE_ACCENT = 0;
     private static final int MODE_BASE = 1;
@@ -51,7 +50,7 @@ public class ColorSelectionNavigatorContent extends FrameLayout implements Navig
     private ColorPicker mColorPicker;
     private TextView mAttributionTextView;
 
-    public ColorSelectionNavigatorContent(@NonNull Context context, @NonNull EventBus bus, @NonNull HoverThemer hoverThemer, @NonNull HoverTheme theme) {
+    public ColorSelectionContent(@NonNull Context context, @NonNull EventBus bus, @NonNull HoverThemer hoverThemer, @NonNull HoverTheme theme) {
         super(context);
         mBus = bus;
         mHoverThemer = hoverThemer;
@@ -138,7 +137,7 @@ public class ColorSelectionNavigatorContent extends FrameLayout implements Navig
     }
 
     @Override
-    public void onShown(@NonNull Navigator navigator) {
+    public void onShown() {
 
     }
 
