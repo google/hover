@@ -22,11 +22,13 @@ import android.view.View;
 
 import io.mattcarroll.hover.Content;
 import io.mattcarroll.hover.content.Navigator;
+import io.mattcarroll.hover.content.NavigatorContent;
+import io.mattcarroll.hover.content.toolbar.ToolbarNavigator;
 
 /**
  * Implementation of {@link Content} that displays a {@link MenuItem} as a list.
  */
-public class MenuListContent implements Content {
+public class MenuListContent implements NavigatorContent {
 
     private static final String TAG = "MenuListNavigatorContent";
 
@@ -63,17 +65,11 @@ public class MenuListContent implements Content {
     }
 
     @Override
-    public boolean isFullscreen() {
-        return true;
-    }
-
-    @Override
-    public void onShown() {
-        // TODO: bring back when we figure where Navigator belongs.
-//        mNavigator = navigator;
-//        if (navigator instanceof ToolbarNavigator) {
-//            ((ToolbarNavigator) navigator).getToolbar().setTitle(mMenu.getTitle());
-//        }
+    public void onShown(@NonNull Navigator navigator) {
+        mNavigator = navigator;
+        if (navigator instanceof ToolbarNavigator) {
+            ((ToolbarNavigator) navigator).getToolbar().setTitle(mMenu.getTitle());
+        }
     }
 
     @Override

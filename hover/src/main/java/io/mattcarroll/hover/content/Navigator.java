@@ -15,10 +15,13 @@
  */
 package io.mattcarroll.hover.content;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
-import android.view.View;
+import android.util.AttributeSet;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
-import io.mattcarroll.hover.Content;
+import java.util.Stack;
 
 /**
  * A visual display that can push and pop {@code View}s in a content area. The size and location of
@@ -26,12 +29,39 @@ import io.mattcarroll.hover.Content;
  *
  * A {@code Navigator} also displays a title that can be set by a client.
  *
- * The content to display in a {@code Navigator} must be provided as a {@link Content}. Each
+ * The content to display in a {@code Navigator} must be provided as a {@link NavigatorContent}. Each
  * pushed {@code NavigatorContent} is retained in a navigation stack until a corresponding
  * {@link #popContent()} is called.  Therefore, {@code NavigatorContent}s must retain their {@code View}
  * and state until garbage collected.
  */
-public interface Navigator {
+public class Navigator extends FrameLayout {
+
+    private final boolean mIsFullscreen;
+    private Stack<NavigatorContent> mContentStack;
+    private ViewGroup.LayoutParams mContentLayoutParams;
+
+    public Navigator(@NonNull Context context) {
+        this(context, true);
+    }
+
+    public Navigator(@NonNull Context context, @NonNull AttributeSet attrs) {
+        super(context, attrs);
+        mIsFullscreen = false;
+        init();
+    }
+
+    public Navigator(@NonNull Context context, boolean isFullscreen) {
+        super(context);
+        mIsFullscreen = isFullscreen;
+        init();
+    }
+
+    private void init() {
+        int heightMode = mIsFullscreen ? ViewGroup.LayoutParams.MATCH_PARENT : ViewGroup.LayoutParams.WRAP_CONTENT;
+        mContentStack = new Stack<>();
+        mContentLayoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, heightMode);
+        setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, heightMode));
+    }
 
     /**
      * Removes the current content {@code View} if content is visible. Then displays the provided
@@ -44,7 +74,17 @@ public interface Navigator {
      *
      * @param content Content to display
      */
-    void pushContent(@NonNull Content content);
+    public void pushContent(@NonNull NavigatorContent content) {
+        // Remove the currently visible content (if there is any).
+        if (!mContentStack.isEmpty()) {
+            removeView(mContentStack.peek().getView());
+            mContentStack.peek().onHidden();
+        }
+
+        // Push and display the new page.
+        mContentStack.push(content);
+        showContent(content);
+    }
 
     /**
      * Removes the current content {@code View} and restores the previous content {@code View}. If
@@ -53,19 +93,50 @@ public interface Navigator {
      *
      * @return true if there was content to remove, false if there was no content to remove
      */
-    boolean popContent();
+    public boolean popContent() {
+        if (mContentStack.size() > 1) {
+            // Remove the currently visible content.
+            removeCurrentContent();
+
+            // Add back the previous content (if there is any).
+            if (!mContentStack.isEmpty()) {
+                showContent(mContentStack.peek());
+            }
+
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     /**
      * Pops all content {@code View}s and returns this {@code Navigator} to its base visual state
      * without any content.
      */
-    void clearContent();
+    public void clearContent() {
+        if (mContentStack.isEmpty()) {
+            // Nothing to clear.
+            return;
+        }
 
-    /**
-     * Returns the View that presents the Navigator.
-     * @return navigator View
-     */
-    @NonNull
-    View getView();
+        // Pop every content View that we can.
+        boolean didPopContent = popContent();
+        while (didPopContent) {
+            didPopContent = popContent();
+        }
 
+        // Clear the root View.
+        removeCurrentContent();
+    }
+
+    private void showContent(@NonNull NavigatorContent content) {
+        addView(content.getView(), mContentLayoutParams);
+        content.onShown(this);
+    }
+
+    private void removeCurrentContent() {
+        NavigatorContent visibleContent = mContentStack.pop();
+        removeView(visibleContent.getView());
+        visibleContent.onHidden();
+    }
 }
