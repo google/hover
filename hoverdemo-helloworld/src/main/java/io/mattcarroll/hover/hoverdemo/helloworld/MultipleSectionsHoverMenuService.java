@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -67,7 +68,7 @@ public class MultipleSectionsHoverMenuService extends HoverMenuService {
             int tabSize = mContext.getResources().getDimensionPixelSize(R.dimen.tab_size);
             FrameLayout tabView = new FrameLayout(mContext);
 //            tabView.setPadding(tabPadding, tabPadding, tabPadding, tabPadding);
-            tabView.addView(imageView, new FrameLayout.LayoutParams(tabSize, tabSize));
+            tabView.addView(imageView, new FrameLayout.LayoutParams(tabSize, tabSize, Gravity.CENTER));
 
             return tabView;
         }
