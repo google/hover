@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.View;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -111,7 +112,7 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
                 chainedTab.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        // is not stable and is crashing.
+                        // TODO: is not stable and is crashing.
                         onTabSelected(chainedTab);
                     }
                 });
@@ -208,58 +209,28 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
         mMenu.setUpdatedCallback(new ListUpdateCallback() {
             @Override
             public void onInserted(int position, int count) {
-                Log.d(TAG, "Tab inserted. Position: " + position + ", Count: " + count);
-
-                for (int i = 0; i < count; ++i) {
-                    HoverMenu.Section section = mMenu.getSection(position + i);
-                    Log.d(TAG, "Adding new tab. Section: " + (position + i) + ", ID: " + section.getId());
-                    Log.d(TAG, " - tab View: " + section.getTabView().hashCode());
-                    Log.d(TAG, " - screen: " + section.getContent().hashCode());
-                    FloatingTab newTab = mScreen.createChainedTab(
-                            section.getId().toString(),
-                            section.getTabView()
-                    );
-                    newTab.disappearImmediate();
-                    if (mChainedTabs.size() <= position) {
-                        // This section was appended to the end.
-                        mChainedTabs.add(newTab);
-                        mTabChains.add(new TabChain(newTab));
-                    } else {
-                        int insertPosition = (position + i);
-                        mChainedTabs.add(insertPosition, newTab);
-                        mTabChains.add(insertPosition, new TabChain(newTab));
-                    }
+                Log.d(TAG, "onInserted. Position: " + position + ", Count: " + count);
+                int[] sectionIndices = new int[count];
+                for (int i = position; i < position + count; ++i) {
+                    sectionIndices[i - position] = i;
                 }
-
-                updateChainedPositions();
+                createTabsForIndex(sectionIndices);
             }
 
             @Override
             public void onRemoved(int position, int count) {
-                Log.d(TAG, "Tab(s) removed. Position: " + position + ", Count: " + count);
-                for (int i = (position + count - 1); i >= position; --i) {
-                    final FloatingTab chainedTab = mChainedTabs.remove(i);
-                    TabChain tabChain = mTabChains.remove(i);
-                    tabChain.unchain(new Runnable() {
-                        @Override
-                        public void run() {
-                            mScreen.destroyChainedTab(chainedTab);
-                        }
-                    });
+                Log.d(TAG, "onRemoved. Position: " + position + ", Count: " + count);
+                int[] sectionIndices = new int[count];
+                for (int i = position; i < position + count; ++i) {
+                    sectionIndices[i - position] = i;
                 }
-
-                updateChainedPositions();
+                removeSections(sectionIndices);
             }
 
             @Override
             public void onMoved(int fromPosition, int toPosition) {
-                Log.d(TAG, "Tab moved. From: " + fromPosition + ", To: " + toPosition);
-                FloatingTab chainedTab = mChainedTabs.remove(fromPosition);
-                mChainedTabs.add(toPosition, chainedTab);
-                TabChain tabChain = mTabChains.remove(fromPosition);
-                mTabChains.add(toPosition, tabChain);
-
-                updateChainedPositions();
+                Log.d(TAG, "onMoved from: " + fromPosition + ", to: " + toPosition);
+                reorderSection(fromPosition, toPosition);
             }
 
             @Override
@@ -273,6 +244,86 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
             Log.d(TAG, "Has control.  Expanding menu.");
             expandMenu();
         }
+    }
+
+    private void createTabsForIndex(int ... sectionIndices) {
+        for (int sectionIndex : sectionIndices) {
+            Log.d(TAG, "Creating tab for section at index " + sectionIndex);
+            HoverMenu.Section section = mMenu.getSection(sectionIndex);
+            Log.d(TAG, "Adding new tab. Section: " + sectionIndex + ", ID: " + section.getId());
+            FloatingTab newTab = addTab(section.getId(), section.getTabView(), sectionIndex);
+            mSections.put(newTab, section);
+        }
+
+        updateChainedPositions();
+    }
+
+    private FloatingTab addTab(@NonNull HoverMenu.SectionId sectionId,
+                               @NonNull View tabView,
+                               int position) {
+        final FloatingTab newTab = mScreen.createChainedTab(
+                sectionId.toString(),
+                tabView
+        );
+        newTab.disappearImmediate();
+        if (mChainedTabs.size() <= position) {
+            // This section was appended to the end.
+            mChainedTabs.add(newTab);
+            mTabChains.add(new TabChain(newTab));
+        } else {
+            mChainedTabs.add(position, newTab);
+            mTabChains.add(position, new TabChain(newTab));
+        }
+
+        newTab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onTabSelected(newTab);
+            }
+        });
+
+        return newTab;
+    }
+
+    private void reorderSection(int fromPosition, int toPosition) {
+        Log.d(TAG, "Tab moved. From: " + fromPosition + ", To: " + toPosition);
+        FloatingTab chainedTab = mChainedTabs.remove(fromPosition);
+        mChainedTabs.add(toPosition, chainedTab);
+        TabChain tabChain = mTabChains.remove(fromPosition);
+        mTabChains.add(toPosition, tabChain);
+
+        updateChainedPositions();
+    }
+
+    private void removeSections(int ... sectionIndices) {
+        Log.d(TAG, "Tab(s) removed: " + Arrays.toString(sectionIndices));
+        for (int sectionIndex : sectionIndices) {
+            removeSection(sectionIndex);
+        }
+
+        updateChainedPositions();
+    }
+
+    private void removeSection(int sectionIndex) {
+        final FloatingTab chainedTab = mChainedTabs.remove(sectionIndex);
+        TabChain tabChain = mTabChains.remove(sectionIndex);
+        tabChain.unchain(new Runnable() {
+            @Override
+            public void run() {
+                mScreen.destroyChainedTab(chainedTab);
+            }
+        });
+
+        // If the removed section was the selected section then select a new section.
+        HoverMenu.Section removedSection = mSections.get(chainedTab);
+        if (removedSection.getId().equals(mActiveSectionId)) {
+            int newSelectionIndex = sectionIndex > 0 ? sectionIndex - 1 : 0;
+            selectSection(mMenu.getSection(newSelectionIndex));
+        }
+
+        // TODO: This cleanup should be centralized.
+        chainedTab.setOnClickListener(null);
+        mSections.remove(chainedTab);
     }
 
     public HoverMenu.SectionId getActiveSectionId() {
@@ -293,15 +344,19 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
     private void onTabSelected(@NonNull FloatingTab selectedTab) {
         HoverMenu.Section section = mSections.get(selectedTab);
         if (!section.getId().equals(mActiveSectionId)) {
-            mActiveSectionId = section.getId();
-            mPrimaryTabId = mActiveSectionId.toString();
-            mPrimaryTab = selectedTab;
-            ContentDisplay contentDisplay = mScreen.getContentDisplay();
-            contentDisplay.activeTabIs(selectedTab);
-            contentDisplay.displayContent(section.getContent());
+            selectSection(section);
         } else if (null != mListener) {
             mListener.onCollapseRequested();
         }
+    }
+
+    private void selectSection(@NonNull HoverMenu.Section section) {
+        mActiveSectionId = section.getId();
+        mPrimaryTabId = mActiveSectionId.toString();
+        mPrimaryTab = mScreen.createChainedTab(mPrimaryTabId, null);
+        ContentDisplay contentDisplay = mScreen.getContentDisplay();
+        contentDisplay.activeTabIs(mPrimaryTab);
+        contentDisplay.displayContent(section.getContent());
     }
 
     public void setListener(@NonNull Listener listener) {
