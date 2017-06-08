@@ -39,6 +39,7 @@ public class HoverMenuView extends RelativeLayout {
 
     private static final String TAG = "HoverMenuView";
 
+    private static final String PREFS_FILE = "HoverMenuView";
     private static final String SAVED_STATE_DOCK_POSITION = "_dock_position";
     private static final String SAVED_STATE_DOCKS_SIDE = "_dock_side";
     private static final String SAVED_STATE_SELECTED_SECTION = "_selected_section";
@@ -51,15 +52,13 @@ public class HoverMenuView extends RelativeLayout {
 
     @NonNull
     public static HoverMenuView createForWindow(@NonNull Context context,
-                                                @NonNull WindowViewController windowViewController,
-                                                @Nullable SharedPreferences savedInstanceState) {
-        return createForWindow(context, windowViewController, savedInstanceState, null);
+                                                @NonNull WindowViewController windowViewController) {
+        return createForWindow(context, windowViewController, null);
     }
 
     @NonNull
     public static HoverMenuView createForWindow(@NonNull Context context,
                                                 @NonNull WindowViewController windowViewController,
-                                                @Nullable SharedPreferences savedInstanceState,
                                                 @Nullable SideDock initialDock) {
         int touchDiameter = context.getResources().getDimensionPixelSize(R.dimen.exit_radius);
         int slop = ViewConfiguration.get(context).getScaledTouchSlop();
@@ -70,13 +69,12 @@ public class HoverMenuView extends RelativeLayout {
                 slop
         );
 
-        return new HoverMenuView(context, dragger, windowViewController, savedInstanceState, initialDock);
+        return new HoverMenuView(context, dragger, windowViewController, initialDock);
     }
 
     @NonNull
-    public static HoverMenuView createForView(@NonNull Context context,
-                                              @Nullable SharedPreferences savedInstanceState) {
-        return new HoverMenuView(context, null, savedInstanceState);
+    public static HoverMenuView createForView(@NonNull Context context) {
+        return new HoverMenuView(context, null);
     }
 
     private final WindowViewController mWindowViewController;
@@ -87,21 +85,15 @@ public class HoverMenuView extends RelativeLayout {
     private HoverMenuViewStateExpanded mExpandedMenu;
     private HoverMenu.SectionId mSelectedSectionId;
     private HoverMenu mMenu;
-    private SharedPreferences mSavedState;
     private boolean mIsAddedToWindow;
     private boolean mIsExpanded = false;
     private boolean mIsDebugMode = false;
     private OnExitListener mOnExitListener;
     private final Set<OnExpandAndCollapseListener> mOnExpandAndCollapseListeners = new CopyOnWriteArraySet<>();
 
-    // Constructor used for inflating from XML.
-    public HoverMenuView(@NonNull Context context, @Nullable AttributeSet attrs) {
-        this(context, attrs, null);
-    }
-
-    private HoverMenuView(@NonNull Context context,
-                          @Nullable AttributeSet attrs,
-                          @Nullable SharedPreferences savedInstanceState) {
+    // Public for use with XML inflation. Clients should use static methods for construction.
+    public HoverMenuView(@NonNull Context context,
+                          @Nullable AttributeSet attrs) {
         super(context, attrs);
         int touchDiameter = context.getResources().getDimensionPixelSize(R.dimen.exit_radius);
         int slop = ViewConfiguration.get(context).getScaledTouchSlop();
@@ -117,20 +109,19 @@ public class HoverMenuView extends RelativeLayout {
             applyAttributes(attrs);
         }
 
-        init(savedInstanceState);
+        init();
     }
 
     private HoverMenuView(@NonNull Context context,
                           @NonNull Dragger dragger,
                           @Nullable WindowViewController windowViewController,
-                          @Nullable SharedPreferences savedInstanceState,
                           @Nullable SideDock initialDockPosition) {
         super(context);
         mDragger = dragger;
         mScreen = new Screen(this);
         mWindowViewController = windowViewController;
         mCollapsedDock = initialDockPosition;
-        init(savedInstanceState);
+        init();
     }
 
     private void applyAttributes(@NonNull AttributeSet attrs) {
@@ -146,10 +137,8 @@ public class HoverMenuView extends RelativeLayout {
         }
     }
 
-    private void init(@Nullable SharedPreferences savedInstanceState) {
-        if (null != savedInstanceState) {
-            restoreStateFromBundle(savedInstanceState);
-        }
+    private void init() {
+        restoreVisualState();
         setFocusableInTouchMode(true); // For handling hardware back button presses.
     }
 
@@ -217,45 +206,39 @@ public class HoverMenuView extends RelativeLayout {
         }
     }
 
-    public void saveStateToBundle(@NonNull SharedPreferences.Editor editor) {
+    public void saveVisualState() {
         if (null != mCollapsedMenu) {
             mCollapsedDock = mCollapsedMenu.getDock();
         }
+        SharedPreferences.Editor editor = getContext().getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE).edit();
         editor.putFloat(mMenu.getId() + SAVED_STATE_DOCK_POSITION, mCollapsedDock.getVerticalDockPositionPercentage());
         editor.putInt(mMenu.getId() + SAVED_STATE_DOCKS_SIDE, mCollapsedDock.getSide());
         editor.putString(mMenu.getId() + SAVED_STATE_SELECTED_SECTION, null != mSelectedSectionId ? mSelectedSectionId.toString() : null);
-        editor.commit();
+        editor.apply();
 
-        Log.d(TAG, "saveStateToBundle(). Position: "
+        Log.d(TAG, "saveVisualState(). Position: "
                 + mCollapsedDock.getVerticalDockPositionPercentage()
                 + ", Side: " + mCollapsedDock.getSide()
                 + ", Section ID: " + mSelectedSectionId);
     }
 
-    private void restoreStateFromBundle(@NonNull SharedPreferences prefs) {
+    private void restoreVisualState() {
         if (null != mMenu) {
-            applySavedState(prefs);
-        } else {
-            mSavedState = prefs;
+            SharedPreferences savedState = getContext().getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE);
+
+            mCollapsedDock = new SideDock(
+                    savedState.getFloat(mMenu.getId() + SAVED_STATE_DOCK_POSITION, 0.5f),
+                    savedState.getInt(mMenu.getId() + SAVED_STATE_DOCKS_SIDE, SideDock.LEFT)
+            );
+            mSelectedSectionId = savedState.contains(mMenu.getId() + SAVED_STATE_SELECTED_SECTION)
+                    ? new HoverMenu.SectionId(savedState.getString(mMenu.getId() + SAVED_STATE_SELECTED_SECTION, null))
+                    : null;
+
+            Log.d(TAG, "restoreStateFromBundle(). Position: "
+                    + mCollapsedDock.getVerticalDockPositionPercentage()
+                    + ", Side: " + mCollapsedDock.getSide()
+                    + ", Section ID: " + mSelectedSectionId);
         }
-    }
-
-    // Precondition: mMenu must be non-null.
-    private void applySavedState(@NonNull SharedPreferences prefs) {
-        mCollapsedDock = new SideDock(
-                prefs.getFloat(mMenu.getId() + SAVED_STATE_DOCK_POSITION, 0.5f),
-                prefs.getInt(mMenu.getId() + SAVED_STATE_DOCKS_SIDE, SideDock.LEFT)
-        );
-        mSelectedSectionId = prefs.contains(mMenu.getId() + SAVED_STATE_SELECTED_SECTION)
-                ? new HoverMenu.SectionId(prefs.getString(mMenu.getId() + SAVED_STATE_SELECTED_SECTION, null))
-                : null;
-
-        Log.d(TAG, "restoreStateFromBundle(). Position: "
-                + mCollapsedDock.getVerticalDockPositionPercentage()
-                + ", Side: " + mCollapsedDock.getSide()
-                + ", Section ID: " + mSelectedSectionId);
-
-        mSavedState = null;
     }
 
     @Override
@@ -291,9 +274,7 @@ public class HoverMenuView extends RelativeLayout {
     public void setMenu(@Nullable HoverMenu menu) {
         mMenu = menu;
 
-        if (null != mMenu && null != mSavedState) {
-            applySavedState(mSavedState);
-        }
+        restoreVisualState();
 
         if (null == mSelectedSectionId || null == mMenu.getSection(mSelectedSectionId)) {
             mSelectedSectionId = mMenu.getSection(0).getId();
@@ -386,6 +367,7 @@ public class HoverMenuView extends RelativeLayout {
             public void onDocked() {
                 Log.d(TAG, "Floating tab has docked.");
                 mCollapsedDock = mCollapsedMenu.getDock();
+                saveVisualState();
             }
 
             @Override

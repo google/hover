@@ -18,7 +18,6 @@ package io.mattcarroll.hover.window;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -45,17 +44,12 @@ public abstract class HoverMenuService extends Service {
 
     private static final String TAG = "HoverMenuService";
 
-    private static final String PREF_FILE = "hover_menu";
-    private static final String PREF_HOVER_MENU_VISUAL_STATE = "hover_menu_visual_state";
-
     private HoverMenuView mHoverMenuView;
     private boolean mIsRunning;
-    private SharedPreferences mPrefs;
     private OnExitListener mOnMenuOnExitListener = new OnExitListener() {
         @Override
         public void onExit() {
             Log.d(TAG, "Menu exit requested. Exiting.");
-            savePreferredLocation();
             mHoverMenuView.removeFromWindow();
             onHoverMenuExitingByUserRequest();
             stopSelf();
@@ -65,7 +59,6 @@ public abstract class HoverMenuService extends Service {
     @Override
     public void onCreate() {
         Log.d(TAG, "onCreate()");
-        mPrefs = getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE);
     }
 
     @Override
@@ -113,7 +106,6 @@ public abstract class HoverMenuService extends Service {
         mHoverMenuView = HoverMenuView.createForWindow(
                 this,
                 new WindowViewController((WindowManager) getSystemService(Context.WINDOW_SERVICE)),
-                mPrefs,
                 new SideDock(0.5f, SideDock.RIGHT)
         );
         mHoverMenuView.setOnExitListener(mOnMenuOnExitListener);
@@ -140,17 +132,5 @@ public abstract class HoverMenuService extends Service {
      */
     protected void onHoverMenuExitingByUserRequest() {
         // Hook for subclasses.
-    }
-
-    private void savePreferredLocation() {
-//        mHover.getHoverMenuView().saveStateToBundle(mPrefs.edit());
-        mHoverMenuView.saveStateToBundle(mPrefs.edit());
-
-//        String memento = mHoverMenu.getVisualState();
-//        mPrefs.edit().putString(PREF_HOVER_MENU_VISUAL_STATE, memento).apply();
-    }
-
-    private String loadPreferredLocation() {
-        return mPrefs.getString(PREF_HOVER_MENU_VISUAL_STATE, null);
     }
 }
