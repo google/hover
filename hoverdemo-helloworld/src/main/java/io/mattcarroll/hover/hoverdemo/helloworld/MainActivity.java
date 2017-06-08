@@ -1,9 +1,6 @@
 package io.mattcarroll.hover.hoverdemo.helloworld;
 
 import android.content.Intent;
-import android.net.Uri;
-import android.os.Build;
-import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -26,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.button_launch_hover_single_section).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent startHoverIntent = HelloWorldHoverMenuService.intentForSingleSection(MainActivity.this);
+                Intent startHoverIntent = new Intent(MainActivity.this, SingleSectionHoverMenuService.class);
                 startService(startHoverIntent);
             }
         });
@@ -34,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.button_launch_hover_multi_sections).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent startHoverIntent = HelloWorldHoverMenuService.intentForMultiSection(MainActivity.this);
+                Intent startHoverIntent = new Intent(MainActivity.this, MultipleSectionsHoverMenuService.class);
                 startService(startHoverIntent);
             }
         });
@@ -42,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.button_launch_hover_changing_sections).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent startHoverIntent = HelloWorldHoverMenuService.intentForChangingSections(MainActivity.this);
+                Intent startHoverIntent = new Intent(MainActivity.this, MutatingSectionsHoverMenuService.class);
                 startService(startHoverIntent);
             }
         });
@@ -50,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.button_launch_hover_reordering_sections).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent startHoverIntent = HelloWorldHoverMenuService.intentForReorderingSections(MainActivity.this);
+                Intent startHoverIntent = new Intent(MainActivity.this, ReorderingHoverMenuService.class);
                 startService(startHoverIntent);
             }
         });
