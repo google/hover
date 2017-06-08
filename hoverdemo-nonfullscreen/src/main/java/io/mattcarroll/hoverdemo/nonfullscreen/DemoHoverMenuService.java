@@ -51,6 +51,6 @@ public class DemoHoverMenuService extends HoverMenuService {
 
     @Override
     protected HoverMenu createHoverMenu(@NonNull Intent intent) {
-        return new DemoHoverMenu(getApplicationContext());
+        return new DemoHoverMenu(getApplicationContext(), "nonfullscreen");
     }
 }

@@ -47,13 +47,16 @@ public class DemoHoverMenu extends HoverMenu {
     public static final String PLACEHOLDER_ID = "placeholder";
 
     private final Context mContext;
+    private final String mMenuId;
     private HoverTheme mTheme;
     private final List<Section> mSections = new ArrayList<>();
 
     public DemoHoverMenu(@NonNull Context context,
+                         @NonNull String menuId,
                          @NonNull Map<String, Content> data,
                          @NonNull HoverTheme theme) throws IOException {
         mContext = context;
+        mMenuId = menuId;
         mTheme = theme;
 
         for (String tabId : data.keySet()) {
@@ -99,6 +102,11 @@ public class DemoHoverMenu extends HoverMenu {
             view.setElevation(padding);
         }
         return view;
+    }
+
+    @Override
+    public String getId() {
+        return mMenuId;
     }
 
     @Override

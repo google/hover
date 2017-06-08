@@ -39,9 +39,9 @@ public class HoverMenuView extends RelativeLayout {
 
     private static final String TAG = "HoverMenuView";
 
-    private static final String SAVED_STATE_DOCK_POSITION = "dock_position";
-    private static final String SAVED_STATE_DOCKS_SIDE = "dock_side";
-    private static final String SAVED_STATE_SELECTED_SECTION = "selected_section";
+    private static final String SAVED_STATE_DOCK_POSITION = "_dock_position";
+    private static final String SAVED_STATE_DOCKS_SIDE = "_dock_side";
+    private static final String SAVED_STATE_SELECTED_SECTION = "_selected_section";
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({ LEFT, RIGHT })
@@ -87,6 +87,7 @@ public class HoverMenuView extends RelativeLayout {
     private HoverMenuViewStateExpanded mExpandedMenu;
     private HoverMenu.SectionId mSelectedSectionId;
     private HoverMenu mMenu;
+    private SharedPreferences mSavedState;
     private boolean mIsAddedToWindow;
     private boolean mIsExpanded = false;
     private boolean mIsDebugMode = false;
@@ -220,9 +221,9 @@ public class HoverMenuView extends RelativeLayout {
         if (null != mCollapsedMenu) {
             mCollapsedDock = mCollapsedMenu.getDock();
         }
-        editor.putFloat(SAVED_STATE_DOCK_POSITION, mCollapsedDock.getVerticalDockPositionPercentage());
-        editor.putInt(SAVED_STATE_DOCKS_SIDE, mCollapsedDock.getSide());
-        editor.putString(SAVED_STATE_SELECTED_SECTION, null != mSelectedSectionId ? mSelectedSectionId.toString() : null);
+        editor.putFloat(mMenu.getId() + SAVED_STATE_DOCK_POSITION, mCollapsedDock.getVerticalDockPositionPercentage());
+        editor.putInt(mMenu.getId() + SAVED_STATE_DOCKS_SIDE, mCollapsedDock.getSide());
+        editor.putString(mMenu.getId() + SAVED_STATE_SELECTED_SECTION, null != mSelectedSectionId ? mSelectedSectionId.toString() : null);
         editor.commit();
 
         Log.d(TAG, "saveStateToBundle(). Position: "
@@ -232,18 +233,29 @@ public class HoverMenuView extends RelativeLayout {
     }
 
     private void restoreStateFromBundle(@NonNull SharedPreferences prefs) {
+        if (null != mMenu) {
+            applySavedState(prefs);
+        } else {
+            mSavedState = prefs;
+        }
+    }
+
+    // Precondition: mMenu must be non-null.
+    private void applySavedState(@NonNull SharedPreferences prefs) {
         mCollapsedDock = new SideDock(
-                prefs.getFloat(SAVED_STATE_DOCK_POSITION, 0.5f),
-                prefs.getInt(SAVED_STATE_DOCKS_SIDE, SideDock.LEFT)
+                prefs.getFloat(mMenu.getId() + SAVED_STATE_DOCK_POSITION, 0.5f),
+                prefs.getInt(mMenu.getId() + SAVED_STATE_DOCKS_SIDE, SideDock.LEFT)
         );
-        mSelectedSectionId = prefs.contains(SAVED_STATE_SELECTED_SECTION)
-                ? new HoverMenu.SectionId(prefs.getString(SAVED_STATE_SELECTED_SECTION, null))
+        mSelectedSectionId = prefs.contains(mMenu.getId() + SAVED_STATE_SELECTED_SECTION)
+                ? new HoverMenu.SectionId(prefs.getString(mMenu.getId() + SAVED_STATE_SELECTED_SECTION, null))
                 : null;
 
         Log.d(TAG, "restoreStateFromBundle(). Position: "
                 + mCollapsedDock.getVerticalDockPositionPercentage()
                 + ", Side: " + mCollapsedDock.getSide()
                 + ", Section ID: " + mSelectedSectionId);
+
+        mSavedState = null;
     }
 
     @Override
@@ -278,6 +290,10 @@ public class HoverMenuView extends RelativeLayout {
 
     public void setMenu(@Nullable HoverMenu menu) {
         mMenu = menu;
+
+        if (null != mMenu && null != mSavedState) {
+            applySavedState(mSavedState);
+        }
 
         if (null == mSelectedSectionId || null == mMenu.getSection(mSelectedSectionId)) {
             mSelectedSectionId = mMenu.getSection(0).getId();

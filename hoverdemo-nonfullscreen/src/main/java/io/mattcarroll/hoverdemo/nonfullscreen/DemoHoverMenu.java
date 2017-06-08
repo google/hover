@@ -20,10 +20,12 @@ import io.mattcarroll.hover.HoverMenu;
 public class DemoHoverMenu extends HoverMenu {
 
     private final Context mContext;
+    private final String mMenuId;
     private final Section mSection;
 
-    public DemoHoverMenu(@NonNull Context context) {
+    public DemoHoverMenu(@NonNull Context context, @NonNull String menuId) {
         mContext = context.getApplicationContext();
+        mMenuId = menuId;
         mSection = new Section(
                 new SectionId("0"),
                 createTabView(),
@@ -47,6 +49,11 @@ public class DemoHoverMenu extends HoverMenu {
             view.setElevation(padding);
         }
         return view;
+    }
+
+    @Override
+    public String getId() {
+        return mMenuId;
     }
 
     @Override

@@ -103,6 +103,11 @@ public class HelloWorldHoverMenuService extends HoverMenuService {
         }
 
         @Override
+        public String getId() {
+            return "singlesectionmenu";
+        }
+
+        @Override
         public int getSectionCount() {
             return 1;
         }
@@ -172,6 +177,11 @@ public class HelloWorldHoverMenuService extends HoverMenuService {
             tabView.addView(imageView, new FrameLayout.LayoutParams(tabSize, tabSize));
 
             return tabView;
+        }
+
+        @Override
+        public String getId() {
+            return "multisectionmenu";
         }
 
         @Override
@@ -293,6 +303,11 @@ public class HelloWorldHoverMenuService extends HoverMenuService {
         }
 
         @Override
+        public String getId() {
+            return "mutatingmenu";
+        }
+
+        @Override
         public int getSectionCount() {
             return mSections.size();
         }
@@ -396,6 +411,11 @@ public class HelloWorldHoverMenuService extends HoverMenuService {
 //
 //            Log.d(TAG, "Created new tab view: " + tabView.hashCode());
 //            return tabView;
+        }
+
+        @Override
+        public String getId() {
+            return "reorderingmenu";
         }
 
         @Override

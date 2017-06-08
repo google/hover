@@ -19,6 +19,8 @@ public abstract class HoverMenu {
     private List<Section> mSections = new ArrayList<>();
     private ListUpdateCallback mListUpdateCallback;
 
+    public abstract String getId();
+
     public abstract int getSectionCount();
 
     @Nullable

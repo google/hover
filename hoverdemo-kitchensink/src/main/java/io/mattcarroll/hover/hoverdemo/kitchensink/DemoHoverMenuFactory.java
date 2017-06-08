@@ -72,7 +72,7 @@ public class DemoHoverMenuFactory {
         demoMenu.put(DemoHoverMenu.MENU_ID, toolbarNavigator);
         demoMenu.put(DemoHoverMenu.PLACEHOLDER_ID, new PlaceholderContent(context, bus));
 
-        return new DemoHoverMenu(context, demoMenu, HoverThemeManager.getInstance().getTheme());
+        return new DemoHoverMenu(context, "kitchensink", demoMenu, HoverThemeManager.getInstance().getTheme());
     }
 
 }
