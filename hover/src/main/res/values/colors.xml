@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="floatingmenu_popup_color">#3b3b3b</color>
-    <color name="floatingmenu_shade">#CC000000</color>
-    <color name="floating_menu_content_hr_color">#CCCCCC</color>
-    <color name="floating_menu_content_title_color">#AAAAAA</color>
-    <color name="menu_item_title_color">#666666</color>
+    <!-- Colors for the Hover menu itself -->
+    <color name="hover_navigator_color">#3b3b3b</color>
+    <color name="hover_shade_color">#CC000000</color>
+
+    <!-- Colors for drill-down menus that can appear in Hover's content area -->
+    <color name="hover_content_menu_divider_color">#CCCCCC</color>
+    <color name="hover_content_menu_title_color">#AAAAAA</color>
+    <color name="hover_content_menu_item_title_color">#666666</color>
 </resources>

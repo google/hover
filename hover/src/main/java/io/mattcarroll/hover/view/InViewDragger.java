@@ -131,7 +131,7 @@ public class InViewDragger implements Dragger {
 
     private void createTouchControlView(@NonNull Point dragStartCenterPosition) {
         mDragView = new View(mContainer.getContext());
-        mDragView.setId(R.id.drag_view);
+        mDragView.setId(R.id.hover_drag_view);
         mDragView.setLayoutParams(new ViewGroup.LayoutParams(mTouchAreaDiameter, mTouchAreaDiameter));
         mDragView.setOnTouchListener(mDragTouchListener);
         mContainer.addView(mDragView);

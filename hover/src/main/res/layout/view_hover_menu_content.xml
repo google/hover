@@ -11,13 +11,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         />
-    <!--<io.mattcarroll.hover.content.toolbar.ToolbarNavigatorContent>-->
-        <!--android:id="@+id/view_content_container"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="0dp"-->
-        <!--android:layout_weight="1"-->
-        <!--android:background="@drawable/round_rect_white"-->
-        <!--/>-->
     <FrameLayout
         android:id="@+id/view_content_container"
         android:layout_width="match_parent"

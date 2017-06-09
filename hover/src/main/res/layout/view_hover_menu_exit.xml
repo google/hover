@@ -13,8 +13,8 @@
         />
     <ImageView
         android:id="@+id/view_exit"
-        android:layout_width="@dimen/delete_icon_size"
-        android:layout_height="@dimen/delete_icon_size"
+        android:layout_width="@dimen/hover_exit_icon_size"
+        android:layout_height="@dimen/hover_exit_icon_size"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="100dp"

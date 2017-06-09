@@ -60,7 +60,7 @@ public class HoverMenuView extends RelativeLayout {
     public static HoverMenuView createForWindow(@NonNull Context context,
                                                 @NonNull WindowViewController windowViewController,
                                                 @Nullable SideDock initialDock) {
-        int touchDiameter = context.getResources().getDimensionPixelSize(R.dimen.exit_radius);
+        int touchDiameter = context.getResources().getDimensionPixelSize(R.dimen.hover_exit_radius);
         int slop = ViewConfiguration.get(context).getScaledTouchSlop();
         InWindowDragger dragger = new InWindowDragger(
                 context,
@@ -95,7 +95,7 @@ public class HoverMenuView extends RelativeLayout {
     public HoverMenuView(@NonNull Context context,
                           @Nullable AttributeSet attrs) {
         super(context, attrs);
-        int touchDiameter = context.getResources().getDimensionPixelSize(R.dimen.exit_radius);
+        int touchDiameter = context.getResources().getDimensionPixelSize(R.dimen.hover_exit_radius);
         int slop = ViewConfiguration.get(context).getScaledTouchSlop();
         mDragger = new InViewDragger(
                 this,

@@ -41,7 +41,7 @@ class FloatingTab extends FrameLayout implements Tab {
     public FloatingTab(@NonNull Context context, @NonNull String tabId) {
         super(context);
         mId = tabId;
-        mTabSize = getResources().getDimensionPixelSize(R.dimen.floating_icon_size);
+        mTabSize = getResources().getDimensionPixelSize(R.dimen.hover_tab_size);
     }
 
     @Override

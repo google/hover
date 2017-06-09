@@ -58,7 +58,7 @@ public class HoverMenuTabSelectorView extends View {
         setSelectorPosition(mSelectorWidthPx / 2);
 
         mSelectorPaint = new Paint();
-        mSelectorPaint.setColor(getResources().getColor(R.color.floatingmenu_popup_color));
+        mSelectorPaint.setColor(getResources().getColor(R.color.hover_navigator_color));
         mSelectorPaint.setStyle(Paint.Style.FILL);
     }
 

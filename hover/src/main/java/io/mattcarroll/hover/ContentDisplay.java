@@ -73,7 +73,7 @@ class ContentDisplay extends RelativeLayout {
         mContainer = findViewById(R.id.container);
         expandToScreenBounds();
 
-        int backgroundCornerRadiusPx = (int) getResources().getDimension(R.dimen.popup_corner_radius);
+        int backgroundCornerRadiusPx = (int) getResources().getDimension(R.dimen.hover_navigator_corner_radius);
         mTabSelectorView = (HoverMenuTabSelectorView) findViewById(R.id.tabselector);
         mTabSelectorView.setPadding(backgroundCornerRadiusPx, 0, backgroundCornerRadiusPx, 0);
 
