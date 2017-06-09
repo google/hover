@@ -29,6 +29,15 @@ public abstract class HoverMenu {
     @Nullable
     public abstract Section getSection(@NonNull SectionId sectionId);
 
+    public int getSectionIndex(@NonNull Section section) {
+        for (int i = 0; i < mSections.size(); ++i) {
+            if (section.equals(mSections.get(i))) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     @NonNull
     public abstract List<Section> getSections();
 

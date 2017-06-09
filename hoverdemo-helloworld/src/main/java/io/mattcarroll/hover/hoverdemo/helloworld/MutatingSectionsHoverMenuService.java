@@ -2,6 +2,7 @@ package io.mattcarroll.hover.hoverdemo.helloworld;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
@@ -62,7 +63,7 @@ public class MutatingSectionsHoverMenuService extends HoverMenuService {
                 new Runnable() {
                     @Override
                     public void run() {
-                        insertTab(1);
+                        insertTab(0);
                     }
                 },
                 new Runnable() {
@@ -86,7 +87,25 @@ public class MutatingSectionsHoverMenuService extends HoverMenuService {
                 new Runnable() {
                     @Override
                     public void run() {
+                        removeTab(0);
+                    }
+                },
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        changeTab(1);
+                    }
+                },
+                new Runnable() {
+                    @Override
+                    public void run() {
                         removeTab(1);
+                    }
+                },
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        changeTab(0);
                     }
                 }
         );
@@ -121,6 +140,13 @@ public class MutatingSectionsHoverMenuService extends HoverMenuService {
 //
 //            Log.d(TAG, "Created new tab view: " + tabView.hashCode());
 //            return tabView;
+        }
+
+        private View createDifferentTabView() {
+            ImageView imageView = new ImageView(mContext);
+            imageView.setImageResource(R.drawable.tab_background_blue);
+            imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            return imageView;
         }
 
         @Override
@@ -163,6 +189,19 @@ public class MutatingSectionsHoverMenuService extends HoverMenuService {
                     createTabView(),
                     new HoverMenuScreen(mContext, "Screen " + id)
             ));
+            notifyMenuChanged();
+        }
+
+        private void changeTab(int position) {
+            Section oldSection = mSections.get(position);
+            Section newSection = new Section(
+                    oldSection.getId(),
+                    createDifferentTabView(),
+                    new HoverMenuScreen(mContext, "This is a new screen!")
+            );
+            mSections.remove(position);
+            mSections.add(position, newSection);
+
             notifyMenuChanged();
         }
 

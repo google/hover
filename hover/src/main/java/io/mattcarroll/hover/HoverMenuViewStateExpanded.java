@@ -123,6 +123,8 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
     private void chainTabs() {
         Log.d(TAG, "Chaining tabs.");
         Tab predecessorTab = mChainedTabs.get(0);
+
+        // Find the selected tab.
         int primaryTabIndex = 0;
         for (int i = 0; i < mChainedTabs.size(); ++i) {
             if (mPrimaryTab == mChainedTabs.get(i)) {
@@ -136,6 +138,8 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
             final TabChain tabChain = mTabChains.get(i);
 
             if (i == 0) {
+                // TODO: generalize the notion of a predecessor so that the 1st tab doesn't need
+                // TODO: to be treated in a special way.
                 tabChain.chainTo(mDock);
                 tabChain.tightenChain();
             } else {
@@ -214,7 +218,7 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
                 for (int i = position; i < position + count; ++i) {
                     sectionIndices[i - position] = i;
                 }
-                createTabsForIndex(sectionIndices);
+                createTabsForIndices(sectionIndices);
             }
 
             @Override
@@ -236,7 +240,11 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
             @Override
             public void onChanged(int position, int count, Object payload) {
                 Log.d(TAG, "Tab(s) changed. From: " + position + ", To: " + count);
-                // TODO: tell content to update
+                int[] sectionIndices = new int[count];
+                for (int i = position; i < position + count; ++i) {
+                    sectionIndices[i - position] = i;
+                }
+                updateSections(sectionIndices);
             }
         });
 
@@ -246,7 +254,7 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
         }
     }
 
-    private void createTabsForIndex(int ... sectionIndices) {
+    private void createTabsForIndices(int ... sectionIndices) {
         for (int sectionIndex : sectionIndices) {
             Log.d(TAG, "Creating tab for section at index " + sectionIndex);
             HoverMenu.Section section = mMenu.getSection(sectionIndex);
@@ -295,6 +303,30 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
         updateChainedPositions();
     }
 
+    private void updateSections(int ... sectionIndices) {
+        Log.d(TAG, "Tab(s) changed: " + Arrays.toString(sectionIndices));
+        for (int sectionIndex : sectionIndices) {
+            updateSection(sectionIndex);
+        }
+    }
+
+    private void updateSection(int sectionIndex) {
+        HoverMenu.Section section = mMenu.getSection(sectionIndex);
+        if (null == section) {
+            Log.e(TAG, "Tried to update section " + sectionIndex + " but could not locate the corresponding Section.");
+            return;
+        }
+
+        // Update Tab View
+        FloatingTab chainedTab = mChainedTabs.get(sectionIndex);
+        chainedTab.setTabView(section.getTabView());
+
+        // Update Section Content if this Section's Content is currently active.
+        if (mActiveSectionId.equals(mMenu.getSection(sectionIndex).getId())) {
+            mScreen.getContentDisplay().displayContent(section.getContent());
+        }
+    }
+
     private void removeSections(int ... sectionIndices) {
         Log.d(TAG, "Tab(s) removed: " + Arrays.toString(sectionIndices));
         for (int sectionIndex : sectionIndices) {
@@ -331,6 +363,10 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
     }
 
     private void updateChainedPositions() {
+        TabChain firstChain = mTabChains.get(0);
+        firstChain.chainTo(mDock);
+        firstChain.tightenChain();
+
         Tab predecessor = mChainedTabs.get(0);
         for (int i = 1; i < mChainedTabs.size(); ++i) {
             FloatingTab chainedTab = mChainedTabs.get(i);

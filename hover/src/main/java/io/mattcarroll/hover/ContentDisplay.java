@@ -126,6 +126,11 @@ class ContentDisplay extends RelativeLayout {
     }
 
     public void displayContent(@Nullable Content content) {
+        if (content == mContent) {
+            // If content hasn't changed then we don't need to do anything.
+            return;
+        }
+
         if (null != mContent) {
             mContentView.removeView(mContent.getView());
         }

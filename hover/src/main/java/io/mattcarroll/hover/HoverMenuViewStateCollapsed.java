@@ -3,6 +3,7 @@ package io.mattcarroll.hover;
 import android.graphics.Point;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.util.ListUpdateCallback;
 import android.util.Log;
 import android.view.View;
 
@@ -17,6 +18,8 @@ class HoverMenuViewStateCollapsed implements HoverMenuViewState {
     private Screen mScreen;
     private HoverMenu mMenu;
     private FloatingTab mFloatingTab;
+    private HoverMenu.Section mActiveSection;
+    private int mActiveSectionIndex = -1;
     private Point mDropPoint; // Where the floating tab is dropped before seeking its initial dock.
     private SideDock mSideDock;
     private boolean mHasControl = false;
@@ -64,9 +67,10 @@ class HoverMenuViewStateCollapsed implements HoverMenuViewState {
         mScreen = screen;
         mPrimaryTabId = primaryTabId;
         Log.d(TAG, "Taking control with primary tab: " + mPrimaryTabId);
-        HoverMenu.Section section = mMenu.getSection(new HoverMenu.SectionId(mPrimaryTabId));
-        section = null != section ? section : mMenu.getSection(0);
-        mFloatingTab = screen.createChainedTab(mPrimaryTabId, section.getTabView());
+        mActiveSection = mMenu.getSection(new HoverMenu.SectionId(mPrimaryTabId));
+        mActiveSection = null != mActiveSection ? mActiveSection : mMenu.getSection(0);
+        mActiveSectionIndex = mMenu.getSectionIndex(mActiveSection);
+        mFloatingTab = screen.createChainedTab(mPrimaryTabId, mActiveSection.getTabView());
         mDragListener = new FloatingTabDragListener(this);
         mIsCollapsed = false; // We're collapsing, not yet collapsed.
         if (null != mListener) {
@@ -76,6 +80,10 @@ class HoverMenuViewStateCollapsed implements HoverMenuViewState {
         sendToDock();
 
         mFloatingTab.addOnLayoutChangeListener(mOnLayoutChangeListener);
+
+        if (null != mMenu) {
+            listenForMenuChanges();
+        }
     }
 
     @Override
@@ -96,8 +104,55 @@ class HoverMenuViewStateCollapsed implements HoverMenuViewState {
         mFloatingTab = null;
     }
 
-    public void setMenu(@NonNull HoverMenu menu) {
+    public void setMenu(@NonNull final HoverMenu menu) {
         mMenu = menu;
+        listenForMenuChanges();
+    }
+
+    private void listenForMenuChanges() {
+        mMenu.setUpdatedCallback(new ListUpdateCallback() {
+            @Override
+            public void onInserted(int position, int count) {
+                // no-op
+            }
+
+            @Override
+            public void onRemoved(int position, int count) {
+                Log.d(TAG, "onRemoved. Position: " + position + ", Count: " + count);
+                if (mActiveSectionIndex == position) {
+                    Log.d(TAG, "Active tab removed. Displaying a new tab.");
+                    // TODO: externalize a selection strategy for when the selected section disappears
+                    mFloatingTab.removeOnLayoutChangeListener(mOnLayoutChangeListener);
+                    mScreen.destroyChainedTab(mFloatingTab);
+
+                    mActiveSectionIndex = mActiveSectionIndex > 0 ? mActiveSectionIndex - 1 : 0;
+                    mActiveSection = mMenu.getSection(mActiveSectionIndex);
+                    mPrimaryTabId = mActiveSection.getId().toString();
+                    mFloatingTab = mScreen.createChainedTab(
+                            mActiveSection.getId().toString(),
+                            mActiveSection.getTabView()
+                    );
+
+                    mFloatingTab.addOnLayoutChangeListener(mOnLayoutChangeListener);
+                }
+            }
+
+            @Override
+            public void onMoved(int fromPosition, int toPosition) {
+                // no-op
+            }
+
+            @Override
+            public void onChanged(int position, int count, Object payload) {
+                Log.d(TAG, "Tab(s) changed. From: " + position + ", To: " + count);
+                for (int i = position; i < position + count; ++i) {
+                    if (i == mActiveSectionIndex) {
+                        Log.d(TAG, "Primary tab changed. Updating its display.");
+                        mFloatingTab.setTabView(mMenu.getSection(position).getTabView());
+                    }
+                }
+            }
+        });
     }
 
     @NonNull

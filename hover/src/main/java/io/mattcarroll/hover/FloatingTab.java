@@ -27,6 +27,7 @@ class FloatingTab extends FrameLayout implements Tab {
 
     private final String mId;
     private int mTabSize;
+    private View mTabView;
     private Point mDock;
     private final Set<OnPositionChangeListener> mOnPositionChangeListeners = new CopyOnWriteArraySet<OnPositionChangeListener>();
 
@@ -153,9 +154,15 @@ class FloatingTab extends FrameLayout implements Tab {
 
     @Override
     public void setTabView(@Nullable View view) {
+        if (view == mTabView) {
+            // If Tab View hasn't changed, no need to do anything.
+            return;
+        }
+
         removeAllViews();
 
-        if (null != view) {
+        mTabView = view;
+        if (null != mTabView) {
             FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT
@@ -163,7 +170,7 @@ class FloatingTab extends FrameLayout implements Tab {
 //                    ViewGroup.LayoutParams.WRAP_CONTENT
             );
 //            layoutParams.gravity = Gravity.CENTER;
-            addView(view, layoutParams);
+            addView(mTabView, layoutParams);
         }
     }
 
