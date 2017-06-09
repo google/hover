@@ -17,6 +17,7 @@ package io.mattcarroll.hover.window;
 
 import android.graphics.PixelFormat;
 import android.graphics.Point;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.view.Gravity;
 import android.view.View;
@@ -38,10 +39,14 @@ public class WindowViewController {
         // won't have any effect on the OR'ing of flags.
         int touchableFlag = isTouchable ? 0 : WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
 
+        int windowType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                : WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;
+
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 width,
                 height,
-                WindowManager.LayoutParams.TYPE_SYSTEM_ALERT,
+                windowType,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS | touchableFlag,
                 PixelFormat.TRANSLUCENT
         );
