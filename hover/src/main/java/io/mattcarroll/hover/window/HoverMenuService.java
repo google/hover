@@ -81,7 +81,6 @@ public abstract class HoverMenuService extends Service {
             Log.d(TAG, "onStartCommand() - showing Hover menu.");
             mIsRunning = true;
             initHoverMenu(intent);
-            mHoverMenuView.addToWindow();
         }
 
         return START_STICKY;
@@ -112,6 +111,9 @@ public abstract class HoverMenuService extends Service {
 
         HoverMenu hoverMenu = createHoverMenu(intent);
         mHoverMenuView.setMenu(hoverMenu);
+        mHoverMenuView.addToWindow();
+
+        onHoverMenuLaunched(mHoverMenuView);
     }
 
     /**
@@ -124,7 +126,17 @@ public abstract class HoverMenuService extends Service {
         return this;
     }
 
+    @NonNull
     protected abstract HoverMenu createHoverMenu(@NonNull Intent intent);
+
+    @NonNull
+    protected HoverMenuView getHoverMenuView() {
+        return mHoverMenuView;
+    }
+
+    protected void onHoverMenuLaunched(@NonNull HoverMenuView hoverMenuView) {
+        // Hook for subclasses.
+    }
 
     /**
      * Hook method for subclasses to take action when the user exits the HoverMenu. This method runs

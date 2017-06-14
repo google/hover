@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import io.mattcarroll.hover.HoverMenu;
+import io.mattcarroll.hover.HoverMenuView;
 import io.mattcarroll.hover.window.HoverMenuService;
 
 /**
@@ -44,9 +45,15 @@ public class ReorderingHoverMenuService extends HoverMenuService {
 
     private static final String TAG = "ReorderingHoverMenuService";
 
+    @NonNull
     @Override
     protected HoverMenu createHoverMenu(@NonNull Intent intent) {
         return new ReorderingSectionHoverMenu(getApplicationContext());
+    }
+
+    @Override
+    protected void onHoverMenuLaunched(@NonNull HoverMenuView hoverMenuView) {
+        hoverMenuView.collapse();
     }
 
     private static class ReorderingSectionHoverMenu extends HoverMenu {

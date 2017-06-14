@@ -5,4 +5,5 @@
     <string name="button_launch_hover_multi_sections">Launch Multiple Sections</string>
     <string name="button_launch_hover_changing_sections">Launch Changing Sections</string>
     <string name="button_launch_hover_reordering_sections">Launch Re-Ordering Sections</string>
+    <string name="button_launch_hover_all_states">Launch All States Menu</string>
 </resources>

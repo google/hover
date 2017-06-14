@@ -18,9 +18,9 @@ package io.mattcarroll.hover.hoverdemo.helloworld;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -28,7 +28,6 @@ import android.widget.ImageView;
 
 import org.codecanon.hover.hoverdemo.helloworld.R;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -42,11 +41,54 @@ import io.mattcarroll.hover.window.HoverMenuService;
  * Extend {@link HoverMenuService} to get a Hover menu that displays the tabs and content
  * in your custom {@link HoverMenu}.
  *
- * This menu presents the simplest possible Hover Menu, a menu with a single Section.
+ * This menu presents a Hover Menu that automatically transitions through each state every few
+ * seconds.
  */
-public class SingleSectionHoverMenuService extends HoverMenuService {
+public class AllStatesHoverMenuService extends HoverMenuService {
 
-    private static final String TAG = "SingleSectionHoverMenuService";
+    private static final String TAG = "AllStatesHoverMenuService";
+
+    private Handler mHandler = new Handler();
+    private int mNextStateTransition = 0;
+
+    private final List<Runnable> mStateTransitions = Arrays.asList(
+            new Runnable() {
+                @Override
+                public void run() {
+                    getHoverMenuView().expand();
+                }
+            },
+            new Runnable() {
+                @Override
+                public void run() {
+                    getHoverMenuView().collapse();
+                }
+            },
+            new Runnable() {
+                @Override
+                public void run() {
+                    getHoverMenuView().close();
+                }
+            },
+            new Runnable() {
+                @Override
+                public void run() {
+                    getHoverMenuView().collapse();
+                }
+            },
+            new Runnable() {
+                @Override
+                public void run() {
+                    getHoverMenuView().expand();
+                }
+            },
+            new Runnable() {
+                @Override
+                public void run() {
+                    getHoverMenuView().close();
+                }
+            }
+    );
 
     @NonNull
     @Override
@@ -56,7 +98,26 @@ public class SingleSectionHoverMenuService extends HoverMenuService {
 
     @Override
     protected void onHoverMenuLaunched(@NonNull HoverMenuView hoverMenuView) {
-        hoverMenuView.collapse();
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                transitionToNextState();
+
+                mHandler.postDelayed(this, 3000);
+            }
+        }, 3000);
+    }
+
+    private void transitionToNextState() {
+        mStateTransitions.get(mNextStateTransition).run();
+        mNextStateTransition = mNextStateTransition < mStateTransitions.size() - 1
+                ? mNextStateTransition + 1
+                : 0;
+    }
+
+    @Override
+    protected void onHoverMenuExitingByUserRequest() {
+        mHandler.removeCallbacksAndMessages(null);
     }
 
     private static class SingleSectionHoverMenu extends HoverMenu {

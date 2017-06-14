@@ -65,6 +65,14 @@ public class HoverMenuView extends RelativeLayout {
     private static final int LEFT = 0;
     private static final int RIGHT = 1;
 
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({ UNDEFINED_STATE, CLOSED, COLLAPSED, EXPANDED })
+    private @interface ViewState { }
+    private static final int UNDEFINED_STATE = 0;
+    private static final int CLOSED = 1;
+    private static final int COLLAPSED = 2;
+    private static final int EXPANDED = 3;
+
     @NonNull
     public static HoverMenuView createForWindow(@NonNull Context context,
                                                 @NonNull WindowViewController windowViewController) {
@@ -95,13 +103,16 @@ public class HoverMenuView extends RelativeLayout {
     private final WindowViewController mWindowViewController;
     private final Dragger mDragger;
     private final Screen mScreen;
+    private HoverMenuViewStateClosed mClosedMenu;
     private HoverMenuViewStateCollapsed mCollapsedMenu;
     private SideDock mCollapsedDock;
     private HoverMenuViewStateExpanded mExpandedMenu;
+    @ViewState
+    private int mViewState = UNDEFINED_STATE; // TODO: consider converting this class into a state machine with enums instead of using this IntDef
+    private int mDesiredStateAfterInitialization = CLOSED;
     private HoverMenu.SectionId mSelectedSectionId;
     private HoverMenu mMenu;
     private boolean mIsAddedToWindow;
-    private boolean mIsExpanded = false;
     private boolean mIsDebugMode = false;
     private OnExitListener mOnExitListener;
     private final Set<OnExpandAndCollapseListener> mOnExpandAndCollapseListeners = new CopyOnWriteArraySet<>();
@@ -178,15 +189,45 @@ public class HoverMenuView extends RelativeLayout {
     }
 
     private void initAfterInitialLayout() {
-        // Start collapsed.
-        if (null != mWindowViewController) {
-            mWindowViewController.makeUntouchable(this);
+        switch (mDesiredStateAfterInitialization) {
+            default:
+            case CLOSED:
+                // Start closed.
+                if (null != mWindowViewController) {
+                    mWindowViewController.makeUntouchable(this);
+                }
+                if (null == mSelectedSectionId) {
+                    mSelectedSectionId = mMenu.getSection(0).getId();
+                }
+                createClosedMenu();
+                mClosedMenu.takeControl(mScreen, mSelectedSectionId.toString());
+                mViewState = CLOSED;
+                break;
+            case COLLAPSED:
+                // Start closed.
+                if (null != mWindowViewController) {
+                    mWindowViewController.makeUntouchable(this);
+                }
+                if (null == mSelectedSectionId) {
+                    mSelectedSectionId = mMenu.getSection(0).getId();
+                }
+                createCollapsedMenu();
+                mCollapsedMenu.takeControl(mScreen, mSelectedSectionId.toString());
+                mViewState = COLLAPSED;
+                break;
+            case EXPANDED:
+                // Start closed.
+                if (null != mWindowViewController) {
+                    mWindowViewController.makeTouchable(this);
+                }
+                if (null == mSelectedSectionId) {
+                    mSelectedSectionId = mMenu.getSection(0).getId();
+                }
+                createExpandedMenu();
+                mExpandedMenu.takeControl(mScreen, mSelectedSectionId.toString());
+                mViewState = EXPANDED;
+                break;
         }
-        if (null == mSelectedSectionId) {
-            mSelectedSectionId = mMenu.getSection(0).getId();
-        }
-        createCollapsedMenu();
-        mCollapsedMenu.takeControl(mScreen, mSelectedSectionId.toString());
     }
 
     @Override
@@ -260,7 +301,7 @@ public class HoverMenuView extends RelativeLayout {
     public boolean dispatchKeyEventPreIme(KeyEvent event) {
         // Intercept the hardware back button press if we're expanded. When it's
         // pressed, we'll collapse.
-        if (mIsExpanded && KeyEvent.KEYCODE_BACK == event.getKeyCode()) {
+        if (EXPANDED == mViewState && KeyEvent.KEYCODE_BACK == event.getKeyCode()) {
             KeyEvent.DispatcherState state = getKeyDispatcherState();
             if (state != null) {
                 if (KeyEvent.ACTION_DOWN == event.getAction()) {
@@ -296,9 +337,13 @@ public class HoverMenuView extends RelativeLayout {
         }
     }
 
-    private void expand() {
-        if (!mIsExpanded) {
-            mIsExpanded = true;
+    public void expand() {
+        if (UNDEFINED_STATE == mViewState) {
+            mDesiredStateAfterInitialization = EXPANDED;
+            return;
+        }
+
+        if (EXPANDED != mViewState) {
             if (null != mWindowViewController) {
                 mWindowViewController.makeTouchable(this);
             }
@@ -306,9 +351,16 @@ public class HoverMenuView extends RelativeLayout {
 
             createExpandedMenu();
 
-            mCollapsedDock = mCollapsedMenu.getDock();
-            mCollapsedMenu.giveControlTo(mExpandedMenu);
-            mCollapsedMenu = null;
+            if (COLLAPSED == mViewState) {
+                mCollapsedDock = mCollapsedMenu.getDock();
+                mCollapsedMenu.giveControlTo(mExpandedMenu);
+                mCollapsedMenu = null;
+            } else if (CLOSED == mViewState) {
+                mClosedMenu.giveControlTo(mExpandedMenu);
+                mClosedMenu = null;
+            }
+
+            mViewState = EXPANDED;
         }
     }
 
@@ -335,9 +387,13 @@ public class HoverMenuView extends RelativeLayout {
         });
     }
 
-    private void collapse() {
-        if (mIsExpanded) {
-            mIsExpanded = false;
+    public void collapse() {
+        if (UNDEFINED_STATE == mViewState) {
+            mDesiredStateAfterInitialization = COLLAPSED;
+            return;
+        }
+
+        if (COLLAPSED != mViewState) {
             if (null != mWindowViewController) {
                 mWindowViewController.makeUntouchable(this);
             }
@@ -345,11 +401,18 @@ public class HoverMenuView extends RelativeLayout {
 
             createCollapsedMenu();
 
-            mSelectedSectionId = mExpandedMenu.getActiveSectionId();
-            mExpandedMenu.giveControlTo(mCollapsedMenu);
-            mExpandedMenu = null;
-
             mScreen.getContentDisplay().setVisibility(GONE);
+
+            if (EXPANDED == mViewState) {
+                mSelectedSectionId = mExpandedMenu.getActiveSectionId();
+                mExpandedMenu.giveControlTo(mCollapsedMenu);
+                mExpandedMenu = null;
+            } else if (CLOSED == mViewState) {
+                mClosedMenu.giveControlTo(mCollapsedMenu);
+                mClosedMenu = null;
+            }
+
+            mViewState = COLLAPSED;
         }
     }
 
@@ -392,13 +455,49 @@ public class HoverMenuView extends RelativeLayout {
             }
 
             @Override
-            public void onDroppedOnExit() {
-                Log.d(TAG, "Floating tab dropped on exit.");
+            public void onExited() {
+                Log.d(TAG, "HoverMenuView is closed.");
+                close();
                 if (null != mOnExitListener) {
                     mOnExitListener.onExit();
                 }
             }
         });
+    }
+
+    public void close() {
+        if (UNDEFINED_STATE == mViewState) {
+            mDesiredStateAfterInitialization = CLOSED;
+            return;
+        }
+
+        Log.d(TAG, "Closing menu.");
+        if (CLOSED != mViewState) {
+            if (null != mWindowViewController) {
+                mWindowViewController.makeUntouchable(this);
+            }
+            clearFocus(); // For handling hardware back button presses.
+
+            createClosedMenu();
+
+            mScreen.getContentDisplay().setVisibility(GONE);
+
+            if (EXPANDED == mViewState) {
+                mExpandedMenu.giveControlTo(mClosedMenu);
+                mExpandedMenu = null;
+            } else if (COLLAPSED == mViewState) {
+                mCollapsedDock = mCollapsedMenu.getDock();
+                mCollapsedMenu.giveControlTo(mClosedMenu);
+                mCollapsedMenu = null;
+            }
+
+            mViewState = CLOSED;
+        }
+    }
+
+    private void createClosedMenu() {
+        Log.d(TAG, "Creating closed menu.");
+        mClosedMenu = new HoverMenuViewStateClosed();
     }
 
     public void setOnExitListener(@Nullable OnExitListener listener) {

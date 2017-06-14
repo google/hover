@@ -192,9 +192,16 @@ class HoverMenuViewStateCollapsed implements HoverMenuViewState {
         }
 
         boolean droppedOnExit = mScreen.getExitView().isInExitZone(mFloatingTab.getPosition());
-        if (droppedOnExit && null != mListener) {
+        if (droppedOnExit) {
             Log.d(TAG, "User dropped floating tab on exit.");
-            mListener.onDroppedOnExit();
+            closeMenu(new Runnable() {
+                @Override
+                public void run() {
+                    if (null != mListener) {
+                        mListener.onExited();
+                    }
+                }
+            });
         } else {
             mSideDock = new SideDock(
                     mFloatingTab.getPosition(),
@@ -269,6 +276,19 @@ class HoverMenuViewStateCollapsed implements HoverMenuViewState {
         mFloatingTab.moveTo(position);
     }
 
+    private void closeMenu(final @Nullable Runnable onClosed) {
+        mFloatingTab.disappear(new Runnable() {
+            @Override
+            public void run() {
+                mScreen.destroyChainedTab(mFloatingTab);
+
+                if (null != onClosed) {
+                    onClosed.run();
+                }
+            }
+        });
+    }
+
     private void activateDragger() {
         mDragger.activate(mDragListener, mFloatingTab.getPosition());
     }
@@ -290,7 +310,7 @@ class HoverMenuViewStateCollapsed implements HoverMenuViewState {
 
         void onTap();
 
-        void onDroppedOnExit();
+        void onExited();
     }
 
     private static final class FloatingTabDragListener implements Dragger.DragListener {

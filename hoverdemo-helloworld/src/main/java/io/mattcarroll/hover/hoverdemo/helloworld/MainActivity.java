@@ -66,6 +66,14 @@ public class MainActivity extends AppCompatActivity {
                 startService(startHoverIntent);
             }
         });
+
+        findViewById(R.id.button_launch_hover_all_states).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent startHoverIntent = new Intent(MainActivity.this, AllStatesHoverMenuService.class);
+                startService(startHoverIntent);
+            }
+        });
     }
 
     @Override

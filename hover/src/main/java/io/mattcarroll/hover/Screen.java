@@ -16,6 +16,7 @@
 package io.mattcarroll.hover;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -95,6 +96,11 @@ class Screen {
             mTabs.put(tabId, chainedTab);
             return chainedTab;
         }
+    }
+
+    @Nullable
+    public FloatingTab getChainedTab(@NonNull String tabId) {
+        return mTabs.get(tabId);
     }
 
     public void destroyChainedTab(@NonNull FloatingTab chainedTab) {
