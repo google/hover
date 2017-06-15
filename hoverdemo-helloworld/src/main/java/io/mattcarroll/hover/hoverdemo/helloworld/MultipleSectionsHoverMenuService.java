@@ -83,16 +83,10 @@ public class MultipleSectionsHoverMenuService extends HoverMenuService {
         }
 
         private View createTabView() {
-            int tabPadding = mContext.getResources().getDimensionPixelSize(R.dimen.tab_padding);
             ImageView imageView = new ImageView(mContext);
             imageView.setImageResource(R.drawable.tab_background);
-
-            int tabSize = mContext.getResources().getDimensionPixelSize(R.dimen.tab_size);
-            FrameLayout tabView = new FrameLayout(mContext);
-//            tabView.setPadding(tabPadding, tabPadding, tabPadding, tabPadding);
-            tabView.addView(imageView, new FrameLayout.LayoutParams(tabSize, tabSize, Gravity.CENTER));
-
-            return tabView;
+            imageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+            return imageView;
         }
 
         @Override

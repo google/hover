@@ -109,13 +109,6 @@ public class ReorderingHoverMenuService extends HoverMenuService {
             imageView.setImageResource(R.drawable.tab_background);
             imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
             return imageView;
-
-//            int tabSize = mContext.getResources().getDimensionPixelSize(R.dimen.tab_size);
-//            FrameLayout tabView = new FrameLayout(mContext);
-//            tabView.addView(imageView, new FrameLayout.LayoutParams(tabSize, tabSize));
-//
-//            Log.d(TAG, "Created new tab view: " + tabView.hashCode());
-//            return tabView;
         }
 
         @Override
