@@ -56,18 +56,21 @@ class HoverMenuViewStateCollapsed implements HoverMenuViewState {
         }
     };
 
-    public HoverMenuViewStateCollapsed(@NonNull Dragger dragger) {
+    public HoverMenuViewStateCollapsed(@NonNull HoverMenu menu, @NonNull Dragger dragger) {
         mDragger = dragger;
+        setMenu(menu);
     }
 
-    public HoverMenuViewStateCollapsed(@NonNull Dragger dragger, @Nullable Point dropPoint) {
+    public HoverMenuViewStateCollapsed(@NonNull HoverMenu menu, @NonNull Dragger dragger, @Nullable Point dropPoint) {
         mDragger = dragger;
         mDropPoint = dropPoint;
+        setMenu(menu);
     }
 
-    public HoverMenuViewStateCollapsed(@NonNull Dragger dragger, @Nullable SideDock sideDock) {
+    public HoverMenuViewStateCollapsed(@NonNull HoverMenu menu, @NonNull Dragger dragger, @Nullable SideDock sideDock) {
         mDragger = dragger;
         mSideDock = sideDock;
+        setMenu(menu);
     }
 
     @Override

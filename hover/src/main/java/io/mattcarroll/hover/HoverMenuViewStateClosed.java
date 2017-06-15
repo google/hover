@@ -6,7 +6,7 @@ import android.util.Log;
 /**
  * TODO
  */
-public class HoverMenuViewStateClosed implements HoverMenuViewState {
+class HoverMenuViewStateClosed implements HoverMenuViewState {
 
     private static final String TAG = "HoverMenuViewStateClosed";
 

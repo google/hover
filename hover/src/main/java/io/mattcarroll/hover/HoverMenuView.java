@@ -110,6 +110,7 @@ public class HoverMenuView extends RelativeLayout {
     @ViewState
     private int mViewState = UNDEFINED_STATE; // TODO: consider converting this class into a state machine with enums instead of using this IntDef
     private int mDesiredStateAfterInitialization = CLOSED;
+    private int mDesiredStateAfterMenuProvided = UNDEFINED_STATE;
     private HoverMenu.SectionId mSelectedSectionId;
     private HoverMenu mMenu;
     private boolean mIsAddedToWindow;
@@ -330,16 +331,41 @@ public class HoverMenuView extends RelativeLayout {
     public void setMenu(@Nullable HoverMenu menu) {
         mMenu = menu;
 
-        restoreVisualState();
+        if (null != mMenu) {
+            restoreVisualState();
 
-        if (null == mSelectedSectionId || null == mMenu.getSection(mSelectedSectionId)) {
-            mSelectedSectionId = mMenu.getSection(0).getId();
+            if (null == mSelectedSectionId || null == mMenu.getSection(mSelectedSectionId)) {
+                mSelectedSectionId = mMenu.getSection(0).getId();
+            }
+
+            if (UNDEFINED_STATE != mDesiredStateAfterMenuProvided) {
+                switch (mDesiredStateAfterInitialization) {
+                    case EXPANDED:
+                        expand();
+                        break;
+                    case COLLAPSED:
+                        collapse();
+                        break;
+                }
+                mDesiredStateAfterInitialization = UNDEFINED_STATE;
+            } else if (COLLAPSED == mViewState) {
+                mCollapsedMenu.setMenu(menu);
+            } else if (EXPANDED == mViewState) {
+                mExpandedMenu.setMenu(menu);
+            }
+        } else {
+            close();
         }
     }
 
     public void expand() {
         if (UNDEFINED_STATE == mViewState) {
             mDesiredStateAfterInitialization = EXPANDED;
+            return;
+        }
+
+        if (null == mMenu) {
+            mDesiredStateAfterMenuProvided = EXPANDED;
             return;
         }
 
@@ -366,8 +392,7 @@ public class HoverMenuView extends RelativeLayout {
 
     private void createExpandedMenu() {
         Log.d(TAG, "Creating expanded menu. Selected section: " + mSelectedSectionId);
-        mExpandedMenu = new HoverMenuViewStateExpanded(mSelectedSectionId);
-        mExpandedMenu.setMenu(mMenu);
+        mExpandedMenu = new HoverMenuViewStateExpanded(mMenu, mSelectedSectionId);
         mExpandedMenu.setListener(new HoverMenuViewStateExpanded.Listener() {
             @Override
             public void onExpanding() {
@@ -390,6 +415,11 @@ public class HoverMenuView extends RelativeLayout {
     public void collapse() {
         if (UNDEFINED_STATE == mViewState) {
             mDesiredStateAfterInitialization = COLLAPSED;
+            return;
+        }
+
+        if (null == mMenu) {
+            mDesiredStateAfterMenuProvided = COLLAPSED;
             return;
         }
 
@@ -418,8 +448,7 @@ public class HoverMenuView extends RelativeLayout {
 
     private void createCollapsedMenu() {
         Log.d(TAG, "Creating collapsed menu. Dock: " + mCollapsedDock);
-        mCollapsedMenu = new HoverMenuViewStateCollapsed(mDragger, mCollapsedDock);
-        mCollapsedMenu.setMenu(mMenu);
+        mCollapsedMenu = new HoverMenuViewStateCollapsed(mMenu, mDragger, mCollapsedDock);
         mCollapsedMenu.setListener(new HoverMenuViewStateCollapsed.Listener() {
             @Override
             public void onCollapsing() {

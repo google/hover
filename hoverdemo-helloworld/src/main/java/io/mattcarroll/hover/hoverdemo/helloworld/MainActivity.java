@@ -16,8 +16,8 @@
 package io.mattcarroll.hover.hoverdemo.helloworld;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 import org.codecanon.hover.hoverdemo.helloworld.R;
@@ -71,6 +71,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent startHoverIntent = new Intent(MainActivity.this, AllStatesHoverMenuService.class);
+                startService(startHoverIntent);
+            }
+        });
+
+        findViewById(R.id.button_launch_hover_changing_menus).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent startHoverIntent = new Intent(MainActivity.this, ChangingMenusHoverMenuService.class);
                 startService(startHoverIntent);
             }
         });

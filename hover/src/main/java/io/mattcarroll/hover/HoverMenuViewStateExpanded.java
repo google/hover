@@ -64,12 +64,11 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
         }
     };
 
-    HoverMenuViewStateExpanded() { }
-
-    HoverMenuViewStateExpanded(@Nullable HoverMenu.SectionId activeSectionId) {
+    HoverMenuViewStateExpanded(@NonNull HoverMenu menu, @Nullable HoverMenu.SectionId activeSectionId) {
         if (null != activeSectionId) {
             mActiveSectionId = activeSectionId;
         }
+        setMenu(menu);
     }
 
     @Override
@@ -224,6 +223,7 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
 
     public void setMenu(@NonNull HoverMenu menu) {
         Log.d(TAG, "Setting menu.");
+        boolean alreadyHasMenu = mMenu != null;
         mMenu = menu;
         mMenu.setUpdatedCallback(new ListUpdateCallback() {
             @Override
@@ -263,9 +263,32 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
             }
         });
 
-        if (mHasControl) {
-            Log.d(TAG, "Has control.  Expanding menu.");
+        if (mHasControl && !alreadyHasMenu) {
+            Log.d(TAG, "Has control.  Received initial menu.  Expanding menu.");
             expandMenu();
+        } else if (mHasControl) {
+            Log.d(TAG, "Has control.  Already had menu.  Switching menu.");
+            transitionDisplayFromOldMenuToNew();
+        }
+    }
+
+    private void transitionDisplayFromOldMenuToNew() {
+        // TODO: implement a generalized display update mechanism rather than have sprawling update
+        // TODO: logic throughout this Class.
+        for (int i = 0; i < mMenu.getSectionCount(); ++i) {
+            if (i < mChainedTabs.size()) {
+                updateSection(i);
+            } else {
+                createTabsForIndices(i);
+            }
+        }
+
+        if (mChainedTabs.size() > mMenu.getSectionCount()) {
+            int[] removedSections = new int[mChainedTabs.size() - mMenu.getSectionCount()];
+            for (int i = mMenu.getSectionCount(); i < mChainedTabs.size(); ++i) {
+                removedSections[i - mMenu.getSectionCount()] = i;
+            }
+            removeSections(removedSections);
         }
     }
 
@@ -344,8 +367,11 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
 
     private void removeSections(int ... sectionIndices) {
         Log.d(TAG, "Tab(s) removed: " + Arrays.toString(sectionIndices));
-        for (int sectionIndex : sectionIndices) {
-            removeSection(sectionIndex);
+        // Sort the indices so that they appear from lowest to highest.  Then process
+        // in reverse order so that we don't remove sections out from under us.
+        Arrays.sort(sectionIndices);
+        for (int i = sectionIndices.length - 1; i >= 0; --i) {
+            removeSection(sectionIndices[i]);
         }
 
         updateChainedPositions();
@@ -364,7 +390,13 @@ class HoverMenuViewStateExpanded implements HoverMenuViewState {
         // If the removed section was the selected section then select a new section.
         HoverMenu.Section removedSection = mSections.get(chainedTab);
         if (removedSection.getId().equals(mActiveSectionId)) {
-            int newSelectionIndex = sectionIndex > 0 ? sectionIndex - 1 : 0;
+            int newSelectionIndex = 0;
+            if (sectionIndex - 1 < mMenu.getSectionCount() - 1) {
+                newSelectionIndex = sectionIndex - 1;
+            } else {
+                newSelectionIndex = mMenu.getSectionCount() - 1;
+            }
+
             selectSection(mMenu.getSection(newSelectionIndex));
         }
 

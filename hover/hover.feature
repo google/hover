@@ -12,16 +12,24 @@ Feature: Hover Menu
     When Hover is launched
     Then Hover is in the "application overlay" window
 
+  #------- Closed Menu ----------
+  Scenario: No overlay exists when Hover is in the closed state.
+    Given that Hover is in the closed state
+    Then nothing is visible on screen
+      And there is no View on the screen (not even invisible Views)
+
   #------- Collapsed Menu -------
   Scenario: Hover docks to predefined location upon first launch
     Given that Hover has never been launched
     When Hover is launched
+      And Hover is collapsed
     Then Hover docks to its default dock location
 
   Scenario: Hover docks to saved location after first launch
     Given that Hover has been launched previously
       And Hover is not currently launched
     When Hover is launched
+      And Hover is collapsed
     Then Hover docks to the same position as the last time it ran
 
   Scenario: Hover can be dragged by the user
@@ -50,12 +58,12 @@ Feature: Hover Menu
     When the user releases Hover's floating tab outside the exit area
     Then Hover's exit area is not displayed
 
-  Scenario: Hover exits when floating tab is dropped on exit
+  Scenario: Hover closes when floating tab is dropped on exit
     Given that Hover is launched
       And Hover is collapsed
       And Hover is being dragged
     When the user releases Hover's floating tab in the exit area
-    Then Hover exits
+    Then Hover closes
 
   Scenario: Hover changes floating tab when the selected section disappears
     Given that Hover is launched
@@ -77,7 +85,16 @@ Feature: Hover Menu
     Then Hover expands its menu
       And the selected section is displayed in the expanded menu
 
-  # What happens if only existing section is removed while collapsed?
+  Scenario: Hover re-opens with previously selected tab
+    Given that Hover is launched
+      And Hover is collapsed
+      And Hover is presenting MenuX
+      And Hover's floating tab is TabX
+    When Hover is destroyed
+      And Hover is launched
+      And Hover is collapsed
+      And Hover is presenting MenuX
+    Then Hover's floating tab is TabX
 
   #-------- Expanded Menu ---------
   Scenario: Hover changes selection when new tab tapped
@@ -104,8 +121,6 @@ Feature: Hover Menu
     Then the selected tab disappears
       And Hover selects another section
       And Hover displays the newly selected section's content
-
-  # What happens if only existing section is removed while expanded?
 
   Scenario: Hover adds tabs when new section is added
     Given that Hover is launched
@@ -152,3 +167,16 @@ Feature: Hover Menu
       And Hover is expanded
     When Hover collapses
     Then Hover docks at the same place as before it expanded
+
+  #-------- Cross-State Behavior --------
+  # TODO: still needs to be implemented
+  Scenario: Hover closes when no menu sections available
+    Given that Hover is launched
+    And Hover is <state>
+    When an empty menu is set on Hover
+    Then Hover closes
+
+    Examples:
+    |   state   |
+    | collapsed |
+    |  expanded |
