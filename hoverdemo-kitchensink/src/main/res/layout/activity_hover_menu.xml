@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<io.mattcarroll.hover.HoverMenuView
+<io.mattcarroll.hover.HoverView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:hover="http://schemas.android.com/apk/res-auto"
     android:id="@+id/hovermenu"

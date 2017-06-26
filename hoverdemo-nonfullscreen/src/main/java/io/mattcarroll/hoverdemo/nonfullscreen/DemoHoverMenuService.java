@@ -21,7 +21,7 @@ import android.support.annotation.NonNull;
 import android.view.ContextThemeWrapper;
 
 import io.mattcarroll.hover.HoverMenu;
-import io.mattcarroll.hover.HoverMenuView;
+import io.mattcarroll.hover.HoverView;
 import io.mattcarroll.hover.window.HoverMenuService;
 
 /**
@@ -57,7 +57,7 @@ public class DemoHoverMenuService extends HoverMenuService {
     }
 
     @Override
-    protected void onHoverMenuLaunched(@NonNull HoverMenuView hoverMenuView) {
-        hoverMenuView.collapse();
+    protected void onHoverMenuLaunched(@NonNull HoverView hoverView) {
+        hoverView.collapse();
     }
 }

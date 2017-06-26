@@ -27,7 +27,7 @@ import android.view.View;
 /**
  * {@code View} that draws a triangle selector icon at a given horizontal position within its bounds.
  */
-public class HoverMenuTabSelectorView extends View {
+public class TabSelectorView extends View {
 
     private static final String TAG = "HoverMenuTabSelectorView";
 
@@ -43,11 +43,11 @@ public class HoverMenuTabSelectorView extends View {
     private Path mSelectorPaintPath;
     private Paint mSelectorPaint;
 
-    public HoverMenuTabSelectorView(Context context) {
+    public TabSelectorView(Context context) {
         this(context, null);
     }
 
-    public HoverMenuTabSelectorView(Context context, AttributeSet attrs) {
+    public TabSelectorView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }

@@ -17,25 +17,19 @@ package io.mattcarroll.hover.hoverdemo.helloworld;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Handler;
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.view.Gravity;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import org.codecanon.hover.hoverdemo.helloworld.R;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import io.mattcarroll.hover.Content;
 import io.mattcarroll.hover.HoverMenu;
-import io.mattcarroll.hover.HoverMenuView;
+import io.mattcarroll.hover.HoverView;
 import io.mattcarroll.hover.window.HoverMenuService;
 
 /**
@@ -55,8 +49,8 @@ public class SingleSectionHoverMenuService extends HoverMenuService {
     }
 
     @Override
-    protected void onHoverMenuLaunched(@NonNull HoverMenuView hoverMenuView) {
-        hoverMenuView.collapse();
+    protected void onHoverMenuLaunched(@NonNull HoverView hoverView) {
+        hoverView.collapse();
     }
 
     private static class SingleSectionHoverMenu extends HoverMenu {

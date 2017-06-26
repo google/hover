@@ -31,7 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import io.mattcarroll.hover.HoverMenu;
-import io.mattcarroll.hover.HoverMenuView;
+import io.mattcarroll.hover.HoverView;
 import io.mattcarroll.hover.window.HoverMenuService;
 
 /**
@@ -52,8 +52,8 @@ public class ReorderingHoverMenuService extends HoverMenuService {
     }
 
     @Override
-    protected void onHoverMenuLaunched(@NonNull HoverMenuView hoverMenuView) {
-        hoverMenuView.collapse();
+    protected void onHoverMenuLaunched(@NonNull HoverView hoverView) {
+        hoverView.collapse();
     }
 
     private static class ReorderingSectionHoverMenu extends HoverMenu {

@@ -40,7 +40,7 @@ class ContentDisplay extends RelativeLayout {
     private View mContainer;
     private FrameLayout mContentView;
     private Drawable mContentBackground;
-    private HoverMenuTabSelectorView mTabSelectorView;
+    private TabSelectorView mTabSelectorView;
     private Tab mSelectedTab;
     private Content mContent;
     private boolean mIsVisible = false;
@@ -89,7 +89,7 @@ class ContentDisplay extends RelativeLayout {
         expandToScreenBounds();
 
         int backgroundCornerRadiusPx = (int) getResources().getDimension(R.dimen.hover_navigator_corner_radius);
-        mTabSelectorView = (HoverMenuTabSelectorView) findViewById(R.id.tabselector);
+        mTabSelectorView = (TabSelectorView) findViewById(R.id.tabselector);
         mTabSelectorView.setPadding(backgroundCornerRadiusPx, 0, backgroundCornerRadiusPx, 0);
 
         mContentView = (FrameLayout) findViewById(R.id.view_content_container);

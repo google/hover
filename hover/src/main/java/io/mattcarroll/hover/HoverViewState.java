@@ -21,8 +21,8 @@ import android.support.annotation.Nullable;
 /**
  * TODO
  */
-interface HoverMenuViewState {
-    void takeControl(@NonNull HoverMenuView hoverMenuView);
+interface HoverViewState {
+    void takeControl(@NonNull HoverView hoverView);
 
     void expand();
 

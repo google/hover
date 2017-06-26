@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="HoverMenuView">
+    <declare-styleable name="HoverView">
         <attr name="dockSide" format="enum">
             <enum name="left" value="0" />
             <enum name="right" value="1" />

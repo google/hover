@@ -23,7 +23,7 @@ import android.view.ContextThemeWrapper;
 import java.io.IOException;
 
 import io.mattcarroll.hover.HoverMenu;
-import io.mattcarroll.hover.HoverMenuView;
+import io.mattcarroll.hover.HoverView;
 import io.mattcarroll.hover.window.HoverMenuService;
 import io.mattcarroll.hover.hoverdemo.kitchensink.theming.HoverTheme;
 
@@ -69,8 +69,8 @@ public class DemoHoverMenuService extends HoverMenuService {
     }
 
     @Override
-    protected void onHoverMenuLaunched(@NonNull HoverMenuView hoverMenuView) {
-        hoverMenuView.collapse();
+    protected void onHoverMenuLaunched(@NonNull HoverView hoverView) {
+        hoverView.collapse();
     }
 
     public void onEventMainThread(@NonNull HoverTheme newTheme) {

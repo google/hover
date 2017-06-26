@@ -19,7 +19,7 @@ import android.support.annotation.NonNull;
 import android.view.View;
 
 /**
- * Content to be displayed in a {@link HoverMenuView}.
+ * Content to be displayed in a {@link HoverView}.
  */
 public interface Content {
 

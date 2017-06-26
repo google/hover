@@ -47,27 +47,27 @@ import static io.mattcarroll.hover.SideDock.SidePosition.LEFT;
  * {@code HoverMenuView} cannot be used in XML because it requires additional parameters in its
  * constructor.
  */
-public class HoverMenuView extends RelativeLayout {
+public class HoverView extends RelativeLayout {
 
-    private static final String TAG = "HoverMenuView";
+    private static final String TAG = "HoverView";
 
-    private static final String PREFS_FILE = "HoverMenuView";
+    private static final String PREFS_FILE = "hover";
     private static final String SAVED_STATE_DOCK_POSITION = "_dock_position";
     private static final String SAVED_STATE_DOCKS_SIDE = "_dock_side";
     private static final String SAVED_STATE_SELECTED_SECTION = "_selected_section";
 
     @NonNull
-    public static HoverMenuView createForWindow(@NonNull Context context,
-                                                @NonNull WindowViewController windowViewController) {
+    public static HoverView createForWindow(@NonNull Context context,
+                                            @NonNull WindowViewController windowViewController) {
         return createForWindow(context, windowViewController, null);
     }
 
     @NonNull
-    public static HoverMenuView createForWindow(@NonNull Context context,
-                                                @NonNull WindowViewController windowViewController,
-                                                @Nullable SideDock.SidePosition initialDockPosition) {
+    public static HoverView createForWindow(@NonNull Context context,
+                                            @NonNull WindowViewController windowViewController,
+                                            @Nullable SideDock.SidePosition initialDockPosition) {
         Dragger dragger = createWindowDragger(context, windowViewController);
-        return new HoverMenuView(context, dragger, windowViewController, initialDockPosition);
+        return new HoverView(context, dragger, windowViewController, initialDockPosition);
     }
 
     @NonNull
@@ -84,17 +84,17 @@ public class HoverMenuView extends RelativeLayout {
     }
 
     @NonNull
-    public static HoverMenuView createForView(@NonNull Context context) {
-        return new HoverMenuView(context, null);
+    public static HoverView createForView(@NonNull Context context) {
+        return new HoverView(context, null);
     }
 
-    final HoverMenuViewState mClosed = new HoverMenuViewStateClosed();
-    final HoverMenuViewState mCollapsed = new HoverMenuViewStateCollapsed();
-    final HoverMenuViewState mExpanded = new HoverMenuViewStateExpanded();
+    final HoverViewState mClosed = new HoverViewStateClosed();
+    final HoverViewState mCollapsed = new HoverViewStateCollapsed();
+    final HoverViewState mExpanded = new HoverViewStateExpanded();
     final WindowViewController mWindowViewController;
     final Dragger mDragger;
     final Screen mScreen;
-    HoverMenuViewState mState;
+    HoverViewState mState;
     HoverMenu mMenu;
     HoverMenu.SectionId mSelectedSectionId;
     SideDock mCollapsedDock;
@@ -106,7 +106,7 @@ public class HoverMenuView extends RelativeLayout {
     final Set<OnExpandAndCollapseListener> mOnExpandAndCollapseListeners = new CopyOnWriteArraySet<>();
 
     // Public for use with XML inflation. Clients should use static methods for construction.
-    public HoverMenuView(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public HoverView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         mDragger = createInViewDragger(context);
         mScreen = new Screen(this);
@@ -130,10 +130,10 @@ public class HoverMenuView extends RelativeLayout {
         );
     }
 
-    private HoverMenuView(@NonNull Context context,
-                          @NonNull Dragger dragger,
-                          @Nullable WindowViewController windowViewController,
-                          @Nullable SideDock.SidePosition initialDockPosition) {
+    private HoverView(@NonNull Context context,
+                      @NonNull Dragger dragger,
+                      @Nullable WindowViewController windowViewController,
+                      @Nullable SideDock.SidePosition initialDockPosition) {
         super(context);
         mDragger = dragger;
         mScreen = new Screen(this);
@@ -151,7 +151,7 @@ public class HoverMenuView extends RelativeLayout {
     }
 
     private void applyAttributes(@NonNull AttributeSet attrs) {
-        TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.HoverMenuView);
+        TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.HoverView);
         try {
             createCollapsedDockFromAttrs(a);
         } finally {
@@ -162,8 +162,8 @@ public class HoverMenuView extends RelativeLayout {
     private void createCollapsedDockFromAttrs(@NonNull TypedArray a) {
         int tabSize = getResources().getDimensionPixelSize(R.dimen.hover_tab_size);
         @SideDock.SidePosition.Side
-        int dockSide = a.getInt(R.styleable.HoverMenuView_dockSide, LEFT);
-        float dockPosition = a.getFraction(R.styleable.HoverMenuView_dockPosition, 1, 1, 0.5f);
+        int dockSide = a.getInt(R.styleable.HoverView_dockSide, LEFT);
+        float dockPosition = a.getFraction(R.styleable.HoverView_dockPosition, 1, 1, 0.5f);
         SideDock.SidePosition sidePosition = new SideDock.SidePosition(dockSide, dockPosition);
         mCollapsedDock = new SideDock(
                 this,
@@ -176,7 +176,7 @@ public class HoverMenuView extends RelativeLayout {
         mTabSize = getResources().getDimensionPixelSize(R.dimen.hover_tab_size);
         restoreVisualState();
         setFocusableInTouchMode(true); // For handling hardware back button presses.
-        setState(new HoverMenuViewStateClosed());
+        setState(new HoverViewStateClosed());
     }
 
     @Override
@@ -249,7 +249,7 @@ public class HoverMenuView extends RelativeLayout {
         mScreen.enableDrugMode(debugMode);
     }
 
-    void setState(@NonNull HoverMenuViewState state) {
+    void setState(@NonNull HoverViewState state) {
         mState = state;
         mState.takeControl(this);
     }
@@ -371,9 +371,9 @@ public class HoverMenuView extends RelativeLayout {
             }
         }
 
-        public void save(@NonNull HoverMenuView hoverMenuView) {
-            setSidePosition(hoverMenuView.mCollapsedDock.sidePosition());
-            setSelectedSectionId(hoverMenuView.mSelectedSectionId);
+        public void save(@NonNull HoverView hoverView) {
+            setSidePosition(hoverView.mCollapsedDock.sidePosition());
+            setSelectedSectionId(hoverView.mSelectedSectionId);
 
             Log.d(TAG, "Saving instance state. Dock side: " + mSidePosition
                     + ", Selected section: " + mSelectedSectionId);
@@ -387,24 +387,24 @@ public class HoverMenuView extends RelativeLayout {
             mSelectedSectionId = selectedSectionId;
         }
 
-        public void restore(@NonNull HoverMenuView hoverMenuView) {
+        public void restore(@NonNull HoverView hoverView) {
             SideDock.SidePosition sidePosition = getSidePosition();
-            hoverMenuView.mCollapsedDock = new SideDock(
-                    hoverMenuView,
-                    hoverMenuView.mTabSize,
+            hoverView.mCollapsedDock = new SideDock(
+                    hoverView,
+                    hoverView.mTabSize,
                     sidePosition
             );
 
             HoverMenu.SectionId savedSelectedSectionId = getSelectedSectionId();
-            Log.d(TAG, "Restoring instance state. Dock: " + hoverMenuView.mCollapsedDock
+            Log.d(TAG, "Restoring instance state. Dock: " + hoverView.mCollapsedDock
                     + ", Selected section: " + savedSelectedSectionId);
 
             // If no menu is set on this HoverMenuView then we should hold onto this saved section
             // selection in case we get a menu that has this section.  If we do have a menu set on
             // this HoverMenuView, then we should only restore this selection if the given section
             // exists in our menu.
-            if (null == hoverMenuView.mMenu
-                    || (null != savedSelectedSectionId && null != hoverMenuView.mMenu.getSection(savedSelectedSectionId))) {
+            if (null == hoverView.mMenu
+                    || (null != savedSelectedSectionId && null != hoverView.mMenu.getSection(savedSelectedSectionId))) {
                 mSelectedSectionId = savedSelectedSectionId;
             }
         }
@@ -441,16 +441,16 @@ public class HoverMenuView extends RelativeLayout {
             mPrefs = prefs;
         }
 
-        public void restore(@NonNull HoverMenuView hoverMenuView, @NonNull HoverMenu menu) {
+        public void restore(@NonNull HoverView hoverView, @NonNull HoverMenu menu) {
             SideDock.SidePosition sidePosition = getSidePosition(menu.getId());
-            hoverMenuView.mCollapsedDock = new SideDock(
-                    hoverMenuView,
-                    hoverMenuView.mTabSize,
+            hoverView.mCollapsedDock = new SideDock(
+                    hoverView,
+                    hoverView.mTabSize,
                     sidePosition
             );
 
             HoverMenu.SectionId selectedSectionId = getSelectedSectionId(menu.getId());
-            hoverMenuView.mSelectedSectionId = selectedSectionId;
+            hoverView.mSelectedSectionId = selectedSectionId;
 
             Log.d(TAG, "Restoring from PersistentState. Position: "
                     + sidePosition.getVerticalDockPositionPercentage()

@@ -17,7 +17,6 @@ package io.mattcarroll.hover.hoverdemo.helloworld;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
@@ -32,7 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import io.mattcarroll.hover.HoverMenu;
-import io.mattcarroll.hover.HoverMenuView;
+import io.mattcarroll.hover.HoverView;
 import io.mattcarroll.hover.window.HoverMenuService;
 
 /**
@@ -53,8 +52,8 @@ public class MutatingSectionsHoverMenuService extends HoverMenuService {
     }
 
     @Override
-    protected void onHoverMenuLaunched(@NonNull HoverMenuView hoverMenuView) {
-        hoverMenuView.collapse();
+    protected void onHoverMenuLaunched(@NonNull HoverView hoverView) {
+        hoverView.collapse();
     }
 
     private static class MutatingHoverMenu extends HoverMenu {

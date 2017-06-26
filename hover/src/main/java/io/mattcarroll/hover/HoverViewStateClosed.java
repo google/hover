@@ -9,47 +9,47 @@ import static android.view.View.GONE;
 /**
  * TODO
  */
-class HoverMenuViewStateClosed extends BaseHoverMenuViewState {
+class HoverViewStateClosed extends BaseHoverViewState {
 
     private static final String TAG = "HoverMenuViewStateClosed";
 
-    private HoverMenuView mHoverMenuView;
+    private HoverView mHoverView;
 
     @Override
-    public void takeControl(@NonNull HoverMenuView hoverMenuView) {
+    public void takeControl(@NonNull HoverView hoverView) {
         Log.d(TAG, "Taking control.");
-        super.takeControl(hoverMenuView);
-        mHoverMenuView = hoverMenuView;
-        mHoverMenuView.mState = this;
-        mHoverMenuView.clearFocus();
-        mHoverMenuView.mScreen.getContentDisplay().setVisibility(GONE);
+        super.takeControl(hoverView);
+        mHoverView = hoverView;
+        mHoverView.mState = this;
+        mHoverView.clearFocus();
+        mHoverView.mScreen.getContentDisplay().setVisibility(GONE);
 
-        String selectedSectionId = null != mHoverMenuView.mSelectedSectionId
-                ? mHoverMenuView.mSelectedSectionId.toString()
+        String selectedSectionId = null != mHoverView.mSelectedSectionId
+                ? mHoverView.mSelectedSectionId.toString()
                 : null;
-        final FloatingTab primaryTab = mHoverMenuView.mScreen.getChainedTab(selectedSectionId);
+        final FloatingTab primaryTab = mHoverView.mScreen.getChainedTab(selectedSectionId);
         if (null != primaryTab) {
             primaryTab.disappear(new Runnable() {
                 @Override
                 public void run() {
-                    mHoverMenuView.mScreen.destroyChainedTab(primaryTab);
+                    mHoverView.mScreen.destroyChainedTab(primaryTab);
                 }
             });
         }
 
-        mHoverMenuView.makeUntouchableInWindow();
+        mHoverView.makeUntouchableInWindow();
     }
 
-    private void changeState(@NonNull HoverMenuViewState nextState) {
-        mHoverMenuView.setState(nextState);
-        mHoverMenuView = null;
+    private void changeState(@NonNull HoverViewState nextState) {
+        mHoverView.setState(nextState);
+        mHoverView = null;
     }
 
     @Override
     public void expand() {
-        if (null != mHoverMenuView.mMenu) {
+        if (null != mHoverView.mMenu) {
             Log.d(TAG, "Expanding.");
-            changeState(mHoverMenuView.mExpanded);
+            changeState(mHoverView.mExpanded);
         } else {
             Log.d(TAG, "Asked to expand, but there is no menu set. Can't expand until a menu is available.");
         }
@@ -57,9 +57,9 @@ class HoverMenuViewStateClosed extends BaseHoverMenuViewState {
 
     @Override
     public void collapse() {
-        if (null != mHoverMenuView.mMenu) {
+        if (null != mHoverView.mMenu) {
             Log.d(TAG, "Collapsing.");
-            changeState(mHoverMenuView.mCollapsed);
+            changeState(mHoverView.mCollapsed);
         } else {
             Log.d(TAG, "Asked to collapse, but there is no menu set. Can't collapse until a menu is available.");
         }
@@ -72,17 +72,17 @@ class HoverMenuViewStateClosed extends BaseHoverMenuViewState {
 
     @Override
     public void setMenu(@Nullable final HoverMenu menu) {
-        mHoverMenuView.mMenu = menu;
+        mHoverView.mMenu = menu;
 
         // If the menu is null then there is nothing to restore.
         if (null == menu) {
             return;
         }
 
-        mHoverMenuView.restoreVisualState();
+        mHoverView.restoreVisualState();
 
-        if (null == mHoverMenuView.mSelectedSectionId || null == mHoverMenuView.mMenu.getSection(mHoverMenuView.mSelectedSectionId)) {
-            mHoverMenuView.mSelectedSectionId = mHoverMenuView.mMenu.getSection(0).getId();
+        if (null == mHoverView.mSelectedSectionId || null == mHoverView.mMenu.getSection(mHoverView.mSelectedSectionId)) {
+            mHoverView.mSelectedSectionId = mHoverView.mMenu.getSection(0).getId();
         }
     }
 

@@ -25,7 +25,7 @@ import android.util.Log;
 import android.view.WindowManager;
 
 import io.mattcarroll.hover.HoverMenu;
-import io.mattcarroll.hover.HoverMenuView;
+import io.mattcarroll.hover.HoverView;
 import io.mattcarroll.hover.OnExitListener;
 import io.mattcarroll.hover.SideDock;
 import io.mattcarroll.hover.overlay.OverlayPermission;
@@ -44,13 +44,13 @@ public abstract class HoverMenuService extends Service {
 
     private static final String TAG = "HoverMenuService";
 
-    private HoverMenuView mHoverMenuView;
+    private HoverView mHoverView;
     private boolean mIsRunning;
     private OnExitListener mOnMenuOnExitListener = new OnExitListener() {
         @Override
         public void onExit() {
             Log.d(TAG, "Menu exit requested. Exiting.");
-            mHoverMenuView.removeFromWindow();
+            mHoverView.removeFromWindow();
             onHoverMenuExitingByUserRequest();
             stopSelf();
         }
@@ -90,7 +90,7 @@ public abstract class HoverMenuService extends Service {
     public void onDestroy() {
         Log.d(TAG, "onDestroy()");
         if (mIsRunning) {
-            mHoverMenuView.removeFromWindow();
+            mHoverView.removeFromWindow();
             mIsRunning = false;
         }
     }
@@ -102,18 +102,18 @@ public abstract class HoverMenuService extends Service {
     }
 
     private void initHoverMenu(@NonNull Intent intent) {
-        mHoverMenuView = HoverMenuView.createForWindow(
+        mHoverView = HoverView.createForWindow(
                 this,
                 new WindowViewController((WindowManager) getSystemService(Context.WINDOW_SERVICE)),
                 new SideDock.SidePosition(SideDock.SidePosition.RIGHT, 0.5f)
         );
-        mHoverMenuView.setOnExitListener(mOnMenuOnExitListener);
+        mHoverView.setOnExitListener(mOnMenuOnExitListener);
 
         HoverMenu hoverMenu = createHoverMenu(intent);
-        mHoverMenuView.setMenu(hoverMenu);
-        mHoverMenuView.addToWindow();
+        mHoverView.setMenu(hoverMenu);
+        mHoverView.addToWindow();
 
-        onHoverMenuLaunched(mHoverMenuView);
+        onHoverMenuLaunched(mHoverView);
     }
 
     /**
@@ -130,11 +130,11 @@ public abstract class HoverMenuService extends Service {
     protected abstract HoverMenu createHoverMenu(@NonNull Intent intent);
 
     @NonNull
-    protected HoverMenuView getHoverMenuView() {
-        return mHoverMenuView;
+    protected HoverView getHoverView() {
+        return mHoverView;
     }
 
-    protected void onHoverMenuLaunched(@NonNull HoverMenuView hoverMenuView) {
+    protected void onHoverMenuLaunched(@NonNull HoverView hoverView) {
         // Hook for subclasses.
     }
 
