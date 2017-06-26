@@ -69,7 +69,7 @@ public class InViewDragger implements Dragger {
                             mOriginalViewPosition.y + dragDeltaY
                     );
 
-                    if (mIsDragging || !isTouchWithinSlopOfOriginalTouch()) {
+                    if (mIsDragging || !isTouchWithinSlopOfOriginalTouch(dragDeltaX, dragDeltaY)) {
                         if (!mIsDragging) {
                             // Dragging just started
                             Log.d(TAG, "MOVE Start Drag.");
@@ -158,11 +158,8 @@ public class InViewDragger implements Dragger {
         }
     }
 
-    private boolean isTouchWithinSlopOfOriginalTouch() {
-        float dx = mCurrentViewPosition.x - mOriginalViewPosition.x;
-        float dy = mCurrentViewPosition.y - mOriginalViewPosition.y;
+    private boolean isTouchWithinSlopOfOriginalTouch(float dx, float dy) {
         double distance = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
-
         return distance < mTapTouchSlop;
     }
 
