@@ -43,8 +43,8 @@ class FloatingTab extends FrameLayout implements Tab {
     private final String mId;
     private int mTabSize;
     private View mTabView;
-    private Point mDock;
-    private final Set<OnPositionChangeListener> mOnPositionChangeListeners = new CopyOnWriteArraySet<OnPositionChangeListener>();
+    private Dock mDock;
+    private final Set<OnPositionChangeListener> mOnPositionChangeListeners = new CopyOnWriteArraySet<>();
 
     private final OnLayoutChangeListener mOnLayoutChangeListener = new OnLayoutChangeListener() {
         @Override
@@ -204,26 +204,20 @@ class FloatingTab extends FrameLayout implements Tab {
     @Nullable
     @Override
     public Point getDockPosition() {
-        return mDock;
+        return mDock.position();
     }
 
-    public void setDockPosition(@NonNull Point dock) {
+    public void setDock(@NonNull Dock dock) {
         mDock = dock;
         notifyListenersOfDockChange();
     }
 
-    public void dockTo(@NonNull Point dock) {
-        dockTo(dock, null);
+    public void dock() {
+        dock(null);
     }
 
-    public void dockTo(@NonNull Point dock, @Nullable final Runnable onDocked) {
-        // TODO: the dock can be changed independent of position, so we can't ignore the incoming
-        // TODO: dock just because it matches our existing one.  figure out a way to not do needless
-        // TODO: dock animations if the same/similar value is provided.  Should probably have a
-        // TODO: dockTo(newDock) like this, but also a sendToDock() or maybe just dock().
-
-        mDock = dock;
-        Point destinationCornerPosition = convertCenterToCorner(mDock);
+    public void dock(@Nullable final Runnable onDocked) {
+        Point destinationCornerPosition = convertCenterToCorner(mDock.position());
         Log.d(TAG, "Docking to destination point: " + destinationCornerPosition);
 
         ObjectAnimator xAnimation = ObjectAnimator.ofFloat(this, "x", destinationCornerPosition.x);
@@ -295,7 +289,7 @@ class FloatingTab extends FrameLayout implements Tab {
 
     private void notifyListenersOfDockChange() {
         for (OnPositionChangeListener listener : mOnPositionChangeListeners) {
-            listener.onDockChange(mDock);
+            listener.onDockChange(mDock.position());
         }
     }
 

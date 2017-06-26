@@ -20,25 +20,22 @@ import android.content.SharedPreferences;
 import android.content.res.TypedArray;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.View;
 import android.view.ViewConfiguration;
-import android.view.WindowManager;
 import android.widget.RelativeLayout;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import io.mattcarroll.hover.view.InViewDragger;
 import io.mattcarroll.hover.window.InWindowDragger;
 import io.mattcarroll.hover.window.WindowViewController;
+
+import static io.mattcarroll.hover.SideDock.SidePosition.LEFT;
 
 /**
  * {@code HoverMenuView} is a floating menu implementation. This implementation displays tabs along
@@ -59,20 +56,6 @@ public class HoverMenuView extends RelativeLayout {
     private static final String SAVED_STATE_DOCKS_SIDE = "_dock_side";
     private static final String SAVED_STATE_SELECTED_SECTION = "_selected_section";
 
-    @Retention(RetentionPolicy.SOURCE)
-    @IntDef({ LEFT, RIGHT })
-    private @interface DockSide { }
-    private static final int LEFT = 0;
-    private static final int RIGHT = 1;
-
-    @Retention(RetentionPolicy.SOURCE)
-    @IntDef({ UNDEFINED_STATE, CLOSED, COLLAPSED, EXPANDED })
-    private @interface ViewState { }
-    private static final int UNDEFINED_STATE = 0;
-    private static final int CLOSED = 1;
-    private static final int COLLAPSED = 2;
-    private static final int EXPANDED = 3;
-
     @NonNull
     public static HoverMenuView createForWindow(@NonNull Context context,
                                                 @NonNull WindowViewController windowViewController) {
@@ -82,17 +65,22 @@ public class HoverMenuView extends RelativeLayout {
     @NonNull
     public static HoverMenuView createForWindow(@NonNull Context context,
                                                 @NonNull WindowViewController windowViewController,
-                                                @Nullable SideDock initialDock) {
+                                                @Nullable SideDock.SidePosition initialDockPosition) {
+        Dragger dragger = createWindowDragger(context, windowViewController);
+        return new HoverMenuView(context, dragger, windowViewController, initialDockPosition);
+    }
+
+    @NonNull
+    private static Dragger createWindowDragger(@NonNull Context context,
+                                               @NonNull WindowViewController windowViewController) {
         int touchDiameter = context.getResources().getDimensionPixelSize(R.dimen.hover_exit_radius);
         int slop = ViewConfiguration.get(context).getScaledTouchSlop();
-        InWindowDragger dragger = new InWindowDragger(
+        return new InWindowDragger(
                 context,
                 windowViewController,
                 touchDiameter,
                 slop
         );
-
-        return new HoverMenuView(context, dragger, windowViewController, initialDock);
     }
 
     @NonNull
@@ -100,209 +88,101 @@ public class HoverMenuView extends RelativeLayout {
         return new HoverMenuView(context, null);
     }
 
-    private final WindowViewController mWindowViewController;
-    private final Dragger mDragger;
-    private final Screen mScreen;
-    private HoverMenuViewStateClosed mClosedMenu;
-    private HoverMenuViewStateCollapsed mCollapsedMenu;
-    private SideDock mCollapsedDock;
-    private HoverMenuViewStateExpanded mExpandedMenu;
-    @ViewState
-    private int mViewState = UNDEFINED_STATE; // TODO: consider converting this class into a state machine with enums instead of using this IntDef
-    private int mDesiredStateAfterInitialization = CLOSED;
-    private int mDesiredStateAfterMenuProvided = UNDEFINED_STATE;
-    private HoverMenu.SectionId mSelectedSectionId;
-    private HoverMenu mMenu;
-    private boolean mIsAddedToWindow;
-    private boolean mIsDebugMode = false;
-    private OnExitListener mOnExitListener;
-    private final Set<OnExpandAndCollapseListener> mOnExpandAndCollapseListeners = new CopyOnWriteArraySet<>();
+    final HoverMenuViewState mClosed = new HoverMenuViewStateClosed();
+    final HoverMenuViewState mCollapsed = new HoverMenuViewStateCollapsed();
+    final HoverMenuViewState mExpanded = new HoverMenuViewStateExpanded();
+    final WindowViewController mWindowViewController;
+    final Dragger mDragger;
+    final Screen mScreen;
+    HoverMenuViewState mState;
+    HoverMenu mMenu;
+    HoverMenu.SectionId mSelectedSectionId;
+    SideDock mCollapsedDock;
+    boolean mIsAddedToWindow;
+    boolean mIsTouchableInWindow;
+    boolean mIsDebugMode = false;
+    int mTabSize;
+    OnExitListener mOnExitListener;
+    final Set<OnExpandAndCollapseListener> mOnExpandAndCollapseListeners = new CopyOnWriteArraySet<>();
 
     // Public for use with XML inflation. Clients should use static methods for construction.
-    public HoverMenuView(@NonNull Context context,
-                          @Nullable AttributeSet attrs) {
+    public HoverMenuView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        int touchDiameter = context.getResources().getDimensionPixelSize(R.dimen.hover_exit_radius);
-        int slop = ViewConfiguration.get(context).getScaledTouchSlop();
-        mDragger = new InViewDragger(
-                this,
-                touchDiameter,
-                slop
-        );
+        mDragger = createInViewDragger(context);
         mScreen = new Screen(this);
         mWindowViewController = null;
+
+        init();
 
         if (null != attrs) {
             applyAttributes(attrs);
         }
+    }
 
-        init();
+    @NonNull
+    private Dragger createInViewDragger(@NonNull Context context) {
+        int touchDiameter = context.getResources().getDimensionPixelSize(R.dimen.hover_exit_radius);
+        int slop = ViewConfiguration.get(context).getScaledTouchSlop();
+        return new InViewDragger(
+                this,
+                touchDiameter,
+                slop
+        );
     }
 
     private HoverMenuView(@NonNull Context context,
                           @NonNull Dragger dragger,
                           @Nullable WindowViewController windowViewController,
-                          @Nullable SideDock initialDockPosition) {
+                          @Nullable SideDock.SidePosition initialDockPosition) {
         super(context);
         mDragger = dragger;
         mScreen = new Screen(this);
         mWindowViewController = windowViewController;
-        mCollapsedDock = initialDockPosition;
+
         init();
+
+        if (null != initialDockPosition) {
+            mCollapsedDock = new SideDock(
+                    this,
+                    mTabSize,
+                    initialDockPosition
+            );
+        }
     }
 
     private void applyAttributes(@NonNull AttributeSet attrs) {
         TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.HoverMenuView);
-
         try {
-            @DockSide
-            int dockSide = a.getInt(R.styleable.HoverMenuView_dockSide, LEFT);
-            float dockPosition = a.getFraction(R.styleable.HoverMenuView_dockPosition, 1, 1, 0.5f);
-            mCollapsedDock = new SideDock(dockPosition, LEFT == dockSide ? SideDock.LEFT : SideDock.RIGHT);
+            createCollapsedDockFromAttrs(a);
         } finally {
             a.recycle();
         }
     }
 
+    private void createCollapsedDockFromAttrs(@NonNull TypedArray a) {
+        int tabSize = getResources().getDimensionPixelSize(R.dimen.hover_tab_size);
+        @SideDock.SidePosition.Side
+        int dockSide = a.getInt(R.styleable.HoverMenuView_dockSide, LEFT);
+        float dockPosition = a.getFraction(R.styleable.HoverMenuView_dockPosition, 1, 1, 0.5f);
+        SideDock.SidePosition sidePosition = new SideDock.SidePosition(dockSide, dockPosition);
+        mCollapsedDock = new SideDock(
+                this,
+                tabSize,
+                sidePosition
+        );
+    }
+
     private void init() {
+        mTabSize = getResources().getDimensionPixelSize(R.dimen.hover_tab_size);
         restoreVisualState();
         setFocusableInTouchMode(true); // For handling hardware back button presses.
-    }
-
-    // TODO: when to call this?
-    public void release() {
-        Log.d(TAG, "Released.");
-        mDragger.deactivate();
-        // TODO: should we also release the screen?
-    }
-
-    @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
-
-        addOnLayoutChangeListener(new OnLayoutChangeListener() {
-            @Override
-            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                removeOnLayoutChangeListener(this);
-                initAfterInitialLayout();
-            }
-        });
-    }
-
-    private void initAfterInitialLayout() {
-        switch (mDesiredStateAfterInitialization) {
-            default:
-            case CLOSED:
-                // Start closed.
-                if (null != mWindowViewController) {
-                    mWindowViewController.makeUntouchable(this);
-                }
-                if (null == mSelectedSectionId) {
-                    mSelectedSectionId = mMenu.getSection(0).getId();
-                }
-                createClosedMenu();
-                mClosedMenu.takeControl(mScreen, mSelectedSectionId.toString());
-                mViewState = CLOSED;
-                break;
-            case COLLAPSED:
-                // Start closed.
-                if (null != mWindowViewController) {
-                    mWindowViewController.makeUntouchable(this);
-                }
-                if (null == mSelectedSectionId) {
-                    mSelectedSectionId = mMenu.getSection(0).getId();
-                }
-                createCollapsedMenu();
-                mCollapsedMenu.takeControl(mScreen, mSelectedSectionId.toString());
-                mViewState = COLLAPSED;
-                break;
-            case EXPANDED:
-                // Start closed.
-                if (null != mWindowViewController) {
-                    mWindowViewController.makeTouchable(this);
-                }
-                if (null == mSelectedSectionId) {
-                    mSelectedSectionId = mMenu.getSection(0).getId();
-                }
-                createExpandedMenu();
-                mExpandedMenu.takeControl(mScreen, mSelectedSectionId.toString());
-                mViewState = EXPANDED;
-                break;
-        }
-    }
-
-    @Override
-    protected Parcelable onSaveInstanceState() {
-        if (null != mCollapsedMenu) {
-            mCollapsedDock = mCollapsedMenu.getDock();
-        }
-        Log.d(TAG, "onSaveInstanceState(). Dock: " + mCollapsedDock
-                + ", Selected section: " + mSelectedSectionId);
-        Parcelable superState = super.onSaveInstanceState();
-        SavedState savedState = new SavedState(superState);
-        savedState.setCollapsedDock(mCollapsedDock);
-        savedState.setSelectedSectionId(mSelectedSectionId);
-        return savedState;
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Parcelable state) {
-        SavedState savedState = (SavedState) state;
-        super.onRestoreInstanceState(savedState.getSuperState());
-        mCollapsedDock = savedState.getCollapsedDock();
-        HoverMenu.SectionId savedSelectedSectionId = savedState.getSelectedSectionId();
-        Log.d(TAG, "onRestoreInstanceState(). Dock: " + mCollapsedDock
-                + ", Selected section: " + savedSelectedSectionId);
-
-        // If no menu is set on this HoverMenuView then we should hold onto this saved section
-        // selection in case we get a menu that has this section.  If we do have a menu set on
-        // this HoverMenuView, then we should only restore this selection if the given section
-        // exists in our menu.
-        if (null == mMenu || (null != savedSelectedSectionId && null != mMenu.getSection(savedSelectedSectionId))) {
-            mSelectedSectionId = savedSelectedSectionId;
-        }
-    }
-
-    public void saveVisualState() {
-        if (null != mCollapsedMenu) {
-            mCollapsedDock = mCollapsedMenu.getDock();
-        }
-        SharedPreferences.Editor editor = getContext().getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE).edit();
-        editor.putFloat(mMenu.getId() + SAVED_STATE_DOCK_POSITION, mCollapsedDock.getVerticalDockPositionPercentage());
-        editor.putInt(mMenu.getId() + SAVED_STATE_DOCKS_SIDE, mCollapsedDock.getSide());
-        editor.putString(mMenu.getId() + SAVED_STATE_SELECTED_SECTION, null != mSelectedSectionId ? mSelectedSectionId.toString() : null);
-        editor.apply();
-
-        Log.d(TAG, "saveVisualState(). Position: "
-                + mCollapsedDock.getVerticalDockPositionPercentage()
-                + ", Side: " + mCollapsedDock.getSide()
-                + ", Section ID: " + mSelectedSectionId);
-    }
-
-    private void restoreVisualState() {
-        if (null != mMenu) {
-            SharedPreferences savedState = getContext().getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE);
-
-            mCollapsedDock = new SideDock(
-                    savedState.getFloat(mMenu.getId() + SAVED_STATE_DOCK_POSITION, 0.5f),
-                    savedState.getInt(mMenu.getId() + SAVED_STATE_DOCKS_SIDE, SideDock.LEFT)
-            );
-            mSelectedSectionId = savedState.contains(mMenu.getId() + SAVED_STATE_SELECTED_SECTION)
-                    ? new HoverMenu.SectionId(savedState.getString(mMenu.getId() + SAVED_STATE_SELECTED_SECTION, null))
-                    : null;
-
-            Log.d(TAG, "restoreStateFromBundle(). Position: "
-                    + mCollapsedDock.getVerticalDockPositionPercentage()
-                    + ", Side: " + mCollapsedDock.getSide()
-                    + ", Section ID: " + mSelectedSectionId);
-        }
+        setState(new HoverMenuViewStateClosed());
     }
 
     @Override
     public boolean dispatchKeyEventPreIme(KeyEvent event) {
-        // Intercept the hardware back button press if we're expanded. When it's
-        // pressed, we'll collapse.
-        if (EXPANDED == mViewState && KeyEvent.KEYCODE_BACK == event.getKeyCode()) {
+        // Intercept the hardware back button press if needed. When it's pressed, we'll collapse.
+        if (mState.respondsToBackButton() && KeyEvent.KEYCODE_BACK == event.getKeyCode()) {
             KeyEvent.DispatcherState state = getKeyDispatcherState();
             if (state != null) {
                 if (KeyEvent.ACTION_DOWN == event.getAction()) {
@@ -317,8 +197,49 @@ public class HoverMenuView extends RelativeLayout {
         return super.dispatchKeyEventPreIme(event);
     }
 
-    private void onBackPressed() {
-        collapse();
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        Parcelable superState = super.onSaveInstanceState();
+        VisualState visualState = new VisualState(superState);
+        visualState.save(this);
+        return visualState;
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Parcelable state) {
+        VisualState visualState = (VisualState) state;
+        super.onRestoreInstanceState(visualState.getSuperState());
+
+        visualState.restore(this);
+    }
+
+    public void saveVisualState() {
+        if (null == mMenu) {
+            // Nothing to save.
+            return;
+        }
+
+        SharedPreferences prefs = getContext().getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE);
+        PersistentState persistentState = new PersistentState(prefs);
+        persistentState.save(mMenu, mCollapsedDock.sidePosition(), mSelectedSectionId);
+    }
+
+    void restoreVisualState() {
+        if (null == mMenu) {
+            Log.d(TAG, "Tried to restore visual state but no menu set.");
+            return;
+        }
+
+        SharedPreferences prefs = getContext().getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE);
+        PersistentState persistentState = new PersistentState(prefs);
+        persistentState.restore(this, mMenu);
+    }
+
+    // TODO: when to call this?
+    public void release() {
+        Log.d(TAG, "Released.");
+        mDragger.deactivate();
+        // TODO: should we also release the screen?
     }
 
     public void enableDebugMode(boolean debugMode) {
@@ -328,205 +249,29 @@ public class HoverMenuView extends RelativeLayout {
         mScreen.enableDrugMode(debugMode);
     }
 
+    void setState(@NonNull HoverMenuViewState state) {
+        mState = state;
+        mState.takeControl(this);
+    }
+
+    private void onBackPressed() {
+        mState.onBackPressed();
+    }
+
     public void setMenu(@Nullable HoverMenu menu) {
-        mMenu = menu;
-
-        if (null != mMenu) {
-            restoreVisualState();
-
-            if (null == mSelectedSectionId || null == mMenu.getSection(mSelectedSectionId)) {
-                mSelectedSectionId = mMenu.getSection(0).getId();
-            }
-
-            if (UNDEFINED_STATE != mDesiredStateAfterMenuProvided) {
-                switch (mDesiredStateAfterInitialization) {
-                    case EXPANDED:
-                        expand();
-                        break;
-                    case COLLAPSED:
-                        collapse();
-                        break;
-                }
-                mDesiredStateAfterInitialization = UNDEFINED_STATE;
-            } else if (COLLAPSED == mViewState) {
-                mCollapsedMenu.setMenu(menu);
-            } else if (EXPANDED == mViewState) {
-                mExpandedMenu.setMenu(menu);
-            }
-        } else {
-            close();
-        }
+        mState.setMenu(menu);
     }
 
     public void expand() {
-        if (UNDEFINED_STATE == mViewState) {
-            mDesiredStateAfterInitialization = EXPANDED;
-            return;
-        }
-
-        if (null == mMenu) {
-            mDesiredStateAfterMenuProvided = EXPANDED;
-            return;
-        }
-
-        if (EXPANDED != mViewState) {
-            if (null != mWindowViewController) {
-                mWindowViewController.makeTouchable(this);
-            }
-            requestFocus(); // For handling hardware back button presses.
-
-            createExpandedMenu();
-
-            if (COLLAPSED == mViewState) {
-                mCollapsedDock = mCollapsedMenu.getDock();
-                mCollapsedMenu.giveControlTo(mExpandedMenu);
-                mCollapsedMenu = null;
-            } else if (CLOSED == mViewState) {
-                mClosedMenu.giveControlTo(mExpandedMenu);
-                mClosedMenu = null;
-            }
-
-            mViewState = EXPANDED;
-        }
-    }
-
-    private void createExpandedMenu() {
-        Log.d(TAG, "Creating expanded menu. Selected section: " + mSelectedSectionId);
-        mExpandedMenu = new HoverMenuViewStateExpanded(mMenu, mSelectedSectionId);
-        mExpandedMenu.setListener(new HoverMenuViewStateExpanded.Listener() {
-            @Override
-            public void onExpanding() {
-                notifyListenersExpanding();
-            }
-
-            @Override
-            public void onExpanded() {
-                mScreen.getContentDisplay().setVisibility(VISIBLE);
-                notifyListenersExpanded();
-            }
-
-            @Override
-            public void onCollapseRequested() {
-                collapse();
-            }
-        });
+        mState.expand();
     }
 
     public void collapse() {
-        if (UNDEFINED_STATE == mViewState) {
-            mDesiredStateAfterInitialization = COLLAPSED;
-            return;
-        }
-
-        if (null == mMenu) {
-            mDesiredStateAfterMenuProvided = COLLAPSED;
-            return;
-        }
-
-        if (COLLAPSED != mViewState) {
-            if (null != mWindowViewController) {
-                mWindowViewController.makeUntouchable(this);
-            }
-            clearFocus(); // For handling hardware back button presses.
-
-            createCollapsedMenu();
-
-            mScreen.getContentDisplay().setVisibility(GONE);
-
-            if (EXPANDED == mViewState) {
-                mSelectedSectionId = mExpandedMenu.getActiveSectionId();
-                mExpandedMenu.giveControlTo(mCollapsedMenu);
-                mExpandedMenu = null;
-            } else if (CLOSED == mViewState) {
-                mClosedMenu.giveControlTo(mCollapsedMenu);
-                mClosedMenu = null;
-            }
-
-            mViewState = COLLAPSED;
-        }
-    }
-
-    private void createCollapsedMenu() {
-        Log.d(TAG, "Creating collapsed menu. Dock: " + mCollapsedDock);
-        mCollapsedMenu = new HoverMenuViewStateCollapsed(mMenu, mDragger, mCollapsedDock);
-        mCollapsedMenu.setListener(new HoverMenuViewStateCollapsed.Listener() {
-            @Override
-            public void onCollapsing() {
-                notifyListenersCollapsing();
-            }
-
-            @Override
-            public void onCollapsed() {
-                notifyListenersCollapsed();
-            }
-
-            @Override
-            public void onDragStart() {
-                mScreen.getExitView().setVisibility(VISIBLE);
-            }
-
-            @Override
-            public void onDragEnd() {
-                mScreen.getExitView().setVisibility(GONE);
-            }
-
-            @Override
-            public void onDocked() {
-                Log.d(TAG, "Floating tab has docked.");
-                mCollapsedDock = mCollapsedMenu.getDock();
-                saveVisualState();
-            }
-
-            @Override
-            public void onTap() {
-                Log.d(TAG, "Expanding the hover menu.");
-                expand();
-            }
-
-            @Override
-            public void onExited() {
-                Log.d(TAG, "HoverMenuView is closed.");
-                close();
-                if (null != mOnExitListener) {
-                    mOnExitListener.onExit();
-                }
-            }
-        });
+        mState.collapse();
     }
 
     public void close() {
-        if (UNDEFINED_STATE == mViewState) {
-            mDesiredStateAfterInitialization = CLOSED;
-            return;
-        }
-
-        Log.d(TAG, "Closing menu.");
-        if (CLOSED != mViewState) {
-            if (null != mWindowViewController) {
-                mWindowViewController.makeUntouchable(this);
-            }
-            clearFocus(); // For handling hardware back button presses.
-
-            createClosedMenu();
-
-            mScreen.getContentDisplay().setVisibility(GONE);
-
-            if (EXPANDED == mViewState) {
-                mExpandedMenu.giveControlTo(mClosedMenu);
-                mExpandedMenu = null;
-            } else if (COLLAPSED == mViewState) {
-                mCollapsedDock = mCollapsedMenu.getDock();
-                mCollapsedMenu.giveControlTo(mClosedMenu);
-                mCollapsedMenu = null;
-            }
-
-            mViewState = CLOSED;
-        }
-    }
-
-    private void createClosedMenu() {
-        Log.d(TAG, "Creating closed menu.");
-        mClosedMenu = new HoverMenuViewStateClosed();
+        mState.close();
     }
 
     public void setOnExitListener(@Nullable OnExitListener listener) {
@@ -541,29 +286,29 @@ public class HoverMenuView extends RelativeLayout {
         mOnExpandAndCollapseListeners.remove(listener);
     }
 
-    private void notifyListenersExpanding() {
-        Log.i(TAG, "Notifying listeners that Hover is expanding.");
+    void notifyListenersExpanding() {
+        Log.d(TAG, "Notifying listeners that Hover is expanding.");
         for (OnExpandAndCollapseListener listener : mOnExpandAndCollapseListeners) {
             listener.onExpanding();
         }
     }
 
-    private void notifyListenersExpanded() {
-        Log.i(TAG, "Notifying listeners that Hover is now expanded.");
+    void notifyListenersExpanded() {
+        Log.d(TAG, "Notifying listeners that Hover is now expanded.");
         for (OnExpandAndCollapseListener listener : mOnExpandAndCollapseListeners) {
             listener.onExpanded();
         }
     }
 
-    private void notifyListenersCollapsing() {
-        Log.i(TAG, "Notifying listeners that Hover is collapsing.");
+    void notifyListenersCollapsing() {
+        Log.d(TAG, "Notifying listeners that Hover is collapsing.");
         for (OnExpandAndCollapseListener listener : mOnExpandAndCollapseListeners) {
             listener.onCollapsing();
         }
     }
 
-    private void notifyListenersCollapsed() {
-        Log.i(TAG, "Notifying listeners that Hover is now collapsed.");
+    void notifyListenersCollapsed() {
+        Log.d(TAG, "Notifying listeners that Hover is now collapsed.");
         for (OnExpandAndCollapseListener listener : mOnExpandAndCollapseListeners) {
             listener.onCollapsed();
         }
@@ -571,85 +316,176 @@ public class HoverMenuView extends RelativeLayout {
 
     // Only call this if using HoverMenuView directly in a window.
     public void addToWindow() {
-        if (!mIsAddedToWindow) {
-            mWindowViewController.addView(
-                    WindowManager.LayoutParams.MATCH_PARENT,
-                    WindowManager.LayoutParams.MATCH_PARENT,
-                    false,
-                    this
-            );
-
-            mIsAddedToWindow = true;
-        }
+        mState.addToWindow();
     }
 
     // Only call this if using HoverMenuView directly in a window.
     public void removeFromWindow() {
-        if (null != mWindowViewController) {
-            mWindowViewController.removeView(this);
-        }
+        mState.removeFromWindow();
     }
 
-    private static class SavedState extends BaseSavedState {
+    void makeTouchableInWindow() {
+        mState.makeTouchableInWindow();
+    }
 
-        private static final Parcelable.Creator<SavedState> CREATOR = new Creator<SavedState>() {
+    void makeUntouchableInWindow() {
+        mState.makeUntouchableInWindow();
+    }
+
+    // State of the HoverMenuView that is persisted across configuration change and other brief OS
+    // interruptions.  This state is written/read when HoverMenuView's onSaveInstanceState() and
+    // onRestoreInstanceState() are called.
+    @SuppressWarnings("WeakerAccess")
+    private static class VisualState extends BaseSavedState {
+
+        @SuppressWarnings("unused")
+        private static final Parcelable.Creator<VisualState> CREATOR = new Creator<VisualState>() {
             @Override
-            public SavedState createFromParcel(Parcel source) {
-                return new SavedState(source);
+            public VisualState createFromParcel(Parcel source) {
+                return new VisualState(source);
             }
 
             @Override
-            public SavedState[] newArray(int size) {
-                return new SavedState[size];
+            public VisualState[] newArray(int size) {
+                return new VisualState[size];
             }
         };
 
-        private SideDock mCollapsedDock;
+        private SideDock.SidePosition mSidePosition;
         private HoverMenu.SectionId mSelectedSectionId;
 
-        SavedState(Parcelable superState) {
+        VisualState(Parcelable superState) {
             super(superState);
         }
 
-        SavedState(Parcel in) {
+        VisualState(Parcel in) {
             super(in);
 
             if (in.dataAvail() > 0) {
-                float dockVerticalPositionPercent = in.readFloat();
                 int side = in.readInt();
-                mCollapsedDock = new SideDock(dockVerticalPositionPercent, side);
+                float dockVerticalPositionPercent = in.readFloat();
+                mSidePosition = new SideDock.SidePosition(side, dockVerticalPositionPercent);
             }
             if (in.dataAvail() > 0) {
                 mSelectedSectionId = new HoverMenu.SectionId(in.readString());
             }
         }
 
-        @Nullable
-        public SideDock getCollapsedDock() {
-            return mCollapsedDock;
+        public void save(@NonNull HoverMenuView hoverMenuView) {
+            setSidePosition(hoverMenuView.mCollapsedDock.sidePosition());
+            setSelectedSectionId(hoverMenuView.mSelectedSectionId);
+
+            Log.d(TAG, "Saving instance state. Dock side: " + mSidePosition
+                    + ", Selected section: " + mSelectedSectionId);
         }
 
-        public void setCollapsedDock(@Nullable SideDock collapsedDock) {
-            mCollapsedDock = collapsedDock;
+        private void setSidePosition(@Nullable SideDock.SidePosition sidePosition) {
+            mSidePosition = sidePosition;
         }
 
-        @Nullable
-        public HoverMenu.SectionId getSelectedSectionId() {
-            return mSelectedSectionId;
-        }
-
-        public void setSelectedSectionId(@Nullable HoverMenu.SectionId selectedSectionId) {
+        private void setSelectedSectionId(@Nullable HoverMenu.SectionId selectedSectionId) {
             mSelectedSectionId = selectedSectionId;
+        }
+
+        public void restore(@NonNull HoverMenuView hoverMenuView) {
+            SideDock.SidePosition sidePosition = getSidePosition();
+            hoverMenuView.mCollapsedDock = new SideDock(
+                    hoverMenuView,
+                    hoverMenuView.mTabSize,
+                    sidePosition
+            );
+
+            HoverMenu.SectionId savedSelectedSectionId = getSelectedSectionId();
+            Log.d(TAG, "Restoring instance state. Dock: " + hoverMenuView.mCollapsedDock
+                    + ", Selected section: " + savedSelectedSectionId);
+
+            // If no menu is set on this HoverMenuView then we should hold onto this saved section
+            // selection in case we get a menu that has this section.  If we do have a menu set on
+            // this HoverMenuView, then we should only restore this selection if the given section
+            // exists in our menu.
+            if (null == hoverMenuView.mMenu
+                    || (null != savedSelectedSectionId && null != hoverMenuView.mMenu.getSection(savedSelectedSectionId))) {
+                mSelectedSectionId = savedSelectedSectionId;
+            }
+        }
+
+        @Nullable
+        private SideDock.SidePosition getSidePosition() {
+            return mSidePosition;
+        }
+
+        @Nullable
+        private HoverMenu.SectionId getSelectedSectionId() {
+            return mSelectedSectionId;
         }
 
         @Override
         public void writeToParcel(Parcel out, int flags) {
             super.writeToParcel(out, flags);
 
-            if (null != mCollapsedDock) {
-                out.writeFloat(mCollapsedDock.getVerticalDockPositionPercentage());
-                out.writeInt(mCollapsedDock.getSide());
+            if (null != mSidePosition) {
+                out.writeInt(mSidePosition.getSide());
+                out.writeFloat(mSidePosition.getVerticalDockPositionPercentage());
             }
         }
+    }
+
+    // State of the HoverMenuView that is persisted to disk.  PersistentState is used to restore a
+    // HoverMenuView's state across different application runs.
+    @SuppressWarnings("WeakerAccess")
+    private static class PersistentState {
+
+        private final SharedPreferences mPrefs;
+
+        PersistentState(@NonNull SharedPreferences prefs) {
+            mPrefs = prefs;
+        }
+
+        public void restore(@NonNull HoverMenuView hoverMenuView, @NonNull HoverMenu menu) {
+            SideDock.SidePosition sidePosition = getSidePosition(menu.getId());
+            hoverMenuView.mCollapsedDock = new SideDock(
+                    hoverMenuView,
+                    hoverMenuView.mTabSize,
+                    sidePosition
+            );
+
+            HoverMenu.SectionId selectedSectionId = getSelectedSectionId(menu.getId());
+            hoverMenuView.mSelectedSectionId = selectedSectionId;
+
+            Log.d(TAG, "Restoring from PersistentState. Position: "
+                    + sidePosition.getVerticalDockPositionPercentage()
+                    + ", Side: " + sidePosition
+                    + ", Section ID: " + selectedSectionId);
+        }
+
+        private SideDock.SidePosition getSidePosition(@NonNull String menuId) {
+            return new SideDock.SidePosition(
+                    mPrefs.getInt(menuId + SAVED_STATE_DOCKS_SIDE, LEFT),
+                    mPrefs.getFloat(menuId + SAVED_STATE_DOCK_POSITION, 0.5f)
+            );
+        }
+
+        private HoverMenu.SectionId getSelectedSectionId(@NonNull String menuId) {
+            return mPrefs.contains(menuId + SAVED_STATE_SELECTED_SECTION)
+                    ? new HoverMenu.SectionId(mPrefs.getString(menuId + SAVED_STATE_SELECTED_SECTION, null))
+                    : null;
+        }
+
+        public void save(@NonNull HoverMenu menu,
+                         @NonNull SideDock.SidePosition sidePosition,
+                         @Nullable HoverMenu.SectionId sectionId) {
+            String menuId = menu.getId();
+            SharedPreferences.Editor editor = mPrefs.edit();
+            editor.putFloat(menuId + SAVED_STATE_DOCK_POSITION, sidePosition.getVerticalDockPositionPercentage());
+            editor.putInt(menuId + SAVED_STATE_DOCKS_SIDE, sidePosition.getSide());
+            editor.putString(menuId + SAVED_STATE_SELECTED_SECTION, null != sectionId ? sectionId.toString() : null);
+            editor.apply();
+
+            Log.d(TAG, "saveVisualState(). Position: "
+                    + sidePosition.getVerticalDockPositionPercentage()
+                    + ", Side: " + sidePosition.getSide()
+                    + ", Section ID: " + sectionId);
+        }
+
     }
 }

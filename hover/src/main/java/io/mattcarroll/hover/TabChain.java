@@ -70,7 +70,8 @@ class TabChain {
         Log.d(TAG, mTab.getTabId() + " is now chained to " + tab.getTabId());
         mPredecessorTab = tab;
         mLockedPosition = null;
-        mTab.setDockPosition(getMyChainPositionRelativeTo(mPredecessorTab));
+        Point myPosition = getMyChainPositionRelativeTo(mPredecessorTab);
+        mTab.setDock(new PositionDock(myPosition));
     }
 
     public void chainTo(@NonNull Point lockedPosition) {
@@ -85,7 +86,7 @@ class TabChain {
         Log.d(TAG, mTab.getTabId() + " is now chained to position " + lockedPosition);
         mPredecessorTab = null;
         mLockedPosition = lockedPosition;
-        mTab.setDockPosition(mLockedPosition);
+        mTab.setDock(new PositionDock(mLockedPosition));
     }
 
     public void tightenChain() {
@@ -99,7 +100,7 @@ class TabChain {
 
     private void moveToChainedPosition() {
         if (View.VISIBLE == mTab.getVisibility()) {
-            mTab.dockTo(mTab.getDockPosition());
+            mTab.dock();
         } else {
             mTab.moveTo(mTab.getDockPosition());
             mTab.appear(null);

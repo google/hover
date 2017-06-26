@@ -15,32 +15,26 @@
  */
 package io.mattcarroll.hover;
 
+import android.graphics.Point;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 /**
  * TODO
  */
-interface HoverMenuViewState {
-    void takeControl(@NonNull HoverMenuView hoverMenuView);
+public class PositionDock extends Dock {
 
-    void expand();
+    private static final String TAG = "SideDock";
 
-    void collapse();
+    private Point mPosition;
 
-    void close();
+    public PositionDock(@NonNull Point position) {
+        mPosition = position;
+    }
 
-    void setMenu(@Nullable HoverMenu menu);
+    @NonNull
+    @Override
+    public Point position() {
+        return mPosition;
+    }
 
-    boolean respondsToBackButton();
-
-    void onBackPressed();
-
-    void addToWindow();
-
-    void removeFromWindow();
-
-    void makeTouchableInWindow();
-
-    void makeUntouchableInWindow();
 }

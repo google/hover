@@ -105,7 +105,7 @@ public abstract class HoverMenuService extends Service {
         mHoverMenuView = HoverMenuView.createForWindow(
                 this,
                 new WindowViewController((WindowManager) getSystemService(Context.WINDOW_SERVICE)),
-                new SideDock(0.5f, SideDock.RIGHT)
+                new SideDock.SidePosition(SideDock.SidePosition.RIGHT, 0.5f)
         );
         mHoverMenuView.setOnExitListener(mOnMenuOnExitListener);
 
