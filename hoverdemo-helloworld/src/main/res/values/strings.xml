@@ -11,4 +11,5 @@
     <string name="button_launch_hover_reordering_sections">Launch Re-Ordering Sections</string>
     <string name="button_launch_hover_all_states">Launch All States Menu</string>
     <string name="button_launch_hover_changing_menus">Launch Changing Menus</string>
+    <string name="button_launch_hover_menu_then_no_menu">Launch Menu, Then No Menu</string>
 </resources>

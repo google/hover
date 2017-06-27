@@ -102,5 +102,13 @@
             android:text="@string/button_launch_hover_changing_menus"
             />
 
+        <Button
+            android:id="@+id/button_launch_hover_menu_then_no_menu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/button_launch_hover_menu_then_no_menu"
+            />
+
     </LinearLayout>
 </ScrollView>

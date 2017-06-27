@@ -90,6 +90,14 @@ public class MainActivity extends AppCompatActivity {
                 startService(startHoverIntent);
             }
         });
+
+        findViewById(R.id.button_launch_hover_menu_then_no_menu).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent startHoverIntent = new Intent(MainActivity.this, MenuThenNoMenuHoverMenuService.class);
+                startService(startHoverIntent);
+            }
+        });
     }
 
     @Override

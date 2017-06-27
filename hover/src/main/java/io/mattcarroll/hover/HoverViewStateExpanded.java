@@ -202,9 +202,12 @@ class HoverViewStateExpanded extends BaseHoverViewState {
             throw new RuntimeException("Cannot give control to another HoverMenuController when we don't have the HoverTab.");
         }
 
+        if (null != mHoverView.mMenu) {
+            mHoverView.mMenu.setUpdatedCallback(null);
+        }
+
         mHasControl = false;
         mHasMenu = false;
-        mHoverView.mMenu.setUpdatedCallback(null);
         mHoverView.mScreen.getContentDisplay().activeTabIs(null);
         mHoverView.mScreen.getContentDisplay().displayContent(null);
         mHoverView.mScreen.getContentDisplay().setVisibility(View.GONE);

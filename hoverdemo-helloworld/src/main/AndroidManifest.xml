@@ -24,6 +24,7 @@
         <service android:name="io.mattcarroll.hover.hoverdemo.helloworld.ReorderingHoverMenuService" />
         <service android:name="io.mattcarroll.hover.hoverdemo.helloworld.AllStatesHoverMenuService"/>
         <service android:name="io.mattcarroll.hover.hoverdemo.helloworld.ChangingMenusHoverMenuService"/>
+        <service android:name="io.mattcarroll.hover.hoverdemo.helloworld.MenuThenNoMenuHoverMenuService"/>
     </application>
 
 </manifest>
