@@ -47,6 +47,14 @@
             android:text="@string/button_launch_hover_multi_sections"
             />
 
+        <Button
+            android:id="@+id/button_launch_hover_foreground"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/button_launch_hover_foreground"
+            />
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -51,6 +51,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        findViewById(R.id.button_launch_hover_foreground).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent startHoverIntent = new Intent(MainActivity.this, SingleSectionNotificationHoverMenuService.class);
+                startService(startHoverIntent);
+            }
+        });
+
         findViewById(R.id.button_launch_hover_changing_sections).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

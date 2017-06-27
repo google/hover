@@ -15,6 +15,7 @@
  */
 package io.mattcarroll.hover.window;
 
+import android.app.Notification;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -59,6 +60,11 @@ public abstract class HoverMenuService extends Service {
     @Override
     public void onCreate() {
         Log.d(TAG, "onCreate()");
+        Notification foregroundNotification = getForegroundNotification();
+        if (null != foregroundNotification) {
+            int notificationId = getForegroundNotificationId();
+            startForeground(notificationId, foregroundNotification);
+        }
     }
 
     @Override
@@ -132,6 +138,18 @@ public abstract class HoverMenuService extends Service {
     @NonNull
     protected HoverView getHoverView() {
         return mHoverView;
+    }
+
+    protected int getForegroundNotificationId() {
+        // Subclasses should provide their own notification ID if using a notification.
+        return 123456789;
+    }
+
+    @Nullable
+    protected Notification getForegroundNotification() {
+        // If subclass returns a non-null Notification then the Service will be run in
+        // the foreground.
+        return null;
     }
 
     protected void onHoverMenuLaunched(@NonNull HoverView hoverView) {

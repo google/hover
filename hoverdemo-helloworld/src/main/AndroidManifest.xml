@@ -19,6 +19,7 @@
         </activity>
         <service android:name="io.mattcarroll.hover.hoverdemo.helloworld.SingleSectionHoverMenuService" />
         <service android:name="io.mattcarroll.hover.hoverdemo.helloworld.MultipleSectionsHoverMenuService" />
+        <service android:name="io.mattcarroll.hover.hoverdemo.helloworld.SingleSectionNotificationHoverMenuService"/>
         <service android:name="io.mattcarroll.hover.hoverdemo.helloworld.MutatingSectionsHoverMenuService" />
         <service android:name="io.mattcarroll.hover.hoverdemo.helloworld.ReorderingHoverMenuService" />
         <service android:name="io.mattcarroll.hover.hoverdemo.helloworld.AllStatesHoverMenuService"/>
