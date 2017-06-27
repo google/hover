@@ -96,9 +96,19 @@ class HoverViewStateExpanded extends BaseHoverViewState {
     }
 
     private void expandMenu() {
+        // If the primary tab is not already visible then we want to dock it immediately without
+        // animation.
+        boolean dockPrimaryTabImmediately = null == mHoverView.mScreen.getChainedTab(mHoverView.mSelectedSectionId.toString());
+
         createChainedTabs();
-        chainTabs();
-        mPrimaryTab.dock(mShowTabsRunnable);
+        chainTabs(!dockPrimaryTabImmediately);
+
+        if (dockPrimaryTabImmediately) {
+            mPrimaryTab.dockImmediately();
+            mHoverView.post(mShowTabsRunnable);
+        } else {
+            mPrimaryTab.dock(mShowTabsRunnable);
+        }
 
         mHoverView.notifyListenersExpanding();
         if (null != mListener) {
@@ -140,7 +150,7 @@ class HoverViewStateExpanded extends BaseHoverViewState {
         }
     }
 
-    private void chainTabs() {
+    private void chainTabs(boolean animatePrimaryTab) {
         Log.d(TAG, "Chaining tabs.");
         Tab predecessorTab = mChainedTabs.get(0);
 
@@ -161,7 +171,7 @@ class HoverViewStateExpanded extends BaseHoverViewState {
                 // TODO: generalize the notion of a predecessor so that the 1st tab doesn't need
                 // TODO: to be treated in a special way.
                 tabChain.chainTo(mDock);
-                tabChain.tightenChain();
+                tabChain.tightenChain(!animatePrimaryTab);
             } else {
                 final Tab currentPredecessor = predecessorTab;
                 int displayDelayInMillis = (int) (Math.abs(primaryTabIndex - i) * 100);

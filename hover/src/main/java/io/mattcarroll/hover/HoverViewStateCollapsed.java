@@ -23,6 +23,7 @@ import android.util.Log;
 import android.view.View;
 
 import static android.view.View.GONE;
+import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 
 /**
@@ -78,7 +79,14 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         mActiveSection = mHoverView.mMenu.getSection(mHoverView.mSelectedSectionId);
         mActiveSection = null != mActiveSection ? mActiveSection : mHoverView.mMenu.getSection(0);
         mActiveSectionIndex = mHoverView.mMenu.getSectionIndex(mActiveSection);
-        mFloatingTab = mHoverView.mScreen.createChainedTab(mHoverView.mSelectedSectionId.toString(), mActiveSection.getTabView());
+        mFloatingTab = mHoverView.mScreen.getChainedTab(mHoverView.mSelectedSectionId.toString());
+        final boolean wasFloatingTabVisible;
+        if (null == mFloatingTab) {
+            wasFloatingTabVisible = false;
+            mFloatingTab = mHoverView.mScreen.createChainedTab(mHoverView.mSelectedSectionId.toString(), mActiveSection.getTabView());
+        } else {
+            wasFloatingTabVisible = true;
+        }
         mDragListener = new FloatingTabDragListener(this);
         mIsCollapsed = false; // We're collapsing, not yet collapsed.
         if (null != mListener) {
@@ -88,10 +96,19 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         initDockPosition();
 
         // post() animation to dock in case the container hasn't measured itself yet.
+        if (!wasFloatingTabVisible) {
+            mFloatingTab.setVisibility(INVISIBLE);
+        }
         mHoverView.post(new Runnable() {
             @Override
             public void run() {
-                sendToDock();
+                if (wasFloatingTabVisible) {
+                    sendToDock();
+                } else {
+                    mFloatingTab.setVisibility(VISIBLE);
+                    moveToDock();
+                    onDocked();
+                }
             }
         });
 

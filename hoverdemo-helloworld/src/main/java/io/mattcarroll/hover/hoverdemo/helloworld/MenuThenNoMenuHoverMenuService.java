@@ -60,13 +60,6 @@ public class MenuThenNoMenuHoverMenuService extends HoverMenuService {
             new Runnable() {
                 @Override
                 public void run() {
-                    // Should do nothing because no menu is set.
-                    getHoverView().expand();
-                }
-            },
-            new Runnable() {
-                @Override
-                public void run() {
                     // Give the menu back. Should stay closed.
                     getHoverView().setMenu(mMenu);
                 }

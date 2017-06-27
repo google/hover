@@ -257,6 +257,10 @@ class FloatingTab extends FrameLayout implements Tab {
         });
     }
 
+    public void dockImmediately() {
+        moveTo(mDock.position());
+    }
+
     public void moveTo(@NonNull Point floatPosition) {
         Point cornerPosition = convertCenterToCorner(floatPosition);
         setX(cornerPosition.x);

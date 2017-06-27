@@ -45,7 +45,7 @@ class TabChain {
         @Override
         public void onDockChange(@NonNull Point dock) {
             Log.d(TAG, hashCode() + "'s predecessor dock moved to: " + dock);
-            moveToChainedPosition();
+            moveToChainedPosition(false);
         }
     };
 
@@ -90,7 +90,11 @@ class TabChain {
     }
 
     public void tightenChain() {
-        moveToChainedPosition();
+        tightenChain(false);
+    }
+
+    public void tightenChain(boolean immediate) {
+        moveToChainedPosition(immediate);
 
         if (null != mPredecessorTab) {
             // TODO: need to only add this once.
@@ -98,9 +102,13 @@ class TabChain {
         }
     }
 
-    private void moveToChainedPosition() {
+    private void moveToChainedPosition(boolean immediate) {
         if (View.VISIBLE == mTab.getVisibility()) {
-            mTab.dock();
+            if (immediate) {
+                mTab.dockImmediately();
+            } else {
+                mTab.dock();
+            }
         } else {
             mTab.moveTo(mTab.getDockPosition());
             mTab.appear(null);
