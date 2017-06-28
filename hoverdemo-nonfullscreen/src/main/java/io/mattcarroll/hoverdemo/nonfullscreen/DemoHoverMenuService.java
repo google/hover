@@ -50,14 +50,14 @@ public class DemoHoverMenuService extends HoverMenuService {
         return new ContextThemeWrapper(this, R.style.AppTheme);
     }
 
-    @NonNull
     @Override
-    protected HoverMenu createHoverMenu(@NonNull Intent intent) {
-        return new DemoHoverMenu(getApplicationContext(), "nonfullscreen");
+    protected void onHoverMenuLaunched(@NonNull Intent intent, @NonNull HoverView hoverView) {
+        hoverView.setMenu(createHoverMenu());
+        hoverView.collapse();
     }
 
-    @Override
-    protected void onHoverMenuLaunched(@NonNull HoverView hoverView) {
-        hoverView.collapse();
+    @NonNull
+    private HoverMenu createHoverMenu() {
+        return new DemoHoverMenu(getApplicationContext(), "nonfullscreen");
     }
 }

@@ -45,12 +45,6 @@ public class SingleSectionNotificationHoverMenuService extends HoverMenuService 
 
     private static final String TAG = "SingleSectionNotificationHoverMenuService";
 
-    @NonNull
-    @Override
-    protected HoverMenu createHoverMenu(@NonNull Intent intent) {
-        return new SingleSectionHoverMenu(getApplicationContext());
-    }
-
     @Override
     protected int getForegroundNotificationId() {
         return 1000;
@@ -67,8 +61,14 @@ public class SingleSectionNotificationHoverMenuService extends HoverMenuService 
     }
 
     @Override
-    protected void onHoverMenuLaunched(@NonNull HoverView hoverView) {
+    protected void onHoverMenuLaunched(@NonNull Intent intent, @NonNull HoverView hoverView) {
+        hoverView.setMenu(createHoverMenu());
         hoverView.collapse();
+    }
+
+    @NonNull
+    private HoverMenu createHoverMenu() {
+        return new SingleSectionHoverMenu(getApplicationContext());
     }
 
     private static class SingleSectionHoverMenu extends HoverMenu {

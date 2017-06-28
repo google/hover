@@ -58,7 +58,12 @@ public class DemoHoverMenuService extends HoverMenuService {
     }
 
     @Override
-    protected HoverMenu createHoverMenu(@NonNull Intent intent) {
+    protected void onHoverMenuLaunched(@NonNull Intent intent, @NonNull HoverView hoverView) {
+        hoverView.setMenu(createHoverMenu());
+        hoverView.collapse();
+    }
+
+    private HoverMenu createHoverMenu() {
         try {
             mDemoHoverMenu = new DemoHoverMenuFactory().createDemoMenuFromCode(getContextForHoverMenu(), Bus.getInstance());
 //            mDemoHoverMenuAdapter = new DemoHoverMenuFactory().createDemoMenuFromFile(getContextForHoverMenu());
@@ -66,11 +71,6 @@ public class DemoHoverMenuService extends HoverMenuService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    protected void onHoverMenuLaunched(@NonNull HoverView hoverView) {
-        hoverView.collapse();
     }
 
     public void onEventMainThread(@NonNull HoverTheme newTheme) {

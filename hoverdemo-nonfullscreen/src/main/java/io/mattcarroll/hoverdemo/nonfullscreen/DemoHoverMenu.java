@@ -50,7 +50,6 @@ public class DemoHoverMenu extends HoverMenu {
 
     private View createTabView() {
         Resources resources = mContext.getResources();
-        int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, resources.getDisplayMetrics());
 
         DemoTabView view = new DemoTabView(
                 mContext,
@@ -59,10 +58,6 @@ public class DemoHoverMenu extends HoverMenu {
         );
         view.setTabBackgroundColor(0xFFFF9600);
         view.setTabForegroundColor(null);
-        view.setPadding(padding, padding, padding, padding);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            view.setElevation(padding);
-        }
         return view;
     }
 

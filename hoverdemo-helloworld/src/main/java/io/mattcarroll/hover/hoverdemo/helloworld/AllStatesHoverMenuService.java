@@ -87,14 +87,9 @@ public class AllStatesHoverMenuService extends HoverMenuService {
             }
     );
 
-    @NonNull
     @Override
-    protected HoverMenu createHoverMenu(@NonNull Intent intent) {
-        return new SingleSectionHoverMenu(getApplicationContext());
-    }
-
-    @Override
-    protected void onHoverMenuLaunched(@NonNull HoverView hoverView) {
+    protected void onHoverMenuLaunched(@NonNull Intent intent, @NonNull HoverView hoverView) {
+        hoverView.setMenu(createHoverMenu());
         mHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -103,6 +98,11 @@ public class AllStatesHoverMenuService extends HoverMenuService {
                 mHandler.postDelayed(this, 3000);
             }
         }, 3000);
+    }
+
+    @NonNull
+    private HoverMenu createHoverMenu() {
+        return new SingleSectionHoverMenu(getApplicationContext());
     }
 
     private void transitionToNextState() {

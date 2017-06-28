@@ -45,15 +45,15 @@ public class MutatingSectionsHoverMenuService extends HoverMenuService {
 
     private static final String TAG = "MutatingSectionsHoverMenuService";
 
-    @NonNull
     @Override
-    protected HoverMenu createHoverMenu(@NonNull Intent intent) {
-        return new MutatingHoverMenu(getApplicationContext());
+    protected void onHoverMenuLaunched(@NonNull Intent intent, @NonNull HoverView hoverView) {
+        hoverView.setMenu(createHoverMenu());
+        hoverView.collapse();
     }
 
-    @Override
-    protected void onHoverMenuLaunched(@NonNull HoverView hoverView) {
-        hoverView.collapse();
+    @NonNull
+    private HoverMenu createHoverMenu() {
+        return new MutatingHoverMenu(getApplicationContext());
     }
 
     private static class MutatingHoverMenu extends HoverMenu {

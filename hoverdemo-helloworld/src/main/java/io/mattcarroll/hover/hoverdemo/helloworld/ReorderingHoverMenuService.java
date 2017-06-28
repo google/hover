@@ -45,15 +45,15 @@ public class ReorderingHoverMenuService extends HoverMenuService {
 
     private static final String TAG = "ReorderingHoverMenuService";
 
-    @NonNull
     @Override
-    protected HoverMenu createHoverMenu(@NonNull Intent intent) {
-        return new ReorderingSectionHoverMenu(getApplicationContext());
+    protected void onHoverMenuLaunched(@NonNull Intent intent, @NonNull HoverView hoverView) {
+        hoverView.setMenu(createHoverMenu());
+        hoverView.collapse();
     }
 
-    @Override
-    protected void onHoverMenuLaunched(@NonNull HoverView hoverView) {
-        hoverView.collapse();
+    @NonNull
+    private HoverMenu createHoverMenu() {
+        return new ReorderingSectionHoverMenu(getApplicationContext());
     }
 
     private static class ReorderingSectionHoverMenu extends HoverMenu {

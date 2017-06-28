@@ -101,15 +101,9 @@ public class MenuThenNoMenuHoverMenuService extends HoverMenuService {
             }
     );
 
-    @NonNull
     @Override
-    protected HoverMenu createHoverMenu(@NonNull Intent intent) {
-        mMenu = new SingleSectionHoverMenu(getApplicationContext());
-        return mMenu;
-    }
-
-    @Override
-    protected void onHoverMenuLaunched(@NonNull HoverView hoverView) {
+    protected void onHoverMenuLaunched(@NonNull Intent intent, @NonNull HoverView hoverView) {
+        hoverView.setMenu(createHoverMenu());
         hoverView.collapse();
 
         mHandler.postDelayed(new Runnable() {
@@ -120,6 +114,12 @@ public class MenuThenNoMenuHoverMenuService extends HoverMenuService {
                 mHandler.postDelayed(this, 3000);
             }
         }, 3000);
+    }
+
+    @NonNull
+    private HoverMenu createHoverMenu() {
+        mMenu = new SingleSectionHoverMenu(getApplicationContext());
+        return mMenu;
     }
 
     private void transitionToNextState() {

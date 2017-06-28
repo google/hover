@@ -55,14 +55,9 @@ public class ChangingMenusHoverMenuService extends HoverMenuService {
         mHoverMenu2 = new SingleSectionHoverMenu(getApplicationContext(), "changingmenus", 3, "This is menu 2");
     }
 
-    @NonNull
     @Override
-    protected HoverMenu createHoverMenu(@NonNull Intent intent) {
-        return mHoverMenu1;
-    }
-
-    @Override
-    protected void onHoverMenuLaunched(@NonNull HoverView hoverView) {
+    protected void onHoverMenuLaunched(@NonNull Intent intent, @NonNull HoverView hoverView) {
+        hoverView.setMenu(createHoverMenu());
         hoverView.collapse();
 
         mHandler.postDelayed(new Runnable() {
@@ -73,6 +68,11 @@ public class ChangingMenusHoverMenuService extends HoverMenuService {
                 mHandler.postDelayed(this, 3000);
             }
         }, 3000);
+    }
+
+    @NonNull
+    private HoverMenu createHoverMenu() {
+        return mHoverMenu1;
     }
 
     private void switchMenus() {

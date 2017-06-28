@@ -42,15 +42,15 @@ public class MultipleSectionsHoverMenuService extends HoverMenuService {
 
     private static final String TAG = "MultipleSectionsHoverMenuService";
 
-    @NonNull
     @Override
-    protected HoverMenu createHoverMenu(@NonNull Intent intent) {
-        return new MultiSectionHoverMenu(getApplicationContext());
+    protected void onHoverMenuLaunched(@NonNull Intent intent, @NonNull HoverView hoverView) {
+        hoverView.setMenu(createHoverMenu());
+        hoverView.collapse();
     }
 
-    @Override
-    protected void onHoverMenuLaunched(@NonNull HoverView hoverView) {
-        hoverView.collapse();
+    @NonNull
+    private HoverMenu createHoverMenu() {
+        return new MultiSectionHoverMenu(getApplicationContext());
     }
 
     private static class MultiSectionHoverMenu extends HoverMenu {

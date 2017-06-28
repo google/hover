@@ -43,8 +43,9 @@ public class DemoHoverMenuActivity extends Activity {
             final ContextThemeWrapper contextThemeWrapper = new ContextThemeWrapper(this, R.style.AppTheme);
             DemoHoverMenu hoverMenu = new DemoHoverMenuFactory().createDemoMenuFromCode(contextThemeWrapper, Bus.getInstance());
 
-            mHoverView = (HoverView) findViewById(R.id.hovermenu);
+            mHoverView = findViewById(R.id.hovermenu);
             mHoverView.setMenu(hoverMenu);
+            mHoverView.collapse();
         } catch (IOException e) {
             Log.e(TAG, "Failed to create demo menu from file.");
             e.printStackTrace();

@@ -42,15 +42,15 @@ public class SingleSectionHoverMenuService extends HoverMenuService {
 
     private static final String TAG = "SingleSectionHoverMenuService";
 
-    @NonNull
     @Override
-    protected HoverMenu createHoverMenu(@NonNull Intent intent) {
-        return new SingleSectionHoverMenu(getApplicationContext());
+    protected void onHoverMenuLaunched(@NonNull Intent intent, @NonNull HoverView hoverView) {
+        hoverView.setMenu(createHoverMenu());
+        hoverView.collapse();
     }
 
-    @Override
-    protected void onHoverMenuLaunched(@NonNull HoverView hoverView) {
-        hoverView.collapse();
+    @NonNull
+    private HoverMenu createHoverMenu() {
+        return new SingleSectionHoverMenu(getApplicationContext());
     }
 
     private static class SingleSectionHoverMenu extends HoverMenu {

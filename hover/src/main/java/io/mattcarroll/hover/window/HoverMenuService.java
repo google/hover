@@ -25,7 +25,6 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.WindowManager;
 
-import io.mattcarroll.hover.HoverMenu;
 import io.mattcarroll.hover.HoverView;
 import io.mattcarroll.hover.OnExitListener;
 import io.mattcarroll.hover.SideDock;
@@ -114,12 +113,9 @@ public abstract class HoverMenuService extends Service {
                 new SideDock.SidePosition(SideDock.SidePosition.RIGHT, 0.5f)
         );
         mHoverView.setOnExitListener(mOnMenuOnExitListener);
-
-        HoverMenu hoverMenu = createHoverMenu(intent);
-        mHoverView.setMenu(hoverMenu);
         mHoverView.addToWindow();
 
-        onHoverMenuLaunched(mHoverView);
+        onHoverMenuLaunched(intent, mHoverView);
     }
 
     /**
@@ -131,9 +127,6 @@ public abstract class HoverMenuService extends Service {
     protected Context getContextForHoverMenu() {
         return this;
     }
-
-    @NonNull
-    protected abstract HoverMenu createHoverMenu(@NonNull Intent intent);
 
     @NonNull
     protected HoverView getHoverView() {
@@ -152,7 +145,7 @@ public abstract class HoverMenuService extends Service {
         return null;
     }
 
-    protected void onHoverMenuLaunched(@NonNull HoverView hoverView) {
+    protected void onHoverMenuLaunched(@NonNull Intent intent, @NonNull HoverView hoverView) {
         // Hook for subclasses.
     }
 
