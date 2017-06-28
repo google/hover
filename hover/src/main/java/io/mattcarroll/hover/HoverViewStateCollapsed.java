@@ -41,8 +41,8 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
 
     private HoverView mHoverView;
     private FloatingTab mFloatingTab;
-    private HoverMenu.Section mActiveSection;
-    private int mActiveSectionIndex = -1;
+    private HoverMenu.Section mSelectedSection;
+    private int mSelectedSectionIndex = -1;
     private boolean mHasControl = false;
     private boolean mIsCollapsed = false;
     private boolean mIsDocked = false;
@@ -81,15 +81,15 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         mHoverView.mScreen.getContentDisplay().setVisibility(GONE);
         mHoverView.makeUntouchableInWindow();
 
-        Log.d(TAG, "Taking control with primary tab: " + mHoverView.mSelectedSectionId);
-        mActiveSection = mHoverView.mMenu.getSection(mHoverView.mSelectedSectionId);
-        mActiveSection = null != mActiveSection ? mActiveSection : mHoverView.mMenu.getSection(0);
-        mActiveSectionIndex = mHoverView.mMenu.getSectionIndex(mActiveSection);
+        Log.d(TAG, "Taking control with selected section: " + mHoverView.mSelectedSectionId);
+        mSelectedSection = mHoverView.mMenu.getSection(mHoverView.mSelectedSectionId);
+        mSelectedSection = null != mSelectedSection ? mSelectedSection : mHoverView.mMenu.getSection(0);
+        mSelectedSectionIndex = mHoverView.mMenu.getSectionIndex(mSelectedSection);
         mFloatingTab = mHoverView.mScreen.getChainedTab(mHoverView.mSelectedSectionId);
         final boolean wasFloatingTabVisible;
         if (null == mFloatingTab) {
             wasFloatingTabVisible = false;
-            mFloatingTab = mHoverView.mScreen.createChainedTab(mHoverView.mSelectedSectionId, mActiveSection.getTabView());
+            mFloatingTab = mHoverView.mScreen.createChainedTab(mHoverView.mSelectedSectionId, mSelectedSection.getTabView());
         } else {
             wasFloatingTabVisible = true;
         }
@@ -191,18 +191,18 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
             @Override
             public void onRemoved(int position, int count) {
                 Log.d(TAG, "onRemoved. Position: " + position + ", Count: " + count);
-                if (mActiveSectionIndex == position) {
-                    Log.d(TAG, "Active tab removed. Displaying a new tab.");
+                if (mSelectedSectionIndex == position) {
+                    Log.d(TAG, "Selected tab removed. Displaying a new tab.");
                     // TODO: externalize a selection strategy for when the selected section disappears
                     mFloatingTab.removeOnLayoutChangeListener(mOnLayoutChangeListener);
                     mHoverView.mScreen.destroyChainedTab(mFloatingTab);
 
-                    mActiveSectionIndex = mActiveSectionIndex > 0 ? mActiveSectionIndex - 1 : 0;
-                    mActiveSection = mHoverView.mMenu.getSection(mActiveSectionIndex);
-                    mHoverView.mSelectedSectionId = mActiveSection.getId();
+                    mSelectedSectionIndex = mSelectedSectionIndex > 0 ? mSelectedSectionIndex - 1 : 0;
+                    mSelectedSection = mHoverView.mMenu.getSection(mSelectedSectionIndex);
+                    mHoverView.mSelectedSectionId = mSelectedSection.getId();
                     mFloatingTab = mHoverView.mScreen.createChainedTab(
-                            mActiveSection.getId(),
-                            mActiveSection.getTabView()
+                            mSelectedSection.getId(),
+                            mSelectedSection.getTabView()
                     );
 
                     mFloatingTab.addOnLayoutChangeListener(mOnLayoutChangeListener);
@@ -218,8 +218,8 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
             public void onChanged(int position, int count, Object payload) {
                 Log.d(TAG, "Tab(s) changed. From: " + position + ", To: " + count);
                 for (int i = position; i < position + count; ++i) {
-                    if (i == mActiveSectionIndex) {
-                        Log.d(TAG, "Primary tab changed. Updating its display.");
+                    if (i == mSelectedSectionIndex) {
+                        Log.d(TAG, "Selected tab changed. Updating its display.");
                         mFloatingTab.setTabView(mHoverView.mMenu.getSection(position).getTabView());
                     }
                 }

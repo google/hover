@@ -118,7 +118,7 @@ class ContentDisplay extends RelativeLayout {
         }
     }
 
-    public void activeTabIs(@Nullable FloatingTab tab) {
+    public void selectedTabIs(@Nullable FloatingTab tab) {
         // Disconnect from old selected tab.
         if (null != mSelectedTab) {
             mSelectedTab.removeOnPositionChangeListener(mOnTabPositionChangeListener);
