@@ -81,15 +81,15 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         mHoverView.mScreen.getContentDisplay().setVisibility(GONE);
         mHoverView.makeUntouchableInWindow();
 
-        Log.d(TAG, "Taking control with primary tab: " + mHoverView.mSelectedSectionId.toString());
+        Log.d(TAG, "Taking control with primary tab: " + mHoverView.mSelectedSectionId);
         mActiveSection = mHoverView.mMenu.getSection(mHoverView.mSelectedSectionId);
         mActiveSection = null != mActiveSection ? mActiveSection : mHoverView.mMenu.getSection(0);
         mActiveSectionIndex = mHoverView.mMenu.getSectionIndex(mActiveSection);
-        mFloatingTab = mHoverView.mScreen.getChainedTab(mHoverView.mSelectedSectionId.toString());
+        mFloatingTab = mHoverView.mScreen.getChainedTab(mHoverView.mSelectedSectionId);
         final boolean wasFloatingTabVisible;
         if (null == mFloatingTab) {
             wasFloatingTabVisible = false;
-            mFloatingTab = mHoverView.mScreen.createChainedTab(mHoverView.mSelectedSectionId.toString(), mActiveSection.getTabView());
+            mFloatingTab = mHoverView.mScreen.createChainedTab(mHoverView.mSelectedSectionId, mActiveSection.getTabView());
         } else {
             wasFloatingTabVisible = true;
         }
@@ -201,7 +201,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
                     mActiveSection = mHoverView.mMenu.getSection(mActiveSectionIndex);
                     mHoverView.mSelectedSectionId = mActiveSection.getId();
                     mFloatingTab = mHoverView.mScreen.createChainedTab(
-                            mActiveSection.getId().toString(),
+                            mActiveSection.getId(),
                             mActiveSection.getTabView()
                     );
 

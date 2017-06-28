@@ -104,7 +104,7 @@ class HoverViewStateExpanded extends BaseHoverViewState {
     private void expandMenu() {
         // If the primary tab is not already visible then we want to dock it immediately without
         // animation.
-        boolean dockPrimaryTabImmediately = null == mHoverView.mScreen.getChainedTab(mHoverView.mSelectedSectionId.toString());
+        boolean dockPrimaryTabImmediately = null == mHoverView.mScreen.getChainedTab(mHoverView.mSelectedSectionId);
 
         createChainedTabs();
         chainTabs(!dockPrimaryTabImmediately);
@@ -127,12 +127,12 @@ class HoverViewStateExpanded extends BaseHoverViewState {
         if (null != mHoverView.mMenu) {
             for (int i = 0; i < mHoverView.mMenu.getSectionCount(); ++i) {
                 HoverMenu.Section section = mHoverView.mMenu.getSection(i);
-                Log.d(TAG, "Creating tab view for: " + section.getId().toString());
+                Log.d(TAG, "Creating tab view for: " + section.getId());
                 final FloatingTab chainedTab = mHoverView.mScreen.createChainedTab(
-                        section.getId().toString(),
+                        section.getId(),
                         section.getTabView()
                 );
-                Log.d(TAG, "Created FloatingTab for ID " + section.getId().toString());
+                Log.d(TAG, "Created FloatingTab for ID " + section.getId());
 
                 if (!mHoverView.mSelectedSectionId.equals(section.getId())) {
                     chainedTab.disappearImmediate();
@@ -400,7 +400,7 @@ class HoverViewStateExpanded extends BaseHoverViewState {
                                @NonNull View tabView,
                                int position) {
         final FloatingTab newTab = mHoverView.mScreen.createChainedTab(
-                sectionId.toString(),
+                sectionId,
                 tabView
         );
         newTab.disappearImmediate();
@@ -513,7 +513,8 @@ class HoverViewStateExpanded extends BaseHoverViewState {
     }
 
     private void onTabSelected(@NonNull FloatingTab selectedTab) {
-        Log.d(TAG, "onTabSelected(). Selected section: " + mSections.get(selectedTab).getId().toString() + ", mSelectedSectionId: " + mHoverView.mSelectedSectionId.toString());
+        Log.d(TAG, "onTabSelected(). Selected section: " + mSections.get(selectedTab).getId()
+                + ", mSelectedSectionId: " + mHoverView.mSelectedSectionId);
         HoverMenu.Section section = mSections.get(selectedTab);
         if (!section.getId().equals(mHoverView.mSelectedSectionId)) {
             selectSection(section);
@@ -524,7 +525,7 @@ class HoverViewStateExpanded extends BaseHoverViewState {
 
     private void selectSection(@NonNull HoverMenu.Section section) {
         mHoverView.mSelectedSectionId = section.getId();
-        mPrimaryTab = mHoverView.mScreen.createChainedTab(mHoverView.mSelectedSectionId.toString(), null);
+        mPrimaryTab = mHoverView.mScreen.getChainedTab(mHoverView.mSelectedSectionId);
         ContentDisplay contentDisplay = mHoverView.mScreen.getContentDisplay();
         contentDisplay.activeTabIs(mPrimaryTab);
         contentDisplay.displayContent(section.getContent());

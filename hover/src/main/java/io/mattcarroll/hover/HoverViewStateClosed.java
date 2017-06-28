@@ -42,10 +42,7 @@ class HoverViewStateClosed extends BaseHoverViewState {
         mHoverView.clearFocus();
         mHoverView.mScreen.getContentDisplay().setVisibility(GONE);
 
-        String selectedSectionId = null != mHoverView.mSelectedSectionId
-                ? mHoverView.mSelectedSectionId.toString()
-                : null;
-        final FloatingTab primaryTab = mHoverView.mScreen.getChainedTab(selectedSectionId);
+        final FloatingTab primaryTab = mHoverView.mScreen.getChainedTab(mHoverView.mSelectedSectionId);
         if (null != primaryTab) {
             primaryTab.disappear(new Runnable() {
                 @Override

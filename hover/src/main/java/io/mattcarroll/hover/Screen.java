@@ -81,6 +81,13 @@ class Screen {
         return mContainer.getHeight();
     }
 
+    @NonNull
+    public FloatingTab createChainedTab(@NonNull HoverMenu.SectionId sectionId, @NonNull View tabView) {
+        String tabId = sectionId.toString();
+        return createChainedTab(tabId, tabView);
+    }
+
+    @NonNull
     public FloatingTab createChainedTab(@NonNull String tabId, @NonNull View tabView) {
         Log.d(TAG, "Existing tabs...");
         for (String existingTabId : mTabs.keySet()) {
@@ -100,7 +107,13 @@ class Screen {
     }
 
     @Nullable
-    public FloatingTab getChainedTab(@NonNull String tabId) {
+    public FloatingTab getChainedTab(@Nullable HoverMenu.SectionId sectionId) {
+        String tabId = null != sectionId ? sectionId.toString() : null;
+        return getChainedTab(tabId);
+    }
+
+    @Nullable
+    public FloatingTab getChainedTab(@Nullable String tabId) {
         return mTabs.get(tabId);
     }
 
