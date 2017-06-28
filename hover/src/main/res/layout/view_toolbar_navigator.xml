@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merge
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    >
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"
         />
+
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
@@ -22,4 +25,4 @@
         android:layout_weight="1"
         />
 
-</merge>
+</LinearLayout>

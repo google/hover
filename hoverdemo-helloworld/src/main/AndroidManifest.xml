@@ -17,7 +17,14 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <service android:name="io.mattcarroll.hover.hoverdemo.helloworld.HelloWorldHoverMenuService" />
+        <service android:name="io.mattcarroll.hover.hoverdemo.helloworld.SingleSectionHoverMenuService" />
+        <service android:name="io.mattcarroll.hover.hoverdemo.helloworld.MultipleSectionsHoverMenuService" />
+        <service android:name="io.mattcarroll.hover.hoverdemo.helloworld.SingleSectionNotificationHoverMenuService"/>
+        <service android:name="io.mattcarroll.hover.hoverdemo.helloworld.MutatingSectionsHoverMenuService" />
+        <service android:name="io.mattcarroll.hover.hoverdemo.helloworld.ReorderingHoverMenuService" />
+        <service android:name="io.mattcarroll.hover.hoverdemo.helloworld.AllStatesHoverMenuService"/>
+        <service android:name="io.mattcarroll.hover.hoverdemo.helloworld.ChangingMenusHoverMenuService"/>
+        <service android:name="io.mattcarroll.hover.hoverdemo.helloworld.MenuThenNoMenuHoverMenuService"/>
     </application>
 
 </manifest>

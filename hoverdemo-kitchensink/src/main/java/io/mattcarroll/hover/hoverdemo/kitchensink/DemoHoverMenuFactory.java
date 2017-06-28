@@ -25,17 +25,17 @@ import java.util.Map;
 import java.util.UUID;
 
 import de.greenrobot.event.EventBus;
-import io.mattcarroll.hover.NavigatorContent;
-import io.mattcarroll.hover.defaulthovermenu.menus.DoNothingMenuAction;
-import io.mattcarroll.hover.defaulthovermenu.menus.Menu;
-import io.mattcarroll.hover.defaulthovermenu.menus.MenuItem;
-import io.mattcarroll.hover.defaulthovermenu.menus.MenuListNavigatorContent;
-import io.mattcarroll.hover.defaulthovermenu.menus.ShowSubmenuMenuAction;
-import io.mattcarroll.hover.defaulthovermenu.toolbar.ToolbarNavigatorContent;
-import io.mattcarroll.hover.hoverdemo.kitchensink.appstate.AppStateNavigatorContent;
-import io.mattcarroll.hover.hoverdemo.kitchensink.colorselection.ColorSelectionNavigatorContent;
-import io.mattcarroll.hover.hoverdemo.kitchensink.introduction.HoverIntroductionNavigatorContent;
-import io.mattcarroll.hover.hoverdemo.kitchensink.placeholder.PlaceholderNavigatorContent;
+import io.mattcarroll.hover.Content;
+import io.mattcarroll.hover.content.menus.DoNothingMenuAction;
+import io.mattcarroll.hover.content.menus.Menu;
+import io.mattcarroll.hover.content.menus.MenuItem;
+import io.mattcarroll.hover.content.menus.MenuListContent;
+import io.mattcarroll.hover.content.menus.ShowSubmenuMenuAction;
+import io.mattcarroll.hover.content.toolbar.ToolbarNavigator;
+import io.mattcarroll.hover.hoverdemo.kitchensink.appstate.AppStateContent;
+import io.mattcarroll.hover.hoverdemo.kitchensink.colorselection.ColorSelectionContent;
+import io.mattcarroll.hover.hoverdemo.kitchensink.introduction.HoverIntroductionContent;
+import io.mattcarroll.hover.hoverdemo.kitchensink.placeholder.PlaceholderContent;
 import io.mattcarroll.hover.hoverdemo.kitchensink.theming.HoverThemeManager;
 
 /**
@@ -45,9 +45,9 @@ public class DemoHoverMenuFactory {
 
     /**
      * Example of how to create a menu in code.
-     * @return HoverMenuAdapter
+     * @return HoverMenu
      */
-    public DemoHoverMenuAdapter createDemoMenuFromCode(@NonNull Context context, @NonNull EventBus bus) throws IOException {
+    public DemoHoverMenu createDemoMenuFromCode(@NonNull Context context, @NonNull EventBus bus) throws IOException {
         Menu drillDownMenuLevelTwo = new Menu("Demo Menu - Level 2", Arrays.asList(
                 new MenuItem(UUID.randomUUID().toString(), "Google", new DoNothingMenuAction()),
                 new MenuItem(UUID.randomUUID().toString(), "Amazon", new DoNothingMenuAction())
@@ -60,19 +60,19 @@ public class DemoHoverMenuFactory {
                 new MenuItem(UUID.randomUUID().toString(), "Location Services", showLevelTwoMenuAction)
         ));
 
-        MenuListNavigatorContent drillDownMenuNavigatorContent = new MenuListNavigatorContent(context, drillDownMenu);
+        MenuListContent drillDownMenuNavigatorContent = new MenuListContent(context, drillDownMenu);
 
-        ToolbarNavigatorContent toolbarNavigatorContent = new ToolbarNavigatorContent(context);
-        toolbarNavigatorContent.pushContent(drillDownMenuNavigatorContent);
+        ToolbarNavigator toolbarNavigator = new ToolbarNavigator(context);
+        toolbarNavigator.pushContent(drillDownMenuNavigatorContent);
 
-        Map<String, NavigatorContent> demoMenu = new LinkedHashMap<>();
-        demoMenu.put(DemoHoverMenuAdapter.INTRO_ID, new HoverIntroductionNavigatorContent(context, Bus.getInstance()));
-        demoMenu.put(DemoHoverMenuAdapter.SELECT_COLOR_ID, new ColorSelectionNavigatorContent(context, Bus.getInstance(), HoverThemeManager.getInstance(), HoverThemeManager.getInstance().getTheme()));
-        demoMenu.put(DemoHoverMenuAdapter.APP_STATE_ID, new AppStateNavigatorContent(context));
-        demoMenu.put(DemoHoverMenuAdapter.MENU_ID, toolbarNavigatorContent);
-        demoMenu.put(DemoHoverMenuAdapter.PLACEHOLDER_ID, new PlaceholderNavigatorContent(context, bus));
+        Map<String, Content> demoMenu = new LinkedHashMap<>();
+        demoMenu.put(DemoHoverMenu.INTRO_ID, new HoverIntroductionContent(context, Bus.getInstance()));
+        demoMenu.put(DemoHoverMenu.SELECT_COLOR_ID, new ColorSelectionContent(context, Bus.getInstance(), HoverThemeManager.getInstance(), HoverThemeManager.getInstance().getTheme()));
+        demoMenu.put(DemoHoverMenu.APP_STATE_ID, new AppStateContent(context));
+        demoMenu.put(DemoHoverMenu.MENU_ID, toolbarNavigator);
+        demoMenu.put(DemoHoverMenu.PLACEHOLDER_ID, new PlaceholderContent(context, bus));
 
-        return new DemoHoverMenuAdapter(context, demoMenu, HoverThemeManager.getInstance().getTheme());
+        return new DemoHoverMenu(context, "kitchensink", demoMenu, HoverThemeManager.getInstance().getTheme());
     }
 
 }

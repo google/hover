@@ -23,6 +23,10 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 
+/**
+ * Provides queries and actions that are required for dealing with the user permission to display
+ * window overlays. Attempting to display a window overlay without permission results in a crash.
+ */
 public class OverlayPermission {
 
     /**
@@ -57,5 +61,9 @@ public class OverlayPermission {
                 Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                 Uri.parse("package:" + context.getPackageName())
         );
+    }
+
+    private OverlayPermission() {
+        // Utility class.
     }
 }

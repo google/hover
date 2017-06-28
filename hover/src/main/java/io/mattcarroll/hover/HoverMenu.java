@@ -17,48 +17,156 @@ package io.mattcarroll.hover;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.util.DiffUtil;
+import android.support.v7.util.ListUpdateCallback;
+import android.view.View;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * A {@code HoverMenu} is a menu that can appear either in a collapsed, draggable state, or in an expanded
- * state that displays content.  A {@code HoverMenu} presents some number of tabs, each of which has its
- * own content that the {@code HoverMenu} also displays.
+ * A {@code HoverMenu} models the structure of a menu that appears within a {@link HoverView}.
  *
- * Content in the {@code HoverMenu} is provided by a given {@link HoverMenuAdapter}. {@code HoverMenuAdapter}s
- * work in a similar fashion to a traditional Android {@code ListAdapter}.
+ * A {@code HoverMenu} includes an ordered list of {@link Section}s.  Each {@code Section} has a tab
+ * {@code View} that represents the section, and the {@link Content} of the given section.
  */
-public interface HoverMenu {
+public abstract class HoverMenu {
 
-    void show();
+    private static final String TAG = "HoverMenu";
 
-    void hide();
+    private List<Section> mSections = new ArrayList<>();
+    private ListUpdateCallback mListUpdateCallback;
 
-    /**
-     * Expands the {@code HoverMenu} to display content.
-     */
-    void expandMenu();
+    public abstract String getId();
 
-    /**
-     * Collapses the {@code HoverMenu} to a single draggable icon.
-     */
-    void collapseMenu();
+    public abstract int getSectionCount();
 
-    /**
-     * Sets the {@link HoverMenuAdapter} that is used to determine what tabs and content should be
-     * displayed in this {@code HoverMenu}.
-     *
-     * @param adapter adapter to provide content for this {@code HoverMenu}
-     */
-    void setAdapter(@Nullable HoverMenuAdapter adapter);
+    @Nullable
+    public abstract Section getSection(int index);
 
-    String getVisualState();
+    @Nullable
+    public abstract Section getSection(@NonNull SectionId sectionId);
 
-    void restoreVisualState(@NonNull String savedVisualState);
+    public int getSectionIndex(@NonNull Section section) {
+        for (int i = 0; i < mSections.size(); ++i) {
+            if (section.equals(mSections.get(i))) {
+                return i;
+            }
+        }
+        return -1;
+    }
 
-    void addOnExitListener(@NonNull OnExitListener onExitListener);
+    @NonNull
+    public abstract List<Section> getSections();
 
-    void removeOnExitListener(@NonNull OnExitListener onExitListener);
+    void setUpdatedCallback(@Nullable ListUpdateCallback listUpdatedCallback) {
+        mListUpdateCallback = listUpdatedCallback;
+    }
 
-    interface OnExitListener {
-        void onExitByUserRequest();
+    public void notifyMenuChanged() {
+        List<Section> oldSections = mSections;
+        List<Section> newSections = getSections();
+        mSections = newSections;
+
+        if (null != mListUpdateCallback) {
+            DiffUtil.Callback diffCallback = new MenuDiffCallback(oldSections, newSections);
+            // calculateDiff() can be long-running.  We let it run synchronously because we don't
+            // expect many Sections.
+            DiffUtil.DiffResult result = DiffUtil.calculateDiff(diffCallback, true);
+            result.dispatchUpdatesTo(mListUpdateCallback);
+        }
+    }
+
+    public static class SectionId {
+
+        private String mId;
+
+        public SectionId(@NonNull String id) {
+            mId = id;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            SectionId sectionId = (SectionId) o;
+
+            return mId.equals(sectionId.mId);
+
+        }
+
+        @Override
+        public int hashCode() {
+            return mId.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            return mId;
+        }
+    }
+
+    public static class Section {
+
+        private final SectionId mId;
+        private final View mTabView;
+        private final Content mContent;
+
+        public Section(@NonNull SectionId id, @NonNull View tabView, @NonNull Content content) {
+            mId = id;
+            mTabView = tabView;
+            mContent = content;
+        }
+
+        @NonNull
+        public SectionId getId() {
+            return mId;
+        }
+
+        @NonNull
+        public View getTabView() {
+            return mTabView;
+        }
+
+        @NonNull
+        public Content getContent() {
+            return mContent;
+        }
+    }
+
+    private static class MenuDiffCallback extends DiffUtil.Callback {
+
+        private final List<Section> mOldList;
+        private final List<Section> mNewList;
+
+        private MenuDiffCallback(@NonNull List<Section> oldList, @NonNull List<Section> newList) {
+            mOldList = oldList;
+            mNewList = newList;
+        }
+
+        @Override
+        public int getOldListSize() {
+            return mOldList.size();
+        }
+
+        @Override
+        public int getNewListSize() {
+            return mNewList.size();
+        }
+
+        @Override
+        public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+            return mOldList.get(oldItemPosition).getId().equals(mNewList.get(newItemPosition).getId());
+        }
+
+        @Override
+        public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+            Section oldSection = mOldList.get(oldItemPosition);
+            Section newSection = mNewList.get(newItemPosition);
+
+            return oldSection.mTabView.equals(newSection.getTabView())
+                    && oldSection.getContent().equals(newSection.getContent());
+        }
     }
 }

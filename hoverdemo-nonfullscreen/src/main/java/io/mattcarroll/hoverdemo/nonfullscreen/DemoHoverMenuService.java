@@ -17,12 +17,12 @@ package io.mattcarroll.hoverdemo.nonfullscreen;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.view.ContextThemeWrapper;
 
-import io.mattcarroll.hover.HoverMenuAdapter;
-import io.mattcarroll.hover.Navigator;
-import io.mattcarroll.hover.defaulthovermenu.DefaultNavigator;
-import io.mattcarroll.hover.defaulthovermenu.window.HoverMenuService;
+import io.mattcarroll.hover.HoverMenu;
+import io.mattcarroll.hover.HoverView;
+import io.mattcarroll.hover.window.HoverMenuService;
 
 /**
  * Demo {@link HoverMenuService}.
@@ -51,12 +51,13 @@ public class DemoHoverMenuService extends HoverMenuService {
     }
 
     @Override
-    protected HoverMenuAdapter createHoverMenuAdapter() {
-        return new DemoHoverMenuAdapter(getApplicationContext());
+    protected void onHoverMenuLaunched(@NonNull Intent intent, @NonNull HoverView hoverView) {
+        hoverView.setMenu(createHoverMenu());
+        hoverView.collapse();
     }
 
-    @Override
-    protected Navigator createNavigator() {
-        return new DefaultNavigator(getApplicationContext(), false);
+    @NonNull
+    private HoverMenu createHoverMenu() {
+        return new DemoHoverMenu(getApplicationContext(), "nonfullscreen");
     }
 }
