@@ -12,7 +12,14 @@ Feature: Hover Menu
     When Hover is launched
     Then Hover is in the "application overlay" window
 
+  Scenario: Run as foreground Service
+    Given Hover is being run in a HoverMenuService
+    When a non-null Notification is provided by the subclass
+    Then HoverMenuService runs as a foreground Service
+      And the given Notification is displayed in the notification shade
+
   #------- Closed Menu ----------
+  # NOT IMPLEMENTED AS OF 0.9.8, BUT IS DESIRED.
   Scenario: No overlay exists when Hover is in the closed state.
     Given that Hover is in the closed state
     Then nothing is visible on screen
@@ -169,7 +176,6 @@ Feature: Hover Menu
     Then Hover docks at the same place as before it expanded
 
   #-------- Cross-State Behavior --------
-  # TODO: still needs to be implemented
   Scenario: Hover closes when no menu sections available
     Given that Hover is launched
     And Hover is <state>
