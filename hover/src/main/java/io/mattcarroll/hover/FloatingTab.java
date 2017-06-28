@@ -34,9 +34,18 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
- * TODO
+ * {@code FloatingTab} is the cornerstone of a {@link HoverView}.  When a {@code HoverView} is
+ * collapsed, it is reduced to a single {@code FloatingTab} that the user can drag and drop.  When
+ * a {@code HoverView} is expanded, that one {@code FloatingTab} slides to a row of tabs that appear
+ * and offer a menu system.
+ *
+ * A {@code FloatingTab} can move around the screen in various ways. A {@code FloatingTab} can place
+ * itself at a "dock position", or slide from its current position to its "dock position", or
+ * position itself at an arbitrary location on screen.
+ *
+ * {@code FloatingTab}s position themselves based on their center.
  */
-class FloatingTab extends FrameLayout implements Tab {
+class FloatingTab extends FrameLayout {
 
     private static final String TAG = "FloatingTab";
 
@@ -161,7 +170,6 @@ class FloatingTab extends FrameLayout implements Tab {
     }
 
     @NonNull
-    @Override
     public String getTabId() {
         return mId;
     }
@@ -170,7 +178,6 @@ class FloatingTab extends FrameLayout implements Tab {
         return mTabSize;
     }
 
-    @Override
     public void setTabView(@Nullable View view) {
         if (view == mTabView) {
             // If Tab View hasn't changed, no need to do anything.
@@ -184,10 +191,7 @@ class FloatingTab extends FrameLayout implements Tab {
             FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT
-//                    ViewGroup.LayoutParams.WRAP_CONTENT,
-//                    ViewGroup.LayoutParams.WRAP_CONTENT
             );
-//            layoutParams.gravity = Gravity.CENTER;
             addView(mTabView, layoutParams);
         }
     }
@@ -202,7 +206,6 @@ class FloatingTab extends FrameLayout implements Tab {
     }
 
     @Nullable
-    @Override
     public Point getDockPosition() {
         return mDock.position();
     }
@@ -274,12 +277,10 @@ class FloatingTab extends FrameLayout implements Tab {
         );
     }
 
-    @Override
     public void addOnPositionChangeListener(@Nullable OnPositionChangeListener listener) {
         mOnPositionChangeListeners.add(listener);
     }
 
-    @Override
     public void removeOnPositionChangeListener(@NonNull OnPositionChangeListener listener) {
         mOnPositionChangeListeners.remove(listener);
     }
@@ -301,5 +302,11 @@ class FloatingTab extends FrameLayout implements Tab {
     // contract and not just an inherited method.
     public void setOnClickListener(@Nullable View.OnClickListener onClickListener) {
         super.setOnClickListener(onClickListener);
+    }
+
+    public interface OnPositionChangeListener {
+        void onPositionChange(@NonNull Point tabPosition);
+
+        void onDockChange(@NonNull Point dockPosition);
     }
 }

@@ -19,7 +19,7 @@ import android.support.annotation.NonNull;
 import android.view.View;
 
 /**
- * TODO
+ * Content that appears within a {@link Navigator}.
  */
 public interface NavigatorContent {
 

@@ -25,18 +25,20 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
- * TODO:
+ * Connects one {@link FloatingTab}s position to that of another {@link FloatingTab}. The space
+ * between the tabs can be configured at construction time.
  */
 class TabChain {
 
     private static final String TAG = "TabChain";
 
-    private FloatingTab mTab;
+    private final FloatingTab mTab;
+    private final int mTabSpacingInPx;
     private Point mLockedPosition;
-    private Tab mPredecessorTab;
-    private final Set<Tab.OnPositionChangeListener> mOnPositionChangeListeners = new CopyOnWriteArraySet<Tab.OnPositionChangeListener>();
+    private FloatingTab mPredecessorTab;
+    private final Set<FloatingTab.OnPositionChangeListener> mOnPositionChangeListeners = new CopyOnWriteArraySet<FloatingTab.OnPositionChangeListener>();
 
-    private final Tab.OnPositionChangeListener mOnPredecessorPositionChange = new Tab.OnPositionChangeListener() {
+    private final FloatingTab.OnPositionChangeListener mOnPredecessorPositionChange = new FloatingTab.OnPositionChangeListener() {
         @Override
         public void onPositionChange(@NonNull Point position) {
             // No-op. We only care when our predecessor's dock changes.
@@ -49,8 +51,9 @@ class TabChain {
         }
     };
 
-    public TabChain(@NonNull FloatingTab tab) {
+    TabChain(@NonNull FloatingTab tab, int tabSpacingInPx) {
         mTab = tab;
+        mTabSpacingInPx = tabSpacingInPx;
     }
 
     @NonNull
@@ -58,11 +61,11 @@ class TabChain {
         return mTab;
     }
 
-    public void chainTo(@NonNull Tab tab) {
+    public void chainTo(@NonNull FloatingTab tab) {
         chainTo(tab, null);
     }
 
-    public void chainTo(@NonNull Tab tab, @Nullable final Runnable onChained) {
+    public void chainTo(@NonNull FloatingTab tab, @Nullable final Runnable onChained) {
         if (null != mPredecessorTab) {
             mPredecessorTab.removeOnPositionChangeListener(mOnPredecessorPositionChange);
         }
@@ -115,11 +118,11 @@ class TabChain {
         }
     }
 
-    private Point getMyChainPositionRelativeTo(@NonNull Tab tab) {
+    private Point getMyChainPositionRelativeTo(@NonNull FloatingTab tab) {
         Point predecessorTabPosition = tab.getDockPosition();
         Log.d(TAG, "Predecessor position: " + predecessorTabPosition);
         return new Point(
-                predecessorTabPosition.x - 200, // TODO: configurable spacing
+                predecessorTabPosition.x - mTabSpacingInPx,
                 predecessorTabPosition.y
         );
     }

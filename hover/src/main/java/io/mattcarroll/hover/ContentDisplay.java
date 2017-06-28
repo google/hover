@@ -31,7 +31,8 @@ import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
 /**
- * TODO
+ * Rectangular area that displays {@link Content}.  A {@code ContentDisplay} also renders a caret
+ * that points at a tab.
  */
 class ContentDisplay extends RelativeLayout {
 
@@ -41,7 +42,7 @@ class ContentDisplay extends RelativeLayout {
     private FrameLayout mContentView;
     private Drawable mContentBackground;
     private TabSelectorView mTabSelectorView;
-    private Tab mSelectedTab;
+    private FloatingTab mSelectedTab;
     private Content mContent;
     private boolean mIsVisible = false;
 
@@ -59,7 +60,7 @@ class ContentDisplay extends RelativeLayout {
         }
     };
 
-    private final Tab.OnPositionChangeListener mOnTabPositionChangeListener = new Tab.OnPositionChangeListener() {
+    private final FloatingTab.OnPositionChangeListener mOnTabPositionChangeListener = new FloatingTab.OnPositionChangeListener() {
         @Override
         public void onPositionChange(@NonNull Point position) {
             Log.d(TAG, mSelectedTab + " tab moved to " + position);
@@ -117,7 +118,7 @@ class ContentDisplay extends RelativeLayout {
         }
     }
 
-    public void activeTabIs(@Nullable Tab tab) {
+    public void activeTabIs(@Nullable FloatingTab tab) {
         // Disconnect from old selected tab.
         if (null != mSelectedTab) {
             mSelectedTab.removeOnPositionChangeListener(mOnTabPositionChangeListener);

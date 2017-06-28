@@ -19,15 +19,16 @@ import android.graphics.Point;
 import android.support.annotation.NonNull;
 
 /**
- * TODO
+ * {@link Dock} that has a static position as defined by a provided {@link Point}. A
+ * {@code PositionDock} never changes its position after construction.
  */
-public class PositionDock extends Dock {
+class PositionDock extends Dock {
 
     private static final String TAG = "SideDock";
 
     private Point mPosition;
 
-    public PositionDock(@NonNull Point position) {
+    PositionDock(@NonNull Point position) {
         mPosition = position;
     }
 

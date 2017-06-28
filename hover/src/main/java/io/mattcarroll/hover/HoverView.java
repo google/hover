@@ -42,10 +42,7 @@ import static io.mattcarroll.hover.SideDock.SidePosition.LEFT;
  * the top of its display, from right to left. Below the tabs, filling the remainder of the display
  * is a content region that displays the content for a selected tab.  The content region includes
  * a visual indicator showing which tab is currently selected.  Each tab's content includes a title
- * and a visual area.  The visual area can display any {@code View}.
- *
- * {@code HoverMenuView} cannot be used in XML because it requires additional parameters in its
- * constructor.
+ * and a visual area.  The visual area can display any {@link Content}.
  */
 public class HoverView extends RelativeLayout {
 
@@ -103,7 +100,7 @@ public class HoverView extends RelativeLayout {
     boolean mIsDebugMode = false;
     int mTabSize;
     OnExitListener mOnExitListener;
-    final Set<OnExpandAndCollapseListener> mOnExpandAndCollapseListeners = new CopyOnWriteArraySet<>();
+    final Set<Listener> mListeners = new CopyOnWriteArraySet<>();
 
     // Public for use with XML inflation. Clients should use static methods for construction.
     public HoverView(@NonNull Context context, @Nullable AttributeSet attrs) {
@@ -278,39 +275,53 @@ public class HoverView extends RelativeLayout {
         mOnExitListener = listener;
     }
 
-    public void addOnExpandAndCollapseListener(@NonNull OnExpandAndCollapseListener listener) {
-        mOnExpandAndCollapseListeners.add(listener);
+    public void addOnExpandAndCollapseListener(@NonNull Listener listener) {
+        mListeners.add(listener);
     }
 
-    public void removeOnExpandAndCollapseListener(@NonNull OnExpandAndCollapseListener listener) {
-        mOnExpandAndCollapseListeners.remove(listener);
+    public void removeOnExpandAndCollapseListener(@NonNull Listener listener) {
+        mListeners.remove(listener);
     }
 
     void notifyListenersExpanding() {
         Log.d(TAG, "Notifying listeners that Hover is expanding.");
-        for (OnExpandAndCollapseListener listener : mOnExpandAndCollapseListeners) {
+        for (Listener listener : mListeners) {
             listener.onExpanding();
         }
     }
 
     void notifyListenersExpanded() {
         Log.d(TAG, "Notifying listeners that Hover is now expanded.");
-        for (OnExpandAndCollapseListener listener : mOnExpandAndCollapseListeners) {
+        for (Listener listener : mListeners) {
             listener.onExpanded();
         }
     }
 
     void notifyListenersCollapsing() {
         Log.d(TAG, "Notifying listeners that Hover is collapsing.");
-        for (OnExpandAndCollapseListener listener : mOnExpandAndCollapseListeners) {
+        for (Listener listener : mListeners) {
             listener.onCollapsing();
         }
     }
 
     void notifyListenersCollapsed() {
         Log.d(TAG, "Notifying listeners that Hover is now collapsed.");
-        for (OnExpandAndCollapseListener listener : mOnExpandAndCollapseListeners) {
+        for (Listener listener : mListeners) {
             listener.onCollapsed();
+        }
+    }
+
+    void notifyListenersClosing() {
+        Log.d(TAG, "Notifying listeners that Hover is closing.");
+        for (Listener listener : mListeners) {
+            listener.onClosing();
+        }
+    }
+
+    void notifyListenersClosed() {
+        Log.d(TAG, "Notifying listeners that Hover is closed.");
+        for (Listener listener : mListeners) {
+            listener.onClosed();
         }
     }
 
@@ -486,6 +497,25 @@ public class HoverView extends RelativeLayout {
                     + ", Side: " + sidePosition.getSide()
                     + ", Section ID: " + sectionId);
         }
+
+    }
+
+    /**
+     * Listener invoked when the corresponding transitions occur within a given {@link HoverView}.
+     */
+    public interface Listener {
+
+        void onExpanding();
+
+        void onExpanded();
+
+        void onCollapsing();
+
+        void onCollapsed();
+
+        void onClosing();
+
+        void onClosed();
 
     }
 }

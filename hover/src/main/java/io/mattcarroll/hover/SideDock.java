@@ -25,7 +25,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * TODO
+ * {@link Dock} that always positions itself either on the left or right side of its container. A
+ * {@code SideDock} insets itself slightly from the edge of its container based on a proportion of
+ * a tab's size.
  */
 public class SideDock extends Dock {
 
@@ -35,7 +37,7 @@ public class SideDock extends Dock {
     private int mTabSize;
     private SidePosition mSidePosition;
 
-    public SideDock(@NonNull ViewGroup containerView, int tabSize, @NonNull SidePosition sidePosition) {
+    SideDock(@NonNull ViewGroup containerView, int tabSize, @NonNull SidePosition sidePosition) {
         mContainerView = containerView;
         mTabSize = tabSize;
         mSidePosition = sidePosition;

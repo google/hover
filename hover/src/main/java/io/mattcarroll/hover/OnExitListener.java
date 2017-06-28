@@ -16,7 +16,8 @@
 package io.mattcarroll.hover;
 
 /**
- * TODO
+ * Listener invoked when the user drops the selected tab on the exit zone when the associated
+ * {@link HoverView} is collapsed.
  */
 public interface OnExitListener {
     void onExit();

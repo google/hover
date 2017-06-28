@@ -26,6 +26,10 @@ import android.view.View;
 
 /**
  * {@code View} that draws a triangle selector icon at a given horizontal position within its bounds.
+ * A {@code TabSelectorView} is like a horizontal rail upon which its triangle selector can slide
+ * left/right.
+ *
+ * Class is public to allow for XML use.
  */
 public class TabSelectorView extends View {
 

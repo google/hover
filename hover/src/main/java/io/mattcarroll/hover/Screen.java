@@ -28,7 +28,8 @@ import java.util.Map;
 import static android.view.View.GONE;
 
 /**
- * TODO:
+ * The visual area occupied by a {@link HoverView}. A {@code Screen} acts as a factory for the
+ * visual elements used within a {@code HoverView}.
  */
 class Screen {
 

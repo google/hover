@@ -24,8 +24,8 @@ import android.widget.FrameLayout;
 import java.util.Stack;
 
 /**
- * A visual display that can push and pop {@code View}s in a content area. The size and location of
- * the content area is chosen by implementing classes.
+ * A visual display that can push and pop {@link NavigatorContent} in a content area. The size and
+ * location of the content area is chosen by implementing classes.
  *
  * A {@code Navigator} also displays a title that can be set by a client.
  *

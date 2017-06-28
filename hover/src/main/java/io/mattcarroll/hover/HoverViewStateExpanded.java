@@ -29,14 +29,20 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * TODO
+ * {@link HoverViewState} that operates the {@link HoverView} when it is expanded. Expanded means
+ * that all menu tabs are displayed along the top of the {@code HoverView} and the selected
+ * {@link HoverMenu.Section}'s {@link Content} is displayed below the row of tabs.
+ *
+ * When the selected tab is tapped again by the user, the {@code HoverView} is transitioned to its
+ * collapsed state.
  */
 class HoverViewStateExpanded extends BaseHoverViewState {
 
     private static final String TAG = "HoverMenuViewStateExpanded";
     private static final int ANCHOR_TAB_X_OFFSET_IN_PX = 100;
     private static final int ANCHOR_TAB_Y_OFFSET_IN_PX = 100;
-    private static final int TAB_SPACING_IN_PX = 100;
+    private static final int TAB_SPACING_IN_PX = 200;
+    private static final int TAB_APPEARANCE_DELAY_IN_MS = 100;
 
     private boolean mHasControl = false;
     private HoverView mHoverView;
@@ -137,7 +143,7 @@ class HoverViewStateExpanded extends BaseHoverViewState {
                 Log.d(TAG, "Adding tabView: " + section.getTabView() + ". Its parent is: " + section.getTabView().getParent());
                 mChainedTabs.add(chainedTab);
                 mSections.put(chainedTab, section);
-                mTabChains.add(new TabChain(chainedTab));
+                mTabChains.add(new TabChain(chainedTab, TAB_SPACING_IN_PX));
 
                 chainedTab.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -152,7 +158,7 @@ class HoverViewStateExpanded extends BaseHoverViewState {
 
     private void chainTabs(boolean animatePrimaryTab) {
         Log.d(TAG, "Chaining tabs.");
-        Tab predecessorTab = mChainedTabs.get(0);
+        FloatingTab predecessorTab = mChainedTabs.get(0);
 
         // Find the selected tab.
         int primaryTabIndex = 0;
@@ -173,7 +179,7 @@ class HoverViewStateExpanded extends BaseHoverViewState {
                 tabChain.chainTo(mDock);
                 tabChain.tightenChain(!animatePrimaryTab);
             } else {
-                final Tab currentPredecessor = predecessorTab;
+                final FloatingTab currentPredecessor = predecessorTab;
                 int displayDelayInMillis = (int) (Math.abs(primaryTabIndex - i) * 100);
                 tabChain.chainTo(currentPredecessor);
                 chainedTab.postDelayed(new Runnable() {
@@ -251,7 +257,7 @@ class HoverViewStateExpanded extends BaseHoverViewState {
             final TabChain tabChain = mTabChains.get(i);
 
             if (mPrimaryTab != chainedTab) {
-                int displayDelayInMillis = Math.abs(primaryTabIndex - i) * TAB_SPACING_IN_PX;
+                int displayDelayInMillis = Math.abs(primaryTabIndex - i) * TAB_APPEARANCE_DELAY_IN_MS;
                 unchainCompletionTime = Math.max(unchainCompletionTime, displayDelayInMillis);
                 Log.d(TAG, "Queue'ing chained tab disappearance with delay: " + displayDelayInMillis);
                 chainedTab.postDelayed(new Runnable() {
@@ -401,10 +407,10 @@ class HoverViewStateExpanded extends BaseHoverViewState {
         if (mChainedTabs.size() <= position) {
             // This section was appended to the end.
             mChainedTabs.add(newTab);
-            mTabChains.add(new TabChain(newTab));
+            mTabChains.add(new TabChain(newTab, TAB_SPACING_IN_PX));
         } else {
             mChainedTabs.add(position, newTab);
-            mTabChains.add(position, new TabChain(newTab));
+            mTabChains.add(position, new TabChain(newTab, TAB_SPACING_IN_PX));
         }
 
         newTab.setOnClickListener(new View.OnClickListener() {
@@ -496,7 +502,7 @@ class HoverViewStateExpanded extends BaseHoverViewState {
         firstChain.chainTo(mDock);
         firstChain.tightenChain();
 
-        Tab predecessor = mChainedTabs.get(0);
+        FloatingTab predecessor = mChainedTabs.get(0);
         for (int i = 1; i < mChainedTabs.size(); ++i) {
             FloatingTab chainedTab = mChainedTabs.get(i);
             TabChain tabChain = mTabChains.get(i);

@@ -25,7 +25,8 @@ import android.view.LayoutInflater;
 import android.widget.FrameLayout;
 
 /**
- * TODO
+ * Fullscreen {@code View} that appears behind the other visual elements in a {@link HoverView} and
+ * darkens the background.
  */
 class ShadeView extends FrameLayout {
 

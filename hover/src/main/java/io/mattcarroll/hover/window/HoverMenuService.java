@@ -31,14 +31,14 @@ import io.mattcarroll.hover.SideDock;
 import io.mattcarroll.hover.overlay.OverlayPermission;
 
 /**
- * {@code Service} that presents a {@code HoverMenu} within a {@code Window}.
+ * {@code Service} that presents a {@link HoverView} within a {@code Window}.
  *
- * The Hover menu is displayed whenever any Intent is received by this {@code Service}. The Hover
- * menu is removed and destroyed whenever this {@code Service} is destroyed.
+ * The {@code HoverView} is displayed whenever any Intent is received by this {@code Service}. The
+ * {@code HoverView} is removed and destroyed whenever this {@code Service} is destroyed.
  *
- * A {@link Service} is required for displaying a {@code HoverMenu} in a {@code Window} because there
- * is no {@code Activity} to associate with the {@code HoverMenu}'s UI. This {@code Service} is the
- * application's link to the device's {@code Window} to display the {@code HoverMenu}.
+ * A {@link Service} is required for displaying a {@code HoverView} in a {@code Window} because there
+ * is no {@code Activity} to associate with the {@code HoverView}'s UI. This {@code Service} is the
+ * application's link to the device's {@code Window} to display the {@code HoverView}.
  */
 public abstract class HoverMenuService extends Service {
 
