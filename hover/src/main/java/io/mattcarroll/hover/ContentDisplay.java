@@ -149,11 +149,13 @@ class ContentDisplay extends RelativeLayout {
 
         if (null != mContent) {
             mContentView.removeView(mContent.getView());
+            mContent.onHidden();
         }
 
         mContent = content;
         if (null != mContent) {
             mContentView.addView(mContent.getView());
+            mContent.onShown();
 
             if (content.isFullscreen()) {
                 expandToScreenBounds();
