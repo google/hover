@@ -6,5 +6,5 @@
     android:layout_height="wrap_content"
     android:padding="24dp"
     android:textSize="20sp"
-    android:textColor="@color/menu_item_title_color"
+    android:textColor="@color/hover_content_menu_item_title_color"
     />

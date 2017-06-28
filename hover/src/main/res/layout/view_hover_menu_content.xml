@@ -1,20 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
-    <io.mattcarroll.hover.defaulthovermenu.HoverMenuTabSelectorView
+    android:orientation="vertical"
+    >
+    <io.mattcarroll.hover.TabSelectorView
         android:id="@+id/tabselector"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         />
-    <!--<io.mattcarroll.hover.defaulthovermenu.toolbar.ToolbarNavigatorContent-->
-        <!--android:id="@+id/view_content_container"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="0dp"-->
-        <!--android:layout_weight="1"-->
-        <!--android:background="@drawable/round_rect_white"-->
-        <!--/>-->
     <FrameLayout
         android:id="@+id/view_content_container"
         android:layout_width="match_parent"
