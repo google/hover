@@ -16,6 +16,33 @@ Hover is still under heavy development. There is still a lot of code cleanup to 
 
 That said, Hover should be in a usable state at this time.
 
+0.9.8 Major Breaking Changes
+-------
+Version 0.9.8 introduces major breaking changes to Hover. This refactor was done to simplify the code
+structure to make it easier to fix existing bugs and further extend behavior.
+
+0.9.8 also introduces a number of bug fixes, behavior improvements, and Android O alterations:
+#### Feature Updates:
+ - Added Android O support for application overlay.
+ - Added support for HoverMenuService as foreground Service (important for Android O).
+ - Added acceptance criteria as hover.feature file.
+ - Added Checkstyle support (no git hooks yet).
+ - Added many Hello World demos to show Hover versatility.
+ - Added ability to switch out HoverMenus at any time.
+ - Much more robust support for adding/removing/changing menu content in HoverView.
+    
+#### Hover Code Alterations:
+ - Moved Hover implementation from 'defaultmenu' package to 'hover' package.
+ - Can now instantiate a HoverView directly (no Builder required).
+ - Replaced HoverMenuAdapter interface with HoverMenu base class.
+ - Added HoverMenuView XML attributes for initial dock position.
+ - Added 'Closed' menu state (in addition to 'Collapsed' and 'Expanded')
+ - Clients can now provide initial dock when constructing HoverMenuView.
+ - Hover collapsed position now saved with menu ID to avoid clobbering multiple menus saved state.
+ - HoverView is now based on state pattern.
+
+There is still code to clean, but hopefully no further refactor of this scale will be necessary.
+
 Demo Hover Menu
 ---------------
 A demo app (called Kitchen Sink) is included with the Hover repo. Here are some screenshots of the demo in action.
@@ -152,7 +179,7 @@ Download
 Hover is available through jCenter:
 
 ```groovy
-compile 'io.mattcarroll.hover:hover:0.9.7'
+compile 'io.mattcarroll.hover:hover:0.9.8'
 ```
 
 Issues

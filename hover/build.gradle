@@ -1,7 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'checkstyle'
 
-version = '0.9.7'
+version = '0.9.8'
 
 android {
     compileSdkVersion project.compileSdkVersion.toInteger()
