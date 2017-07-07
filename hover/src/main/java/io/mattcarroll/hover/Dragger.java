@@ -31,6 +31,12 @@ public interface Dragger {
     void activate(@NonNull DragListener dragListener, @NonNull Point dragStartCenterPosition);
 
     /**
+     * Changes the position of this Dragger's touch area to the given position.
+     * @param position new position of touch area
+     */
+    void moveTo(@NonNull Point position);
+
+    /**
      * Stops monitoring and reporting user drag behavior.
      */
     void deactivate();

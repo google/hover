@@ -46,6 +46,7 @@ public class SingleSectionHoverMenuService extends HoverMenuService {
     protected void onHoverMenuLaunched(@NonNull Intent intent, @NonNull HoverView hoverView) {
         hoverView.setMenu(createHoverMenu());
         hoverView.collapse();
+        hoverView.enableDebugMode(true);
     }
 
     @NonNull

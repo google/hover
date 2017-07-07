@@ -116,6 +116,7 @@ public class InWindowDragger implements Dragger {
         mTapTouchSlop = tapTouchSlop;
     }
 
+    @Override
     public void activate(@NonNull DragListener dragListener, @NonNull Point dragStartCenterPosition) {
         if (!mIsActivated) {
             Log.d(TAG, "Activating.");
@@ -126,6 +127,16 @@ public class InWindowDragger implements Dragger {
         }
     }
 
+    @Override
+    public void moveTo(@NonNull Point position) {
+        if (mIsActivated) {
+            mWindowViewController.moveViewTo(mDragView,
+                    position.x - (mTouchAreaDiameter / 2),
+                    position.y - (mTouchAreaDiameter / 2));
+        }
+    }
+
+    @Override
     public void deactivate() {
         if (mIsActivated) {
             Log.d(TAG, "Deactivating.");
