@@ -121,6 +121,13 @@ public class InViewDragger implements Dragger {
     }
 
     @Override
+    public void moveTo(@NonNull Point position) {
+        if (mIsActivated) {
+            moveDragViewTo(new PointF(position.x, position.y));
+        }
+    }
+
+    @Override
     public void deactivate() {
         if (mIsActivated) {
             Log.d(TAG, "Deactivating.");
