@@ -101,10 +101,22 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         }
         initDockPosition();
 
+        boolean fixed = null != mHoverView.mMenu.getFixedSection()
+                && !mFloatingTab.getTabId().equals(mHoverView.mMenu.getFixedSection().getId().toString());
         // post() animation to dock in case the container hasn't measured itself yet.
-        if (!wasFloatingTabVisible) {
+        if (!wasFloatingTabVisible || fixed) {
             mFloatingTab.setVisibility(INVISIBLE);
+            if(fixed) {
+                mFloatingTab = mHoverView.mScreen.getChainedTab(mHoverView.mMenu.getFixedSection().getId());
+                if(null == mFloatingTab) {
+                    mFloatingTab = mHoverView.mScreen.createChainedTab(
+                            mHoverView.mMenu.getFixedSection().getId(),
+                            mHoverView.mMenu.getFixedSection().getTabView());
+                }
+                mFloatingTab.setVisibility(VISIBLE);
+            }
         }
+
         mHoverView.post(new Runnable() {
             @Override
             public void run() {
@@ -351,6 +363,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     }
 
     private void closeMenu(final @Nullable Runnable onClosed) {
+        Log.d(TAG, "closeMenu: disappear" + mFloatingTab.getTabId());
         mFloatingTab.disappear(new Runnable() {
             @Override
             public void run() {

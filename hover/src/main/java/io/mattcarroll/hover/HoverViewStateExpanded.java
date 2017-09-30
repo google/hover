@@ -38,7 +38,7 @@ import java.util.Map;
  */
 class HoverViewStateExpanded extends BaseHoverViewState {
 
-    private static final String TAG = "HoverMenuViewStateExpanded";
+    private static final String TAG = "HoverViewStateExpanded";
     private static final int ANCHOR_TAB_X_OFFSET_IN_PX = 100;
     private static final int ANCHOR_TAB_Y_OFFSET_IN_PX = 100;
     private static final int TAB_SPACING_IN_PX = 200;
@@ -104,7 +104,7 @@ class HoverViewStateExpanded extends BaseHoverViewState {
     private void expandMenu() {
         // If the selected tab is not already visible then we want to dock it immediately without
         // animation.
-        boolean dockSelectedTabImmediately = null == mHoverView.mScreen.getChainedTab(mHoverView.mSelectedSectionId);
+        boolean dockSelectedTabImmediately = null == mHoverView.mScreen.getChainedTab(mHoverView.mSelectedSectionId); // getSectionId()
 
         createChainedTabs();
         chainTabs(!dockSelectedTabImmediately);
@@ -125,7 +125,8 @@ class HoverViewStateExpanded extends BaseHoverViewState {
     private void createChainedTabs() {
         Log.d(TAG, "Creating chained tabs");
         if (null != mHoverView.mMenu) {
-            for (int i = 0; i < mHoverView.mMenu.getSectionCount(); ++i) {
+            int count = mHoverView.mMenu.getSectionCount();
+            for (int i = 0; i < count; ++i) {
                 HoverMenu.Section section = mHoverView.mMenu.getSection(i);
                 Log.d(TAG, "Creating tab view for: " + section.getId());
                 final FloatingTab chainedTab = mHoverView.mScreen.createChainedTab(
@@ -252,32 +253,40 @@ class HoverViewStateExpanded extends BaseHoverViewState {
 
         int unchainCompletionTime = 0;
         mTabsToUnchainCount = mChainedTabs.size() - 1; // -1 for selected tab
-        for (int i = 0; i < mChainedTabs.size(); ++i) {
+        final boolean fixed =  null != mHoverView.mMenu && null != mHoverView.mMenu.getFixedSection();
+        HoverMenu.SectionId fixedTabId = null;
+        if(fixed) {
+            fixedTabId = mHoverView.mMenu.getFixedSection().getId();
+        }
+        for (int i = 0, size = mChainedTabs.size(); i < size; ++i) {
             final FloatingTab chainedTab = mChainedTabs.get(i);
             final TabChain tabChain = mTabChains.get(i);
 
-            if (mSelectedTab != chainedTab) {
-                int displayDelayInMillis = Math.abs(selectedTabIndex - i) * TAB_APPEARANCE_DELAY_IN_MS;
-                unchainCompletionTime = Math.max(unchainCompletionTime, displayDelayInMillis);
-                Log.d(TAG, "Queue'ing chained tab disappearance with delay: " + displayDelayInMillis);
-                chainedTab.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        tabChain.unchain(new Runnable() {
-                            @Override
-                            public void run() {
-                                Log.d(TAG, "Destroying chained tab: " + chainedTab);
-                                mHoverView.mScreen.destroyChainedTab(chainedTab);
-
-                                --mTabsToUnchainCount;
-                                if (0 == mTabsToUnchainCount && null != onUnChained) {
-                                    onUnChained.run();
-                                }
-                            }
-                        });
-                    }
-                }, displayDelayInMillis);
+            if((fixed && chainedTab.getTabId().equals(mHoverView.mMenu.getFixedSection().getId().toString()))
+                    || (!fixed && mSelectedTab == chainedTab)) {
+                continue;
             }
+
+            int displayDelayInMillis = Math.abs(selectedTabIndex - i) * TAB_APPEARANCE_DELAY_IN_MS;
+            unchainCompletionTime = Math.max(unchainCompletionTime, displayDelayInMillis);
+            Log.d(TAG, "Queue'ing chained tab disappearance with delay: " + displayDelayInMillis);
+            chainedTab.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    tabChain.unchain(new Runnable() {
+                        @Override
+                        public void run() {
+                            Log.d(TAG, "Destroying chained tab: " + chainedTab);
+                            mHoverView.mScreen.destroyChainedTab(chainedTab);
+
+                            --mTabsToUnchainCount;
+                            if (0 == mTabsToUnchainCount && null != onUnChained) {
+                                onUnChained.run();
+                            }
+                        }
+                    });
+                }
+            }, displayDelayInMillis);
         }
 
         mChainedTabs.clear();
@@ -472,6 +481,7 @@ class HoverViewStateExpanded extends BaseHoverViewState {
     private void removeSection(int sectionIndex) {
         final FloatingTab chainedTab = mChainedTabs.remove(sectionIndex);
         TabChain tabChain = mTabChains.remove(sectionIndex);
+        Log.d(TAG, "removeSection: " + sectionIndex + ", " + tabChain.getTab().getTabId());
         tabChain.unchain(new Runnable() {
             @Override
             public void run() {
