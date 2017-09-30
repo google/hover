@@ -82,10 +82,24 @@ public class SideDock extends Dock {
             int x = LEFT == mSide
                     ? ((int) (tabSize * 0.25))
                     : screenSize.x - ((int) (tabSize * 0.25));
-
+            if(screenSize.y == 0) {
+                screenSize.y = 1;
+            }
+            float min = tabSize / 2.0f / screenSize.y;
+            float max = 1 - min;
+            mVerticalDockPositionPercentage = fixVal(mVerticalDockPositionPercentage, min, max);
             int y = (int) (screenSize.y * mVerticalDockPositionPercentage);
-
             return new Point(x, y);
+        }
+
+        private final float fixVal(float origin, float min, float max) {
+            if(origin < min) {
+                return min;
+            } else if(origin > max) {
+                return max;
+            } else {
+                return origin;
+            }
         }
 
         public float getVerticalDockPositionPercentage() {
