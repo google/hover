@@ -59,6 +59,15 @@ public abstract class HoverMenu {
     @NonNull
     public abstract List<Section> getSections();
 
+    /**
+     * Keep one section as the floating tab.(must be included in {@link #getSections()})
+     * @return null: disable [default]
+     */
+    @Nullable
+    protected Section getFixedSection() {
+        return null;
+    }
+
     void setUpdatedCallback(@Nullable ListUpdateCallback listUpdatedCallback) {
         mListUpdateCallback = listUpdatedCallback;
     }
