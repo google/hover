@@ -46,7 +46,6 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     private boolean mHasControl = false;
     private boolean mIsCollapsed = false;
     private boolean mIsDocked = false;
-    private boolean mIsFixed = false;
     private Dragger.DragListener mDragListener;
     private Listener mListener;
 
