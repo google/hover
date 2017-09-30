@@ -135,4 +135,10 @@ public class DemoHoverMenu extends HoverMenu {
     public List<Section> getSections() {
         return new ArrayList<>(mSections);
     }
+
+//    // use the code below to test how fixed section work.
+//    @Override
+//    protected Section getFixedSection() {
+//        return mSections.get(0);
+//    }
 }
