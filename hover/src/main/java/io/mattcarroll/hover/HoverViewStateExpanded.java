@@ -74,6 +74,23 @@ class HoverViewStateExpanded extends BaseHoverViewState {
         }
     };
 
+    private final View.OnLayoutChangeListener mUpdateTabPositionsLayoutListener = new View.OnLayoutChangeListener() {
+        @Override
+        public void onLayoutChange(View view, int l1, int t1, int r1, int b1, int l2, int t2, int r2, int b2) {
+            // If the containing dimensions of the HoverView have changed then it's probably
+            // an orientation change and we need to update the primary dock position of
+            // our tabs.
+            if (l1 != l2 || t1 != t2 || r1 != r2 || b1 != b2) {
+                mDock = new Point(
+                        mHoverView.mScreen.getWidth() - ANCHOR_TAB_X_OFFSET_IN_PX,
+                        ANCHOR_TAB_Y_OFFSET_IN_PX
+                );
+                mTabChains.get(0).chainTo(mDock);
+                updateChainedPositions();
+            }
+        }
+    };
+
     HoverViewStateExpanded() { }
 
     @Override
@@ -89,6 +106,7 @@ class HoverViewStateExpanded extends BaseHoverViewState {
         mHoverView.mState = this;
         mHoverView.makeTouchableInWindow();
         mHoverView.requestFocus(); // For handling hardware back button presses.
+        mHoverView.addOnLayoutChangeListener(mUpdateTabPositionsLayoutListener);
         mDock = new Point(
                 mHoverView.mScreen.getWidth() - ANCHOR_TAB_X_OFFSET_IN_PX,
                 ANCHOR_TAB_Y_OFFSET_IN_PX
@@ -224,6 +242,7 @@ class HoverViewStateExpanded extends BaseHoverViewState {
 
         mHasControl = false;
         mHasMenu = false;
+        mHoverView.removeOnLayoutChangeListener(mUpdateTabPositionsLayoutListener);
         mHoverView.mScreen.getContentDisplay().selectedTabIs(null);
         mHoverView.mScreen.getContentDisplay().displayContent(null);
         mHoverView.mScreen.getContentDisplay().setVisibility(View.GONE);

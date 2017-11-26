@@ -53,6 +53,8 @@ class FloatingTab extends FrameLayout {
     private int mTabSize;
     private View mTabView;
     private Dock mDock;
+    private ObjectAnimator mXAnimation;
+    private ObjectAnimator mYAnimation;
     private final Set<OnPositionChangeListener> mOnPositionChangeListeners = new CopyOnWriteArraySet<>();
 
     private final OnLayoutChangeListener mOnLayoutChangeListener = new OnLayoutChangeListener() {
@@ -223,14 +225,22 @@ class FloatingTab extends FrameLayout {
         Point destinationCornerPosition = convertCenterToCorner(mDock.position());
         Log.d(TAG, "Docking to destination point: " + destinationCornerPosition);
 
-        ObjectAnimator xAnimation = ObjectAnimator.ofFloat(this, "x", destinationCornerPosition.x);
-        xAnimation.setDuration(500);
-        xAnimation.setInterpolator(new OvershootInterpolator());
-        ObjectAnimator yAnimation = ObjectAnimator.ofFloat(this, "y", destinationCornerPosition.y);
-        yAnimation.setDuration(500);
-        yAnimation.setInterpolator(new OvershootInterpolator());
+        if (null != mXAnimation) {
+            mXAnimation.cancel();
+        }
+        mXAnimation = ObjectAnimator.ofFloat(this, "x", destinationCornerPosition.x);
+        mXAnimation.setDuration(500);
+        mXAnimation.setInterpolator(new OvershootInterpolator());
+
+        if (null != mYAnimation) {
+            mYAnimation.cancel();
+        }
+        mYAnimation = ObjectAnimator.ofFloat(this, "y", destinationCornerPosition.y);
+        mYAnimation.setDuration(500);
+        mYAnimation.setInterpolator(new OvershootInterpolator());
+
         AnimatorSet animatorSet = new AnimatorSet();
-        animatorSet.play(xAnimation).with(yAnimation);
+        animatorSet.play(mXAnimation).with(mYAnimation);
         animatorSet.start();
 
         animatorSet.addListener(new Animator.AnimatorListener() {
@@ -252,7 +262,7 @@ class FloatingTab extends FrameLayout {
             public void onAnimationRepeat(Animator animation) { }
         });
 
-        xAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+        mXAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 notifyListenersOfPositionChange();
