@@ -148,7 +148,7 @@ class HoverViewStateExpanded extends BaseHoverViewState {
                 chainedTab.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        // TODO: is not stable and is crashing.
+                        Log.d(TAG, "Chained tab was tapped: " + chainedTab.getTabId());
                         onTabSelected(chainedTab);
                     }
                 });
@@ -254,6 +254,8 @@ class HoverViewStateExpanded extends BaseHoverViewState {
         mTabsToUnchainCount = mChainedTabs.size() - 1; // -1 for selected tab
         for (int i = 0; i < mChainedTabs.size(); ++i) {
             final FloatingTab chainedTab = mChainedTabs.get(i);
+            chainedTab.setOnClickListener(null);
+
             final TabChain tabChain = mTabChains.get(i);
 
             if (mSelectedTab != chainedTab) {
