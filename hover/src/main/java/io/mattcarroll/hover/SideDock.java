@@ -28,6 +28,9 @@ import java.lang.annotation.RetentionPolicy;
  * {@link Dock} that always positions itself either on the left or right side of its container. A
  * {@code SideDock} insets itself slightly from the edge of its container based on a proportion of
  * a tab's size.
+ *
+ * A {@link SideDock} also constrains its position slightly within the top and bottom of its
+ * container so that the docking position can't be lost off-screen.
  */
 public class SideDock extends Dock {
 
@@ -84,6 +87,12 @@ public class SideDock extends Dock {
                     : screenSize.x - ((int) (tabSize * 0.25));
 
             int y = (int) (screenSize.y * mVerticalDockPositionPercentage);
+
+            // Prevent the dock from sitting completely above or below the screen area.
+            int minY = (int) (tabSize * 0.25);
+            int maxY = (int) (screenSize.y - (tabSize * 0.25));
+            y = Math.max(y, minY);
+            y = Math.min(y, maxY);
 
             return new Point(x, y);
         }
