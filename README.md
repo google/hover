@@ -179,7 +179,7 @@ Download
 Hover is available through jCenter:
 
 ```groovy
-compile 'io.mattcarroll.hover:hover:0.9.8'
+implementation 'io.mattcarroll.hover:hover:0.9.8'
 ```
 
 Issues
