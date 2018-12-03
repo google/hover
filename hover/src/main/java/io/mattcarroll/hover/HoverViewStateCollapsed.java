@@ -37,7 +37,7 @@ import static android.view.View.VISIBLE;
  */
 class HoverViewStateCollapsed extends BaseHoverViewState {
 
-    private static final String TAG = "HoverMenuViewStateCollapsed";
+    private static final String TAG = "HoverViewStateCollapsed";
 
     private HoverView mHoverView;
     private FloatingTab mFloatingTab;
@@ -108,6 +108,9 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         mHoverView.post(new Runnable() {
             @Override
             public void run() {
+                if (!mHasControl) {
+                    return;
+                }
                 if (wasFloatingTabVisible) {
                     sendToDock();
                 } else {
@@ -303,6 +306,9 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         mFloatingTab.dock(new Runnable() {
             @Override
             public void run() {
+                if (!mHasControl) {
+                    return;
+                }
                 onDocked();
             }
         });

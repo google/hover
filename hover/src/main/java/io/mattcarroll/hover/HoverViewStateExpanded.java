@@ -38,7 +38,7 @@ import java.util.Map;
  */
 class HoverViewStateExpanded extends BaseHoverViewState {
 
-    private static final String TAG = "HoverMenuViewStateExpanded";
+    private static final String TAG = "HoverViewStateExpanded";
     private static final int ANCHOR_TAB_X_OFFSET_IN_PX = 100;
     private static final int ANCHOR_TAB_Y_OFFSET_IN_PX = 100;
     private static final int TAB_SPACING_IN_PX = 200;
@@ -57,6 +57,9 @@ class HoverViewStateExpanded extends BaseHoverViewState {
     private final Runnable mShowTabsRunnable = new Runnable() {
         @Override
         public void run() {
+            if (!mHasControl) {
+                return;
+            }
             mHoverView.mScreen.getShadeView().show();
             mHoverView.mScreen.getContentDisplay().selectedTabIs(mSelectedTab);
 

@@ -28,14 +28,19 @@ import static android.view.View.GONE;
  */
 class HoverViewStateClosed extends BaseHoverViewState {
 
-    private static final String TAG = "HoverMenuViewStateClosed";
+    private static final String TAG = "HoverViewStateClosed";
 
     private HoverView mHoverView;
+    private boolean mHasControl = false;
 
     @Override
     public void takeControl(@NonNull HoverView hoverView) {
         Log.d(TAG, "Taking control.");
         super.takeControl(hoverView);
+        if (mHasControl) {
+            throw new RuntimeException("Cannot take control of a FloatingTab when we already control one.");
+        }
+        mHasControl = true;
         mHoverView = hoverView;
         mHoverView.notifyListenersClosing();
         mHoverView.mState = this;
@@ -47,6 +52,9 @@ class HoverViewStateClosed extends BaseHoverViewState {
             selectedTab.disappear(new Runnable() {
                 @Override
                 public void run() {
+                    if (!mHasControl) {
+                        return;
+                    }
                     mHoverView.mScreen.destroyChainedTab(selectedTab);
                     mHoverView.notifyListenersClosed();
                 }
@@ -59,6 +67,10 @@ class HoverViewStateClosed extends BaseHoverViewState {
     }
 
     private void changeState(@NonNull HoverViewState nextState) {
+        if (!mHasControl) {
+            throw new RuntimeException("Cannot give control to another HoverMenuController when we don't have the HoverTab.");
+        }
+        mHasControl = false;
         mHoverView.setState(nextState);
         mHoverView = null;
     }
