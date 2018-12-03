@@ -2,7 +2,6 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion project.compileSdkVersion.toInteger()
-    buildToolsVersion project.buildToolsVersion
 
     defaultConfig {
         applicationId "org.codecanon.hover.hoverdemo.helloworld"
@@ -23,6 +22,6 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile project(':hover')
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation project(':hover')
 }

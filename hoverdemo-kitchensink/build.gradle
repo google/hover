@@ -2,7 +2,6 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion project.compileSdkVersion.toInteger()
-    buildToolsVersion project.buildToolsVersion
 
     defaultConfig {
         applicationId "io.mattcarroll.hover.hoverdemo"
@@ -20,12 +19,12 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    testCompile 'junit:junit:4.12'
-    compile "com.android.support:appcompat-v7:${supportLibVersion}"
-    compile "com.android.support:design:${supportLibVersion}"
-    compile "com.android.support:recyclerview-v7:${supportLibVersion}"
-    compile 'de.greenrobot:eventbus:2.4.0'
-    compile 'com.larswerkman:HoloColorPicker:1.5'
-    compile project(':hover')
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    testImplementation 'junit:junit:4.12'
+    implementation "com.android.support:appcompat-v7:${supportLibVersion}"
+    implementation "com.android.support:design:${supportLibVersion}"
+    implementation "com.android.support:recyclerview-v7:${supportLibVersion}"
+    implementation 'de.greenrobot:eventbus:2.4.0'
+    implementation 'com.larswerkman:HoloColorPicker:1.5'
+    implementation project(':hover')
 }

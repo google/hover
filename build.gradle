@@ -2,10 +2,11 @@
 
 buildscript {
     repositories {
+        google()
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.0.0-alpha4'
+        classpath 'com.android.tools.build:gradle:3.2.1'
 
         // For Bintray publishing
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.2'
@@ -15,6 +16,7 @@ buildscript {
 
 allprojects {
     repositories {
+        google()
         jcenter()
     }
 }
