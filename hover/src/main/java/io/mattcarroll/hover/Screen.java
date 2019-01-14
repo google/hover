@@ -40,6 +40,7 @@ class Screen {
     private ExitView mExitView;
     private ShadeView mShadeView;
     private Map<String, FloatingTab> mTabs = new HashMap<>();
+    private Map<String, TabMessageView> mTabMessageViews = new HashMap<>();
     private boolean mIsDebugMode = false;
 
     Screen(@NonNull ViewGroup hoverMenuContainer) {
@@ -82,13 +83,13 @@ class Screen {
     }
 
     @NonNull
-    public FloatingTab createChainedTab(@NonNull HoverMenu.SectionId sectionId, @NonNull View tabView) {
-        String tabId = sectionId.toString();
-        return createChainedTab(tabId, tabView);
+    public FloatingTab createChainedTab(@NonNull HoverMenu.Section section) {
+        String tabId = section.getId().toString();
+        return createChainedTab(tabId, section.getTabView(), section.getTabMessageView());
     }
 
     @NonNull
-    public FloatingTab createChainedTab(@NonNull String tabId, @NonNull View tabView) {
+    public FloatingTab createChainedTab(@NonNull String tabId, @NonNull View tabView, @Nullable View tabMessageView) {
         Log.d(TAG, "Existing tabs...");
         for (String existingTabId : mTabs.keySet()) {
             Log.d(TAG, existingTabId);
@@ -102,6 +103,11 @@ class Screen {
             chainedTab.enableDebugMode(mIsDebugMode);
             mContainer.addView(chainedTab);
             mTabs.put(tabId, chainedTab);
+            if (tabMessageView != null) {
+                final TabMessageView messageView = new TabMessageView(tabView.getContext(), tabMessageView, chainedTab);
+                mContainer.addView(messageView);
+                mTabMessageViews.put(tabId, messageView);
+            }
             return chainedTab;
         }
     }
@@ -133,5 +139,18 @@ class Screen {
 
     public ShadeView getShadeView() {
         return mShadeView;
+    }
+
+    public void showTabContentView(final HoverMenu.SectionId sectionId, final SideDock dock, final Runnable onAppeared) {
+        if (getChainedTab(sectionId) != null && mTabMessageViews.get(sectionId.toString()) != null) {
+            mTabMessageViews.get(sectionId.toString()).appear(dock, onAppeared);
+        }
+    }
+
+    public void hideTabContentView(final HoverMenu.SectionId sectionId, final boolean withAnimation) {
+        final TabMessageView tabMessageView = mTabMessageViews.get(sectionId.toString());
+        if (tabMessageView != null) {
+            tabMessageView.disappear(withAnimation);
+        }
     }
 }

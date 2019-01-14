@@ -48,6 +48,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 class FloatingTab extends FrameLayout {
 
     private static final String TAG = "FloatingTab";
+    private static final int APPEARING_ANIMATION_DURATION = 300;
 
     private final String mId;
     private int mTabSize;
@@ -101,9 +102,9 @@ class FloatingTab extends FrameLayout {
     public void appear(@Nullable final Runnable onAppeared) {
         AnimatorSet animatorSet = new AnimatorSet();
         ObjectAnimator scaleX = ObjectAnimator.ofFloat(this, "scaleX", 0.0f, 1.0f);
-        scaleX.setDuration(250);
         ObjectAnimator scaleY = ObjectAnimator.ofFloat(this, "scaleY", 0.0f, 1.0f);
-        scaleY.setDuration(250);
+        animatorSet.setDuration(APPEARING_ANIMATION_DURATION);
+        animatorSet.setInterpolator(new OvershootInterpolator());
         animatorSet.playTogether(scaleX, scaleY);
         animatorSet.start();
 
@@ -138,9 +139,8 @@ class FloatingTab extends FrameLayout {
     public void disappear(@Nullable final Runnable onDisappeared) {
         AnimatorSet animatorSet = new AnimatorSet();
         ObjectAnimator scaleX = ObjectAnimator.ofFloat(this, "scaleX", 0.0f);
-        scaleX.setDuration(250);
         ObjectAnimator scaleY = ObjectAnimator.ofFloat(this, "scaleY", 0.0f);
-        scaleY.setDuration(250);
+        animatorSet.setDuration(APPEARING_ANIMATION_DURATION);
         animatorSet.playTogether(scaleX, scaleY);
         animatorSet.start();
 
@@ -268,6 +268,7 @@ class FloatingTab extends FrameLayout {
         Point cornerPosition = convertCenterToCorner(floatPosition);
         setX(cornerPosition.x);
         setY(cornerPosition.y);
+        notifyListenersOfPositionChange();
     }
 
     private Point convertCenterToCorner(@NonNull Point centerPosition) {
@@ -294,7 +295,7 @@ class FloatingTab extends FrameLayout {
 
     private void notifyListenersOfDockChange() {
         for (OnPositionChangeListener listener : mOnPositionChangeListeners) {
-            listener.onDockChange(mDock.position());
+            listener.onDockChange(mDock);
         }
     }
 
@@ -307,6 +308,6 @@ class FloatingTab extends FrameLayout {
     public interface OnPositionChangeListener {
         void onPositionChange(@NonNull Point tabPosition);
 
-        void onDockChange(@NonNull Point dockPosition);
+        void onDockChange(@NonNull Dock dock);
     }
 }

@@ -45,7 +45,7 @@ class TabChain {
         }
 
         @Override
-        public void onDockChange(@NonNull Point dock) {
+        public void onDockChange(@NonNull Dock dock) {
             Log.d(TAG, hashCode() + "'s predecessor dock moved to: " + dock);
             moveToChainedPosition(false);
         }
@@ -113,7 +113,7 @@ class TabChain {
                 mTab.dock();
             }
         } else {
-            mTab.moveTo(mTab.getDockPosition());
+            mTab.dockImmediately();
             mTab.appear(null);
         }
     }

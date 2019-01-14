@@ -73,7 +73,7 @@ class ContentDisplay extends RelativeLayout {
         }
 
         @Override
-        public void onDockChange(@NonNull Point dock) {
+        public void onDockChange(@NonNull Dock dock) {
             // No-op.
         }
     };

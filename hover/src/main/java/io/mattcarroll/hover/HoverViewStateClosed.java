@@ -56,6 +56,9 @@ class HoverViewStateClosed extends BaseHoverViewState {
                         return;
                     }
                     mHoverView.mScreen.destroyChainedTab(selectedTab);
+                    if (null != mHoverView.mOnExitListener) {
+                        mHoverView.mOnExitListener.onExit();
+                    }
                     mHoverView.notifyListenersClosed();
                 }
             });
@@ -73,6 +76,16 @@ class HoverViewStateClosed extends BaseHoverViewState {
         mHasControl = false;
         mHoverView.setState(nextState);
         mHoverView = null;
+    }
+
+    @Override
+    public void preview() {
+        if (null != mHoverView.mMenu) {
+            Log.d(TAG, "Preview.");
+            changeState(mHoverView.mPreviewed);
+        } else {
+            Log.d(TAG, "Asked to preview, but there is no menu set. Can't preview until a menu is available.");
+        }
     }
 
     @Override

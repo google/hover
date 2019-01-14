@@ -112,11 +112,17 @@ public abstract class HoverMenu {
         private final SectionId mId;
         private final View mTabView;
         private final Content mContent;
+        private final View mTabMessageView;
 
         public Section(@NonNull SectionId id, @NonNull View tabView, @NonNull Content content) {
+            this(id, tabView, content, null);
+        }
+
+        public Section(@NonNull SectionId id, @NonNull View tabView, @NonNull Content content, @Nullable View tabMessageView) {
             mId = id;
             mTabView = tabView;
             mContent = content;
+            mTabMessageView = tabMessageView;
         }
 
         @NonNull
@@ -127,6 +133,11 @@ public abstract class HoverMenu {
         @NonNull
         public View getTabView() {
             return mTabView;
+        }
+
+        @Nullable
+        public View getTabMessageView() {
+            return mTabMessageView;
         }
 
         @NonNull

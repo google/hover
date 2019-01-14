@@ -29,6 +29,8 @@ interface HoverViewState {
      */
     void takeControl(@NonNull HoverView hoverView);
 
+    void preview();
+
     /**
      * Expands the HoverView.
      */

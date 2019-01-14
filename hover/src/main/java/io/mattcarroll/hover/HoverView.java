@@ -87,6 +87,7 @@ public class HoverView extends RelativeLayout {
 
     final HoverViewState mClosed = new HoverViewStateClosed();
     final HoverViewState mCollapsed = new HoverViewStateCollapsed();
+    final HoverViewState mPreviewed = new HoverViewStatePreviewed();
     final HoverViewState mExpanded = new HoverViewStateExpanded();
     final WindowViewController mWindowViewController;
     final Dragger mDragger;
@@ -98,9 +99,10 @@ public class HoverView extends RelativeLayout {
     boolean mIsAddedToWindow;
     boolean mIsTouchableInWindow;
     boolean mIsDebugMode = false;
+    boolean mUseShadeView = true;
     int mTabSize;
     OnExitListener mOnExitListener;
-    final Set<Listener> mListeners = new CopyOnWriteArraySet<>();
+    final Set<OnStateChangeListener> mOnStateChangeListeners = new CopyOnWriteArraySet<>();
 
     // Public for use with XML inflation. Clients should use static methods for construction.
     public HoverView(@NonNull Context context, @Nullable AttributeSet attrs) {
@@ -259,6 +261,10 @@ public class HoverView extends RelativeLayout {
         mState.setMenu(menu);
     }
 
+    public void preview() {
+        mState.preview();
+    }
+
     public void expand() {
         mState.expand();
     }
@@ -271,57 +277,77 @@ public class HoverView extends RelativeLayout {
         mState.close();
     }
 
+    public void setUseShadeView(final boolean useShadeView) {
+        mUseShadeView = useShadeView;
+    }
+
+    public boolean useShadeView() {
+        return mUseShadeView;
+    }
+
     public void setOnExitListener(@Nullable OnExitListener listener) {
         mOnExitListener = listener;
     }
 
-    public void addOnExpandAndCollapseListener(@NonNull Listener listener) {
-        mListeners.add(listener);
+    public void addOnStateChangeListener(@NonNull OnStateChangeListener onStateChangeListener) {
+        mOnStateChangeListeners.add(onStateChangeListener);
     }
 
-    public void removeOnExpandAndCollapseListener(@NonNull Listener listener) {
-        mListeners.remove(listener);
+    public void removeOnStateChangeListener(@NonNull OnStateChangeListener onStateChangeListener) {
+        mOnStateChangeListeners.remove(onStateChangeListener);
     }
 
     void notifyListenersExpanding() {
         Log.d(TAG, "Notifying listeners that Hover is expanding.");
-        for (Listener listener : mListeners) {
-            listener.onExpanding();
+        for (OnStateChangeListener onStateChangeListener : mOnStateChangeListeners) {
+            onStateChangeListener.onExpanding();
         }
     }
 
     void notifyListenersExpanded() {
         Log.d(TAG, "Notifying listeners that Hover is now expanded.");
-        for (Listener listener : mListeners) {
-            listener.onExpanded();
+        for (OnStateChangeListener onStateChangeListener : mOnStateChangeListeners) {
+            onStateChangeListener.onExpanded();
         }
     }
 
     void notifyListenersCollapsing() {
         Log.d(TAG, "Notifying listeners that Hover is collapsing.");
-        for (Listener listener : mListeners) {
-            listener.onCollapsing();
+        for (OnStateChangeListener onStateChangeListener : mOnStateChangeListeners) {
+            onStateChangeListener.onCollapsing();
         }
     }
 
     void notifyListenersCollapsed() {
         Log.d(TAG, "Notifying listeners that Hover is now collapsed.");
-        for (Listener listener : mListeners) {
-            listener.onCollapsed();
+        for (OnStateChangeListener onStateChangeListener : mOnStateChangeListeners) {
+            onStateChangeListener.onCollapsed();
+        }
+    }
+
+    void notifyListenersPreviewing() {
+        for (OnStateChangeListener onStateChangeListener : mOnStateChangeListeners) {
+            onStateChangeListener.onPreviewing();
+        }
+    }
+
+    void notifyListenersPreviewed() {
+        for (OnStateChangeListener onStateChangeListener : mOnStateChangeListeners) {
+            onStateChangeListener.onPreviewed();
         }
     }
 
     void notifyListenersClosing() {
         Log.d(TAG, "Notifying listeners that Hover is closing.");
-        for (Listener listener : mListeners) {
-            listener.onClosing();
+        for (OnStateChangeListener onStateChangeListener : mOnStateChangeListeners) {
+            onStateChangeListener.onClosing();
         }
     }
 
     void notifyListenersClosed() {
         Log.d(TAG, "Notifying listeners that Hover is closed.");
-        for (Listener listener : mListeners) {
-            listener.onClosed();
+        for (OnStateChangeListener onStateChangeListener : mOnStateChangeListeners) {
+            onStateChangeListener.onClosed();
         }
     }
 
@@ -503,7 +529,7 @@ public class HoverView extends RelativeLayout {
     /**
      * Listener invoked when the corresponding transitions occur within a given {@link HoverView}.
      */
-    public interface Listener {
+    public interface OnStateChangeListener {
 
         void onExpanding();
 
@@ -513,9 +539,54 @@ public class HoverView extends RelativeLayout {
 
         void onCollapsed();
 
+        void onPreviewing();
+
+        void onPreviewed();
+
         void onClosing();
 
         void onClosed();
+    }
 
+    public static class DefaultOnStateChangeListener implements OnStateChangeListener {
+        @Override
+        public void onExpanding() {
+
+        }
+
+        @Override
+        public void onExpanded() {
+
+        }
+
+        @Override
+        public void onCollapsing() {
+
+        }
+
+        @Override
+        public void onCollapsed() {
+
+        }
+
+        @Override
+        public void onPreviewing() {
+
+        }
+
+        @Override
+        public void onPreviewed() {
+
+        }
+
+        @Override
+        public void onClosing() {
+
+        }
+
+        @Override
+        public void onClosed() {
+
+        }
     }
 }
