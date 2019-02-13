@@ -16,6 +16,7 @@
 package io.mattcarroll.hover;
 
 import android.graphics.Point;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.util.ListUpdateCallback;
@@ -40,6 +41,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     private static final String TAG = "HoverViewStateCollapsed";
     private static final float MIN_TAB_VERTICAL_POSITION = 0.0f;
     private static final float MAX_TAB_VERTICAL_POSITION = 1.0f;
+    private static final long ALPHA_IDLE_MILLIS = 5000;
 
     protected HoverView mHoverView;
     private FloatingTab mFloatingTab;
@@ -50,6 +52,15 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     private boolean mIsDocked = false;
     private Dragger.DragListener mDragListener;
     private Listener mListener;
+    private Handler mHandler = new Handler();
+    private Runnable mAlphaChanger = new Runnable() {
+        @Override
+        public void run() {
+            if (!(mHoverView.mState instanceof HoverViewStatePreviewed) && mHoverView.mState instanceof HoverViewStateCollapsed) {
+                mHoverView.setAlpha(0.5f);
+            }
+        }
+    };
 
     private final View.OnLayoutChangeListener mOnLayoutChangeListener = new View.OnLayoutChangeListener() {
         @Override
@@ -128,6 +139,8 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         if (null != mHoverView.mMenu) {
             listenForMenuChanges();
         }
+
+        scheduleHoverViewAlphaChange();
     }
 
     @Override
@@ -155,6 +168,8 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         if (!mHasControl) {
             throw new RuntimeException("Cannot give control to another HoverMenuController when we don't have the HoverTab.");
         }
+
+        restoreHoverViewAlphaValue();
 
         mFloatingTab.removeOnLayoutChangeListener(mOnLayoutChangeListener);
 
@@ -254,6 +269,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         if (null != mListener) {
             mListener.onDragStart();
         }
+        restoreHoverViewAlphaValue();
     }
 
     private void onDroppedByUser() {
@@ -340,6 +356,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         Log.d(TAG, "Docked. Activating dragger.");
         mIsDocked = true;
         activateDragger();
+        scheduleHoverViewAlphaChange();
 
         // We consider ourselves having gone from "collapsing" to "collapsed" upon the very first dock.
         boolean didJustCollapse = !mIsCollapsed;
@@ -364,6 +381,15 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
 
     private void deactivateDragger() {
         mHoverView.mDragger.deactivate();
+    }
+
+    private void scheduleHoverViewAlphaChange() {
+        mHandler.postDelayed(mAlphaChanger, ALPHA_IDLE_MILLIS);
+    }
+
+    protected void restoreHoverViewAlphaValue() {
+        mHandler.removeCallbacksAndMessages(null);
+        mHoverView.setAlpha(1f);
     }
 
     public interface Listener {
