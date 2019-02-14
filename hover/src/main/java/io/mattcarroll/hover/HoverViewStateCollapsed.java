@@ -388,7 +388,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     }
 
     protected void restoreHoverViewAlphaValue() {
-        mHandler.removeCallbacksAndMessages(null);
+        mHandler.removeCallbacks(mAlphaChanger);
         mHoverView.setAlpha(1f);
     }
 
