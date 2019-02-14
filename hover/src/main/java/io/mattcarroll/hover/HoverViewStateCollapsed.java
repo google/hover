@@ -178,6 +178,8 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
             mHoverView.mMenu.setUpdatedCallback(null);
         }
 
+        mHoverView.mScreen.getExitView().setVisibility(GONE);
+
         mHasControl = false;
         mIsDocked = false;
         deactivateDragger();
