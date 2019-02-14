@@ -70,12 +70,10 @@ public class HoverView extends RelativeLayout {
     @NonNull
     private static Dragger createWindowDragger(@NonNull Context context,
                                                @NonNull WindowViewController windowViewController) {
-        int touchDiameter = context.getResources().getDimensionPixelSize(R.dimen.hover_exit_radius);
         int slop = ViewConfiguration.get(context).getScaledTouchSlop();
         return new InWindowDragger(
                 context,
                 windowViewController,
-                touchDiameter,
                 slop
         );
     }
@@ -120,11 +118,9 @@ public class HoverView extends RelativeLayout {
 
     @NonNull
     private Dragger createInViewDragger(@NonNull Context context) {
-        int touchDiameter = context.getResources().getDimensionPixelSize(R.dimen.hover_exit_radius);
         int slop = ViewConfiguration.get(context).getScaledTouchSlop();
         return new InViewDragger(
                 this,
-                touchDiameter,
                 slop
         );
     }

@@ -15,8 +15,8 @@
  */
 package io.mattcarroll.hover.view;
 
-import android.graphics.Point;
 import android.graphics.PointF;
+import android.graphics.Rect;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -34,7 +34,6 @@ public class InViewDragger implements Dragger {
     private static final String TAG = "InViewDragger";
 
     private final ViewGroup mContainer;
-    private final int mTouchAreaDiameter;
     private final int mTapTouchSlop;
     private boolean mIsActivated;
     private boolean mIsDragging;
@@ -98,9 +97,8 @@ public class InViewDragger implements Dragger {
         }
     };
 
-    public InViewDragger(@NonNull ViewGroup container, int touchAreaDiameter, int touchSlop) {
+    public InViewDragger(@NonNull ViewGroup container, int touchSlop) {
         mContainer = container;
-        mTouchAreaDiameter = touchAreaDiameter;
         mTapTouchSlop = touchSlop;
     }
 
@@ -111,12 +109,12 @@ public class InViewDragger implements Dragger {
     }
 
     @Override
-    public void activate(@NonNull DragListener dragListener, @NonNull Point dragStartCenterPosition) {
+    public void activate(@NonNull DragListener dragListener, @NonNull Rect rect) {
         if (!mIsActivated) {
             Log.d(TAG, "Activating.");
             mIsActivated = true;
             mDragListener = dragListener;
-            createTouchControlView(dragStartCenterPosition);
+            createTouchControlView(rect);
         }
     }
 
@@ -129,14 +127,16 @@ public class InViewDragger implements Dragger {
         }
     }
 
-    private void createTouchControlView(@NonNull Point dragStartCenterPosition) {
+    private void createTouchControlView(@NonNull Rect rect) {
         mDragView = new View(mContainer.getContext());
         mDragView.setId(R.id.hover_drag_view);
-        mDragView.setLayoutParams(new ViewGroup.LayoutParams(mTouchAreaDiameter, mTouchAreaDiameter));
+        final int width = rect.right - rect.left;
+        final int height = rect.bottom - rect.top;
+        mDragView.setLayoutParams(new ViewGroup.LayoutParams(width, height));
         mDragView.setOnTouchListener(mDragTouchListener);
         mContainer.addView(mDragView);
 
-        moveDragViewTo(new PointF(dragStartCenterPosition.x, dragStartCenterPosition.y));
+        moveDragViewTo(new PointF((rect.right + rect.left) / 2, (rect.bottom + rect.top) / 2));
         updateTouchControlViewAppearance();
     }
 
@@ -179,15 +179,15 @@ public class InViewDragger implements Dragger {
 
     private PointF convertCornerToCenter(@NonNull PointF cornerPosition) {
         return new PointF(
-                cornerPosition.x + (mTouchAreaDiameter / 2),
-                cornerPosition.y + (mTouchAreaDiameter / 2)
+                cornerPosition.x + (mDragView.getWidth() / 2),
+                cornerPosition.y + (mDragView.getHeight() / 2)
         );
     }
 
     private PointF convertCenterToCorner(@NonNull PointF centerPosition) {
         return new PointF(
-                centerPosition.x - (mTouchAreaDiameter / 2),
-                centerPosition.y - (mTouchAreaDiameter / 2)
+                centerPosition.x - (mDragView.getWidth() / 2),
+                centerPosition.y - (mDragView.getHeight() / 2)
         );
     }
 }

@@ -15,7 +15,7 @@
  */
 package io.mattcarroll.hover;
 
-import android.graphics.Point;
+import android.graphics.Rect;
 import android.support.annotation.NonNull;
 
 /**
@@ -26,9 +26,9 @@ public interface Dragger {
     /**
      * Starts reporting user drag behavior given a drag area represented by {@code controlBounds}.
      * @param dragListener listener that receives information about drag behavior
-     * @param dragStartCenterPosition initial touch point to start dragging
+     * @param rect Rect area to be draggable
      */
-    void activate(@NonNull DragListener dragListener, @NonNull Point dragStartCenterPosition);
+    void activate(@NonNull DragListener dragListener, @NonNull Rect rect);
 
     /**
      * Stops monitoring and reporting user drag behavior.

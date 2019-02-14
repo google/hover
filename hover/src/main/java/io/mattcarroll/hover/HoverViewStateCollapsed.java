@@ -16,6 +16,7 @@
 package io.mattcarroll.hover;
 
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -44,13 +45,13 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     private static final long ALPHA_IDLE_MILLIS = 5000;
 
     protected HoverView mHoverView;
-    private FloatingTab mFloatingTab;
+    protected FloatingTab mFloatingTab;
     private HoverMenu.Section mSelectedSection;
     private int mSelectedSectionIndex = -1;
     private boolean mHasControl = false;
     private boolean mIsCollapsed = false;
     private boolean mIsDocked = false;
-    private Dragger.DragListener mDragListener;
+    protected Dragger.DragListener mDragListener;
     private Listener mListener;
     private Handler mHandler = new Handler();
     private Runnable mAlphaChanger = new Runnable() {
@@ -371,15 +372,17 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         }
     }
 
-    private void moveTabTo(@NonNull Point position) {
+    protected void moveTabTo(@NonNull Point position) {
         mFloatingTab.moveTo(position);
     }
 
-    private void activateDragger() {
-        mHoverView.mDragger.activate(mDragListener, mFloatingTab.getPosition());
+    protected void activateDragger() {
+        final Rect visibleRect = new Rect();
+        mFloatingTab.getGlobalVisibleRect(visibleRect);
+        mHoverView.mDragger.activate(mDragListener, visibleRect);
     }
 
-    private void deactivateDragger() {
+    protected void deactivateDragger() {
         mHoverView.mDragger.deactivate();
     }
 

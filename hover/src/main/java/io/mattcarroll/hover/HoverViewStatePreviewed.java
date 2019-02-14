@@ -15,6 +15,8 @@
  */
 package io.mattcarroll.hover;
 
+import android.graphics.Point;
+import android.graphics.Rect;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -26,13 +28,15 @@ import android.util.Log;
 class HoverViewStatePreviewed extends HoverViewStateCollapsed {
 
     private static final String TAG = "HoverViewStatePreviewed";
+    private TabMessageView mMessageView;
 
     @Override
     public void takeControl(@NonNull HoverView hoverView) {
         super.takeControl(hoverView);
         mHoverView.mState = this;
         mHoverView.notifyListenersPreviewing();
-        mHoverView.mScreen.showTabContentView(mHoverView.mSelectedSectionId, mHoverView.mCollapsedDock, new Runnable() {
+        mMessageView = mHoverView.mScreen.getTabMessageView(mHoverView.mSelectedSectionId);
+        mMessageView.appear(mHoverView.mCollapsedDock, new Runnable() {
             @Override
             public void run() {
                 mHoverView.notifyListenersPreviewed();
@@ -43,9 +47,9 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
     @Override
     protected void changeState(@NonNull final HoverViewState nextState) {
         if (nextState instanceof HoverViewStateCollapsed) {
-            mHoverView.mScreen.hideTabContentView(mHoverView.mSelectedSectionId, true);
+            mMessageView.disappear(true);
         } else {
-            mHoverView.mScreen.hideTabContentView(mHoverView.mSelectedSectionId, false);
+            mMessageView.disappear(false);
         }
         super.changeState(nextState);
     }
@@ -58,5 +62,26 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
     @Override
     public void collapse() {
         changeState(mHoverView.mCollapsed);
+    }
+
+    @Override
+    protected void moveTabTo(@NonNull Point position) {
+        final int floatingTabOffset = mMessageView.getWidth() / 2;
+        if (mHoverView.mCollapsedDock.sidePosition().getSide() == SideDock.SidePosition.RIGHT) {
+            mFloatingTab.moveTo(new Point(position.x + floatingTabOffset, position.y));
+        } else {
+            mFloatingTab.moveTo(new Point(position.x - floatingTabOffset, position.y));
+        }
+    }
+
+    @Override
+    protected void activateDragger() {
+        final Rect tabRect = new Rect();
+        final Rect messageRect = new Rect();
+        mFloatingTab.getGlobalVisibleRect(tabRect);
+        mMessageView.getGlobalVisibleRect(messageRect);
+        tabRect.union(messageRect);
+
+        mHoverView.mDragger.activate(mDragListener, tabRect);
     }
 }

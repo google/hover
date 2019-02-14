@@ -141,16 +141,7 @@ class Screen {
         return mShadeView;
     }
 
-    public void showTabContentView(final HoverMenu.SectionId sectionId, final SideDock dock, final Runnable onAppeared) {
-        if (getChainedTab(sectionId) != null && mTabMessageViews.get(sectionId.toString()) != null) {
-            mTabMessageViews.get(sectionId.toString()).appear(dock, onAppeared);
-        }
-    }
-
-    public void hideTabContentView(final HoverMenu.SectionId sectionId, final boolean withAnimation) {
-        final TabMessageView tabMessageView = mTabMessageViews.get(sectionId.toString());
-        if (tabMessageView != null) {
-            tabMessageView.disappear(withAnimation);
-        }
+    public TabMessageView getTabMessageView(final HoverMenu.SectionId sectionId) {
+        return mTabMessageViews.get(sectionId.toString());
     }
 }
