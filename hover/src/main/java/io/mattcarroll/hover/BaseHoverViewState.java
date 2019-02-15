@@ -15,64 +15,43 @@
  */
 package io.mattcarroll.hover;
 
+import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
-import android.view.WindowManager;
+import android.support.annotation.Nullable;
 
 /**
  * {@link HoverViewState} that includes behavior common to all implementations.
  */
 abstract class BaseHoverViewState implements HoverViewState {
 
-    private HoverView mHoverView;
+    private boolean mHasControl = false;
+    protected HoverView mHoverView;
 
+    @CallSuper
     @Override
-    public void takeControl(@NonNull HoverView hoverView) {
+    public void takeControl(@NonNull HoverView hoverView, Runnable onStateChanged) {
+        if (mHasControl) {
+            throw new RuntimeException("Cannot take control of a FloatingTab when we already control one.");
+        }
+        mHasControl = true;
         mHoverView = hoverView;
     }
 
-    // Only call this if using HoverMenuView directly in a window.
+    @CallSuper
     @Override
-    public void addToWindow() {
-        if (!mHoverView.mIsAddedToWindow) {
-            mHoverView.mWindowViewController.addView(
-                    WindowManager.LayoutParams.MATCH_PARENT,
-                    WindowManager.LayoutParams.MATCH_PARENT,
-                    false,
-                    mHoverView
-            );
-
-            mHoverView.mIsAddedToWindow = true;
-
-            if (mHoverView.mIsTouchableInWindow) {
-                mHoverView.makeTouchableInWindow();
-            } else {
-                mHoverView.makeUntouchableInWindow();
-            }
+    public void giveUpControl(@NonNull HoverViewState nextState) {
+        if (!mHasControl) {
+            throw new RuntimeException("Cannot give up control of a FloatingTab when we don't have the control");
         }
+        mHasControl = false;
+        mHoverView = null;
     }
 
-    // Only call this if using HoverMenuView directly in a window.
-    @Override
-    public void removeFromWindow() {
-        if (mHoverView.mIsAddedToWindow) {
-            mHoverView.mWindowViewController.removeView(mHoverView);
-            mHoverView.mIsAddedToWindow = false;
-        }
+    protected final boolean hasControl() {
+        return mHasControl;
     }
 
     @Override
-    public void makeTouchableInWindow() {
-        mHoverView.mIsTouchableInWindow = true;
-        if (mHoverView.mIsAddedToWindow) {
-            mHoverView.mWindowViewController.makeTouchable(mHoverView);
-        }
-    }
-
-    @Override
-    public void makeUntouchableInWindow() {
-        mHoverView.mIsTouchableInWindow = false;
-        if (mHoverView.mIsAddedToWindow) {
-            mHoverView.mWindowViewController.makeUntouchable(mHoverView);
-        }
+    public void setMenu(@Nullable HoverMenu menu) {
     }
 }
