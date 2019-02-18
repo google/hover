@@ -15,44 +15,115 @@
  */
 package io.mattcarroll.hover;
 
+import android.graphics.PointF;
 import android.graphics.Rect;
 import android.support.annotation.NonNull;
+import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
 
 /**
  * Reports user drag behavior on the screen to a {@link DragListener}.
  */
-public interface Dragger {
+public abstract class Dragger extends BaseTouchController {
+    private static final String TAG = "Dragger";
 
-    /**
-     * Starts reporting user drag behavior given a drag area represented by {@code controlBounds}.
-     * @param dragListener listener that receives information about drag behavior
-     * @param rect Rect area to be draggable
-     */
-    void activate(@NonNull DragListener dragListener, @NonNull Rect rect);
+    private final int mTapTouchSlop;
+    private DragListener mDragListener;
+    private boolean mIsDragging;
 
-    /**
-     * Stops monitoring and reporting user drag behavior.
-     */
-    void deactivate();
+    private PointF mOriginalViewPosition = new PointF();
+    private PointF mCurrentViewPosition = new PointF();
+    private PointF mOriginalTouchPosition = new PointF();
 
-    /**
-     * Enable/Disable debug mode.  In debug mode this Dragger will paint its touch area with a
-     * translucent color.
-     * @param debugMode true for debug mode, false otherwise
-     */
-    void enableDebugMode(boolean debugMode);
+    protected final View.OnTouchListener mDragTouchListener = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            switch (motionEvent.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    Log.d(TAG, "ACTION_DOWN");
+                    mIsDragging = false;
 
-    interface DragListener {
+                    mOriginalViewPosition = convertCornerToCenter(getTouchViewPosition(mTouchView));
+                    mCurrentViewPosition = new PointF(mOriginalViewPosition.x, mOriginalViewPosition.y);
+                    mOriginalTouchPosition.set(motionEvent.getRawX(), motionEvent.getRawY());
+                    mTouchListener.onPress();
+                    return true;
+                case MotionEvent.ACTION_MOVE:
+                    Log.d(TAG, "ACTION_MOVE. motionX: " + motionEvent.getRawX() + ", motionY: " + motionEvent.getRawY());
+                    float dragDeltaX = motionEvent.getRawX() - mOriginalTouchPosition.x;
+                    float dragDeltaY = motionEvent.getRawY() - mOriginalTouchPosition.y;
+                    mCurrentViewPosition = new PointF(
+                            mOriginalViewPosition.x + dragDeltaX,
+                            mOriginalViewPosition.y + dragDeltaY
+                    );
 
-        /**
-         * The user has pressed within the draggable area at the given position.
-         * @param x x-coordinate of the user's press (in the parent View's coordinate space)
-         * @param y y-coordiante of the user's press (in the parent View's coordinate space)
-         */
-        void onPress(float x, float y);
+                    if (mIsDragging || !isTouchWithinSlopOfOriginalTouch(dragDeltaX, dragDeltaY)) {
+                        if (!mIsDragging) {
+                            // Dragging just started
+                            Log.d(TAG, "MOVE Start Drag.");
+                            mIsDragging = true;
+                            mDragListener.onDragStart(mCurrentViewPosition.x, mCurrentViewPosition.y);
+                        } else {
+                            PointF cornerPosition = convertCenterToCorner(mCurrentViewPosition);
+                            moveTouchViewTo(mTouchView, cornerPosition);
+                            mDragListener.onDragTo(mCurrentViewPosition.x, mCurrentViewPosition.y);
+                        }
+                    }
 
+                    return true;
+                case MotionEvent.ACTION_UP:
+                    Log.d(TAG, "ACTION_UP");
+                    if (!mIsDragging) {
+                        Log.d(TAG, "Reporting as a tap.");
+                        mTouchListener.onTap();
+                    } else {
+                        Log.d(TAG, "Reporting as a drag release at: " + mCurrentViewPosition);
+                        mDragListener.onReleasedAt(mCurrentViewPosition.x, mCurrentViewPosition.y);
+                    }
+                    return true;
+                default:
+                    return false;
+            }
+        }
+    };
+
+    public Dragger(int mTapTouchSlop) {
+        this.mTapTouchSlop = mTapTouchSlop;
+    }
+
+    public abstract PointF getTouchViewPosition(@NonNull View touchView);
+
+    public void activate(@NonNull DragListener dragListener, @NonNull Rect rect) {
+        super.activate(dragListener, rect);
+        mDragListener = dragListener;
+        mTouchView.setOnTouchListener(mDragTouchListener);
+    }
+
+    private boolean isTouchWithinSlopOfOriginalTouch(float dx, float dy) {
+        double distance = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+        Log.d(TAG, "Drag distance " + distance + " vs slop allowance " + mTapTouchSlop);
+        return distance < mTapTouchSlop;
+    }
+
+    private PointF convertCornerToCenter(@NonNull PointF cornerPosition) {
+        return new PointF(
+                cornerPosition.x + (mTouchView.getWidth() / 2f),
+                cornerPosition.y + (mTouchView.getHeight() / 2f)
+        );
+    }
+
+    private PointF convertCenterToCorner(@NonNull PointF centerPosition) {
+        return new PointF(
+                centerPosition.x - (mTouchView.getWidth() / 2f),
+                centerPosition.y - (mTouchView.getHeight() / 2f)
+        );
+    }
+
+    public interface DragListener extends TouchListener {
         /**
          * The user has begun dragging.
+         *
          * @param x x-coordinate of the user's drag start (in the parent View's coordinate space)
          * @param y y-coordiante of the user's drag start (in the parent View's coordinate space)
          */
@@ -60,6 +131,7 @@ public interface Dragger {
 
         /**
          * The user has dragged to the given coordinates.
+         *
          * @param x x-coordinate of the user's drag (in the parent View's coordinate space)
          * @param y y-coordiante of the user's drag (in the parent View's coordinate space)
          */
@@ -67,15 +139,10 @@ public interface Dragger {
 
         /**
          * The user has stopped touching the drag area.
+         *
          * @param x x-coordinate of the user's release (in the parent View's coordinate space)
          * @param y y-coordiante of the user's release (in the parent View's coordinate space)
          */
         void onReleasedAt(float x, float y);
-
-        /**
-         * The user tapped the drag area (instead of dragging it).
-         */
-        void onTap();
-
     }
 }

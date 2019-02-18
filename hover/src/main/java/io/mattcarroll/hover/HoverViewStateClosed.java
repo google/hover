@@ -69,4 +69,9 @@ class HoverViewStateClosed extends BaseHoverViewState {
         Log.d(TAG, "Giving up control.");
         super.giveUpControl(nextState);
     }
+
+    @Override
+    public HoverViewStateType getStateType() {
+        return HoverViewStateType.CLOSED;
+    }
 }

@@ -459,4 +459,9 @@ class HoverViewStateExpanded extends BaseHoverViewState {
         contentDisplay.selectedTabIs(mSelectedTab);
         contentDisplay.displayContent(section.getContent());
     }
+
+    @Override
+    public HoverViewStateType getStateType() {
+        return HoverViewStateType.EXPANDED;
+    }
 }

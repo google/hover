@@ -49,4 +49,6 @@ interface HoverViewState {
      * {@link #respondsToBackButton()} returns true.
      */
     void onBackPressed();
+
+    HoverViewStateType getStateType();
 }

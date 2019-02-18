@@ -74,4 +74,9 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
 
         mHoverView.mDragger.activate(mDragListener, tabRect);
     }
+
+    @Override
+    public HoverViewStateType getStateType() {
+        return HoverViewStateType.PREVIEWED;
+    }
 }
