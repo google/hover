@@ -75,14 +75,16 @@ class FloatingTab extends FrameLayout {
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
+        updateSize();
+        addOnLayoutChangeListener(mOnLayoutChangeListener);
+    }
 
+    private void updateSize() {
         // Make this View the desired size.
-        ViewGroup.LayoutParams layoutParams = getLayoutParams();
+        final ViewGroup.LayoutParams layoutParams = getLayoutParams();
         layoutParams.width = mTabSize;
         layoutParams.height = mTabSize;
         setLayoutParams(layoutParams);
-
-        addOnLayoutChangeListener(mOnLayoutChangeListener);
     }
 
     @Override
@@ -167,6 +169,19 @@ class FloatingTab extends FrameLayout {
 
     public void disappearImmediate() {
         setVisibility(GONE);
+    }
+
+    public void shrink() {
+        mTabSize = getResources().getDimensionPixelSize(R.dimen.hover_tab_size_shrunk);
+        updateSize();
+        setPadding(0, 0, 0, 0);
+    }
+
+    public void expand() {
+        mTabSize = getResources().getDimensionPixelSize(R.dimen.hover_tab_size);
+        updateSize();
+        int padding = getResources().getDimensionPixelSize(R.dimen.hover_tab_margin);
+        setPadding(padding, padding, padding, padding);
     }
 
     @NonNull

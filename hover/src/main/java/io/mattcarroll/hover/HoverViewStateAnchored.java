@@ -28,11 +28,6 @@ class HoverViewStateAnchored extends BaseHoverViewState {
         Log.d(TAG, "Taking control.");
         mHoverView.makeUntouchableInWindow();
         mHoverView.clearFocus();
-        final int pointMargin = hoverView.getContext().getResources().getDimensionPixelSize(R.dimen.hover_tab_anchor_margin);
-        final Point anchorPoint = new Point(
-                mHoverView.mScreen.getWidth() - pointMargin,
-                mHoverView.mScreen.getHeight() - pointMargin
-        );
 
         mSelectedSection = mHoverView.mMenu.getSection(mHoverView.mSelectedSectionId);
         if (mSelectedSection == null) {
@@ -42,6 +37,14 @@ class HoverViewStateAnchored extends BaseHoverViewState {
         if (mSelectedTab == null) {
             mSelectedTab = mHoverView.mScreen.createChainedTab(mSelectedSection);
         }
+
+        mSelectedTab.shrink();
+        mSelectedTab.setSelected(true);
+        final int anchorMargin = hoverView.getContext().getResources().getDimensionPixelSize(R.dimen.hover_tab_anchor_margin) + (mSelectedTab.getTabSize() / 2);
+        final Point anchorPoint = new Point(
+                mHoverView.mScreen.getWidth() - anchorMargin,
+                mHoverView.mScreen.getHeight() - anchorMargin
+        );
         mSelectedTab.setDock(new PositionDock(anchorPoint));
         mSelectedTab.dock(new Runnable() {
             @Override
@@ -59,6 +62,8 @@ class HoverViewStateAnchored extends BaseHoverViewState {
     public void giveUpControl(@NonNull HoverViewState nextState) {
         Log.d(TAG, "Giving up control.");
         deactivateTouchController();
+        mSelectedTab.expand();
+        mSelectedTab.setSelected(false);
         super.giveUpControl(nextState);
     }
 
