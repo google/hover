@@ -45,6 +45,8 @@ public class TabMessageView extends FrameLayout {
 
     public TabMessageView(@NonNull Context context, @NonNull View messageView, @NonNull FloatingTab floatingTab) {
         super(context);
+        setClipToPadding(false);
+        setClipChildren(false);
         mFloatingTab = floatingTab;
         addView(messageView);
         setVisibility(GONE);
