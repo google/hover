@@ -45,6 +45,8 @@ class Screen {
 
     Screen(@NonNull ViewGroup hoverMenuContainer) {
         mContainer = hoverMenuContainer;
+        mContainer.setClipChildren(false);
+        mContainer.setClipToPadding(false);
 
         mShadeView = new ShadeView(mContainer.getContext());
         mContainer.addView(mShadeView, new WindowManager.LayoutParams(
