@@ -294,7 +294,9 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         mIsCollapsed = true;
         mHoverView.saveVisualState();
         if (didJustCollapse) {
-            mOnStateChanged.run();
+            if (mOnStateChanged != null) {
+                mOnStateChanged.run();
+            }
         }
         mHoverView.notifyOnDocked(this);
     }
