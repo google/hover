@@ -1,9 +1,11 @@
 package io.mattcarroll.hover;
 
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.view.View;
+
+import java.util.ArrayList;
 
 class HoverViewStateAnchored extends BaseHoverViewState {
 
@@ -23,7 +25,7 @@ class HoverViewStateAnchored extends BaseHoverViewState {
     };
 
     @Override
-    public void takeControl(@NonNull HoverView hoverView, final Runnable onStateChanged) {
+    public void takeControl(@NonNull final HoverView hoverView, final Runnable onStateChanged) {
         super.takeControl(hoverView, onStateChanged);
         Log.d(TAG, "Taking control.");
         mHoverView.makeUntouchableInWindow();
@@ -40,11 +42,10 @@ class HoverViewStateAnchored extends BaseHoverViewState {
 
         mSelectedTab.shrink();
         mSelectedTab.setSelected(true);
-        final int anchorMargin = hoverView.getContext().getResources().getDimensionPixelSize(R.dimen.hover_tab_anchor_margin) + (mSelectedTab.getTabSize() / 2);
-        final Point anchorPoint = new Point(
-                mHoverView.mScreen.getWidth() - anchorMargin,
-                mHoverView.mScreen.getHeight() - anchorMargin
-        );
+        final int anchorMarginX = hoverView.getContext().getResources().getDimensionPixelSize(R.dimen.hover_tab_anchor_margin_x) + (mSelectedTab.getTabSize() / 2);
+        final int anchorMarginY = hoverView.getContext().getResources().getDimensionPixelSize(R.dimen.hover_tab_anchor_margin_y) + (mSelectedTab.getTabSize() / 2);
+        final Point anchorPoint = mHoverView.getScreenSize();
+        anchorPoint.offset(-anchorMarginX, -anchorMarginY);
         mSelectedTab.setDock(new PositionDock(anchorPoint));
         mSelectedTab.dock(new Runnable() {
             @Override
@@ -68,9 +69,9 @@ class HoverViewStateAnchored extends BaseHoverViewState {
     }
 
     private void activateTouchController() {
-        final Rect visibleRect = new Rect();
-        mSelectedTab.getGlobalVisibleRect(visibleRect);
-        mHoverView.mDragger.activate(mTouchListener, visibleRect);
+        final ArrayList<View> list = new ArrayList<>();
+        list.add(mSelectedTab);
+        mHoverView.mDragger.activate(mTouchListener, list);
     }
 
     private void deactivateTouchController() {

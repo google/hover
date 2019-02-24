@@ -62,7 +62,8 @@ class ContentDisplay extends RelativeLayout {
 
     private final FloatingTab.OnPositionChangeListener mOnTabPositionChangeListener = new FloatingTab.OnPositionChangeListener() {
         @Override
-        public void onPositionChange(@NonNull Point position) {
+        public void onPositionChange(@NonNull View view) {
+            final Point position = new Point((int) view.getX() + (view.getWidth() / 2), (int) view.getY() + (view.getHeight() / 2));
             Log.d(TAG, mSelectedTab + " tab moved to " + position);
             updateTabSelectorPosition();
 

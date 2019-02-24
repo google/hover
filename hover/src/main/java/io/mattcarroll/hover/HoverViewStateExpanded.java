@@ -79,7 +79,7 @@ class HoverViewStateExpanded extends BaseHoverViewState {
         mHoverView.makeTouchableInWindow();
         mHoverView.requestFocus(); // For handling hardware back button presses.
         mDock = new Point(
-                mHoverView.mScreen.getWidth() - ANCHOR_TAB_X_OFFSET_IN_PX,
+                mHoverView.getScreenSize().x - ANCHOR_TAB_X_OFFSET_IN_PX,
                 ANCHOR_TAB_Y_OFFSET_IN_PX
         );
         if (null != mHoverView.mMenu) {

@@ -30,9 +30,6 @@ import android.view.ViewGroup;
 import android.view.animation.OvershootInterpolator;
 import android.widget.FrameLayout;
 
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
-
 /**
  * {@code FloatingTab} is the cornerstone of a {@link HoverView}.  When a {@code HoverView} is
  * collapsed, it is reduced to a single {@code FloatingTab} that the user can drag and drop.  When
@@ -45,7 +42,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
  *
  * {@code FloatingTab}s position themselves based on their center.
  */
-class FloatingTab extends FrameLayout {
+class FloatingTab extends HoverFrameLayout {
 
     private static final String TAG = "FloatingTab";
     private static final int APPEARING_ANIMATION_DURATION = 300;
@@ -54,12 +51,11 @@ class FloatingTab extends FrameLayout {
     private int mTabSize;
     private View mTabView;
     private Dock mDock;
-    private final Set<OnPositionChangeListener> mOnPositionChangeListeners = new CopyOnWriteArraySet<>();
 
     private final OnLayoutChangeListener mOnLayoutChangeListener = new OnLayoutChangeListener() {
         @Override
         public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-            notifyListenersOfPositionChange();
+            notifyListenersOfPositionChange(FloatingTab.this);
         }
     };
 
@@ -229,7 +225,7 @@ class FloatingTab extends FrameLayout {
 
     public void setDock(@NonNull Dock dock) {
         mDock = dock;
-        notifyListenersOfDockChange();
+        notifyListenersOfDockChange(mDock);
     }
 
     public void dock() {
@@ -259,7 +255,7 @@ class FloatingTab extends FrameLayout {
                 if (null != onDocked) {
                     onDocked.run();
                 }
-                notifyListenersOfPositionChange();
+                notifyListenersOfPositionChange(FloatingTab.this);
             }
 
             @Override
@@ -272,7 +268,7 @@ class FloatingTab extends FrameLayout {
         xAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                notifyListenersOfPositionChange();
+                notifyListenersOfPositionChange(FloatingTab.this);
             }
         });
     }
@@ -285,7 +281,7 @@ class FloatingTab extends FrameLayout {
         Point cornerPosition = convertCenterToCorner(floatPosition);
         setX(cornerPosition.x);
         setY(cornerPosition.y);
-        notifyListenersOfPositionChange();
+        notifyListenersOfPositionChange(FloatingTab.this);
     }
 
     private Point convertCenterToCorner(@NonNull Point centerPosition) {
@@ -295,36 +291,9 @@ class FloatingTab extends FrameLayout {
         );
     }
 
-    public void addOnPositionChangeListener(@Nullable OnPositionChangeListener listener) {
-        mOnPositionChangeListeners.add(listener);
-    }
-
-    public void removeOnPositionChangeListener(@NonNull OnPositionChangeListener listener) {
-        mOnPositionChangeListeners.remove(listener);
-    }
-
-    private void notifyListenersOfPositionChange() {
-        Point position = getPosition();
-        for (OnPositionChangeListener listener : mOnPositionChangeListeners) {
-            listener.onPositionChange(position);
-        }
-    }
-
-    private void notifyListenersOfDockChange() {
-        for (OnPositionChangeListener listener : mOnPositionChangeListeners) {
-            listener.onDockChange(mDock);
-        }
-    }
-
     // This method is declared in this class simply to make it clear that its part of our public
     // contract and not just an inherited method.
     public void setOnClickListener(@Nullable View.OnClickListener onClickListener) {
         super.setOnClickListener(onClickListener);
-    }
-
-    public interface OnPositionChangeListener {
-        void onPositionChange(@NonNull Point tabPosition);
-
-        void onDockChange(@NonNull Dock dock);
     }
 }

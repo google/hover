@@ -1,7 +1,8 @@
 <resources>
     <dimen name="hover_tab_size">72dp</dimen>
     <dimen name="hover_tab_size_shrunk">48dp</dimen>
-    <dimen name="hover_tab_anchor_margin">12dp</dimen>
+    <dimen name="hover_tab_anchor_margin_x">12dp</dimen>
+    <dimen name="hover_tab_anchor_margin_y">32dp</dimen>
     <dimen name="hover_tab_margin">8dp</dimen>
     <dimen name="hover_navigator_corner_radius">7dp</dimen>
     <dimen name="hover_exit_icon_size">40dp</dimen>

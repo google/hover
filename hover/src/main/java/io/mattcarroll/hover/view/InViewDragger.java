@@ -62,8 +62,8 @@ public class InViewDragger extends Dragger {
     }
 
     @Override
-    public void moveTouchViewTo(@NonNull View touchView, @NonNull PointF position) {
-        touchView.setX(position.x);
-        touchView.setY(position.y);
+    public void moveTouchViewTo(@NonNull View touchView, @NonNull PointF cornerPosition) {
+        touchView.setX(cornerPosition.x);
+        touchView.setY(cornerPosition.y);
     }
 }

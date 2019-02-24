@@ -16,13 +16,14 @@
 package io.mattcarroll.hover;
 
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.util.ListUpdateCallback;
 import android.util.Log;
 import android.view.View;
+
+import java.util.ArrayList;
 
 import static android.view.View.GONE;
 import static android.view.View.INVISIBLE;
@@ -62,7 +63,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     };
     private Runnable mOnStateChanged;
 
-    private final View.OnLayoutChangeListener mOnLayoutChangeListener = new View.OnLayoutChangeListener() {
+    protected final View.OnLayoutChangeListener mOnLayoutChangeListener = new View.OnLayoutChangeListener() {
         @Override
         public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
             if (hasControl() && mIsDocked) {
@@ -110,9 +111,16 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
                 if (wasFloatingTabVisible) {
                     sendToDock();
                 } else {
-                    mFloatingTab.appear(null);
                     moveToDock();
-                    onDocked();
+                    mFloatingTab.appear(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (!hasControl()) {
+                                return;
+                            }
+                            onDocked();
+                        }
+                    });
                 }
             }
         });
@@ -218,7 +226,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
             mHoverView.close();
         } else {
             int tabSize = mHoverView.getResources().getDimensionPixelSize(R.dimen.hover_tab_size);
-            Point screenSize = new Point(mHoverView.mScreen.getWidth(), mHoverView.mScreen.getHeight());
+            Point screenSize = mHoverView.getScreenSize();
             float tabHorizontalPositionPercent = (float) mFloatingTab.getPosition().x / screenSize.x;
             float tabVerticalPosition = (float) mFloatingTab.getPosition().y / screenSize.y;
             if (tabVerticalPosition < MIN_TAB_VERTICAL_POSITION) {
@@ -266,7 +274,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     private void moveToDock() {
         Log.d(TAG, "Moving floating tag to dock.");
         Point dockPosition = mHoverView.mCollapsedDock.sidePosition().calculateDockPosition(
-                new Point(mHoverView.mScreen.getWidth(), mHoverView.mScreen.getHeight()),
+                mHoverView.getScreenSize(),
                 mFloatingTab.getTabSize()
         );
         mFloatingTab.moveTo(dockPosition);
@@ -306,9 +314,9 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     }
 
     protected void activateDragger() {
-        final Rect visibleRect = new Rect();
-        mFloatingTab.getGlobalVisibleRect(visibleRect);
-        mHoverView.mDragger.activate(mDragListener, visibleRect);
+        ArrayList<View> list = new ArrayList<>();
+        list.add(mFloatingTab);
+        mHoverView.mDragger.activate(mDragListener, list);
     }
 
     protected void deactivateDragger() {

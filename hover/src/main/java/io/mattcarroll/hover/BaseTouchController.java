@@ -7,13 +7,18 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public abstract class BaseTouchController {
     private static final String TAG = "BaseTouchController";
 
-    protected View mTouchView;
+    protected Map<String, View> mTouchViewMap = new HashMap<>();
     protected TouchListener mTouchListener;
     protected boolean mIsActivated;
     private boolean mIsDebugMode;
+    private List<View> mViewList;
 
     private View.OnTouchListener mDragTouchListener = new View.OnTouchListener() {
         @Override
@@ -33,21 +38,45 @@ public abstract class BaseTouchController {
         }
     };
 
+    private final HoverFrameLayout.OnPositionChangeListener mOnLayoutChangeListener = new HoverFrameLayout.OnPositionChangeListener() {
+        @Override
+        public void onPositionChange(@NonNull View view) {
+            moveTouchViewTo(mTouchViewMap.get(view.getTag()), new PointF(view.getX(), view.getY()));
+        }
+
+        @Override
+        public void onDockChange(@NonNull Dock dock) {
+
+        }
+    };
+
     public abstract View createTouchView(@NonNull Rect rect);
 
     public abstract void destroyTouchView(@NonNull View touchView);
 
     public abstract void moveTouchViewTo(@NonNull View touchView, @NonNull PointF position);
 
-    public void activate(@NonNull TouchListener touchListener, @NonNull Rect rect) {
+    public void activate(@NonNull TouchListener touchListener, @NonNull List<View> viewList) {
         if (!mIsActivated) {
             Log.d(TAG, "Activating.");
             mIsActivated = true;
             mTouchListener = touchListener;
-            mTouchView = createTouchView(rect);
-            moveTouchViewTo(mTouchView, new PointF(rect.left, rect.top));
-            mTouchView.setOnTouchListener(mDragTouchListener);
-
+            mViewList = viewList;
+            mTouchViewMap.clear();
+            for (int i = 0; i < mViewList.size(); i++) {
+                View view = mViewList.get(i);
+                String tag = "view" + i;
+                view.setTag(tag);
+                Rect rect = new Rect();
+                view.getDrawingRect(rect);
+                View touchView = createTouchView(rect);
+                moveTouchViewTo(touchView, new PointF(view.getX(), view.getY()));
+                touchView.setOnTouchListener(mDragTouchListener);
+                mTouchViewMap.put(tag, touchView);
+                if (view instanceof HoverFrameLayout) {
+                    ((HoverFrameLayout) view).addOnPositionChangeListener(mOnLayoutChangeListener);
+                }
+            }
             updateTouchControlViewAppearance();
         }
     }
@@ -55,10 +84,20 @@ public abstract class BaseTouchController {
     public void deactivate() {
         if (mIsActivated) {
             Log.d(TAG, "Deactivating.");
-            mTouchView.setOnTouchListener(null);
-            destroyTouchView(mTouchView);
+            for (View view : mViewList) {
+                view.setOnTouchListener(null);
+                if (view instanceof HoverFrameLayout) {
+                    ((HoverFrameLayout) view).removeOnPositionChangeListener(mOnLayoutChangeListener);
+                }
+            }
+
+            for (View touchView : mTouchViewMap.values()) {
+                destroyTouchView(touchView);
+            }
+
             mIsActivated = false;
-            mTouchView = null;
+            mTouchViewMap.clear();
+            mViewList = null;
         }
     }
 
@@ -68,11 +107,13 @@ public abstract class BaseTouchController {
     }
 
     private void updateTouchControlViewAppearance() {
-        if (null != mTouchView) {
-            if (mIsDebugMode) {
-                mTouchView.setBackgroundColor(0x44FF0000);
-            } else {
-                mTouchView.setBackgroundColor(0x00000000);
+        for (View touchView : mTouchViewMap.values()) {
+            if (null != touchView) {
+                if (mIsDebugMode) {
+                    touchView.setBackgroundColor(0x44FF0000);
+                } else {
+                    touchView.setBackgroundColor(0x00000000);
+                }
             }
         }
     }

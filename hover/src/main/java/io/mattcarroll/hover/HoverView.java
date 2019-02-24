@@ -18,6 +18,7 @@ package io.mattcarroll.hover;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.TypedArray;
+import android.graphics.Point;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
@@ -411,6 +412,12 @@ public class HoverView extends RelativeLayout {
         if (mIsAddedToWindow) {
             mWindowViewController.makeUntouchable(this);
         }
+    }
+
+    public Point getScreenSize() {
+        final Point screenSize = new Point();
+        ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getSize(screenSize);
+        return screenSize;
     }
 
     // State of the HoverMenuView that is persisted across configuration change and other brief OS

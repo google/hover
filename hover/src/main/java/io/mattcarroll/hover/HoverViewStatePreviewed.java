@@ -16,9 +16,11 @@
 package io.mattcarroll.hover;
 
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.view.View;
+
+import java.util.ArrayList;
 
 /**
  * {@link HoverViewState} that operates the {@link HoverView} when it is closed. Closed means that
@@ -38,6 +40,9 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
         mMessageView.appear(mHoverView.mCollapsedDock, new Runnable() {
             @Override
             public void run() {
+                if (!hasControl()) {
+                    return;
+                }
                 onStateChanged.run();
             }
         });
@@ -56,6 +61,10 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
 
     @Override
     protected void moveTabTo(@NonNull Point position) {
+        if (mHoverView == null) {
+            return;
+        }
+
         final int floatingTabOffset = mMessageView.getWidth() / 2;
         if (mHoverView.mCollapsedDock.sidePosition().getSide() == SideDock.SidePosition.RIGHT) {
             mFloatingTab.moveTo(new Point(position.x + floatingTabOffset, position.y));
@@ -66,13 +75,10 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
 
     @Override
     protected void activateDragger() {
-        final Rect tabRect = new Rect();
-        final Rect messageRect = new Rect();
-        mFloatingTab.getGlobalVisibleRect(tabRect);
-        mMessageView.getGlobalVisibleRect(messageRect);
-        tabRect.union(messageRect);
-
-        mHoverView.mDragger.activate(mDragListener, tabRect);
+        final ArrayList<View> list = new ArrayList<>();
+        list.add(mFloatingTab);
+        list.add(mMessageView);
+        mHoverView.mDragger.activate(mDragListener, list);
     }
 
     @Override

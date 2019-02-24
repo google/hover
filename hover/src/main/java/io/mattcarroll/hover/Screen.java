@@ -76,14 +76,6 @@ class Screen {
         }
     }
 
-    public int getWidth() {
-        return mContainer.getWidth();
-    }
-
-    public int getHeight() {
-        return mContainer.getHeight();
-    }
-
     @NonNull
     public FloatingTab createChainedTab(@NonNull HoverMenu.Section section) {
         String tabId = section.getId().toString();

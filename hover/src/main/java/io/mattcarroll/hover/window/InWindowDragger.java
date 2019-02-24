@@ -60,7 +60,7 @@ public class InWindowDragger extends Dragger {
     }
 
     @Override
-    public void moveTouchViewTo(@NonNull View touchView, @NonNull PointF position) {
-        mWindowViewController.moveViewTo(touchView, (int) position.x, (int) position.y);
+    public void moveTouchViewTo(@NonNull View touchView, @NonNull PointF cornerPosition) {
+        mWindowViewController.moveViewTo(touchView, (int) cornerPosition.x, (int) cornerPosition.y);
     }
 }
