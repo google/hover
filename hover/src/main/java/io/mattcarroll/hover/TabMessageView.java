@@ -17,6 +17,7 @@ public class TabMessageView extends HoverFrameLayout {
 
     private final FloatingTab mFloatingTab;
     private SideDock mSideDock;
+    private View mMessageView;
 
     private final OnPositionChangeListener mOnTabPositionChangeListener = new OnPositionChangeListener() {
         @Override
@@ -46,13 +47,23 @@ public class TabMessageView extends HoverFrameLayout {
         }
     };
 
-    public TabMessageView(@NonNull Context context, @NonNull View messageView, @NonNull FloatingTab floatingTab) {
+    public TabMessageView(@NonNull Context context, @NonNull FloatingTab floatingTab) {
         super(context);
         setClipToPadding(false);
         setClipChildren(false);
         mFloatingTab = floatingTab;
-        addView(messageView);
         setVisibility(GONE);
+    }
+
+    public void setMessageView(@Nullable View view) {
+        if (view == mMessageView) {
+            return;
+        }
+        removeAllViews();
+        mMessageView = view;
+        if (mMessageView != null) {
+            addView(mMessageView);
+        }
     }
 
     public void appear(final SideDock dock, @Nullable final Runnable onAppeared) {

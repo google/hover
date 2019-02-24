@@ -47,7 +47,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
 
     protected FloatingTab mFloatingTab;
     protected final Dragger.DragListener mDragListener = new FloatingTabDragListener(this);
-    private HoverMenu.Section mSelectedSection;
+    protected HoverMenu.Section mSelectedSection;
     private int mSelectedSectionIndex = -1;
     private boolean mIsCollapsed = false;
     private boolean mIsDocked = false;

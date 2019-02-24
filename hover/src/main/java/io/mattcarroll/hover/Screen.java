@@ -79,11 +79,11 @@ class Screen {
     @NonNull
     public FloatingTab createChainedTab(@NonNull HoverMenu.Section section) {
         String tabId = section.getId().toString();
-        return createChainedTab(tabId, section.getTabView(), section.getTabMessageView());
+        return createChainedTab(tabId, section.getTabView());
     }
 
     @NonNull
-    public FloatingTab createChainedTab(@NonNull String tabId, @NonNull View tabView, @Nullable View tabMessageView) {
+    public FloatingTab createChainedTab(@NonNull String tabId, @NonNull View tabView) {
         Log.d(TAG, "Existing tabs...");
         for (String existingTabId : mTabs.keySet()) {
             Log.d(TAG, existingTabId);
@@ -97,11 +97,9 @@ class Screen {
             chainedTab.enableDebugMode(mIsDebugMode);
             mContainer.addView(chainedTab);
             mTabs.put(tabId, chainedTab);
-            if (tabMessageView != null) {
-                final TabMessageView messageView = new TabMessageView(tabView.getContext(), tabMessageView, chainedTab);
-                mContainer.addView(messageView);
-                mTabMessageViews.put(tabId, messageView);
-            }
+            final TabMessageView messageView = new TabMessageView(tabView.getContext(), chainedTab);
+            mContainer.addView(messageView);
+            mTabMessageViews.put(tabId, messageView);
             return chainedTab;
         }
     }
@@ -119,6 +117,7 @@ class Screen {
 
     public void destroyChainedTab(@NonNull FloatingTab chainedTab) {
         mTabs.remove(chainedTab.getTabId());
+        mTabMessageViews.remove(chainedTab.getTabId());
         chainedTab.setTabView(null);
         mContainer.removeView(chainedTab);
     }

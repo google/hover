@@ -37,6 +37,7 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
         super.takeControl(hoverView, null);
         Log.d(TAG, "Taking control.");
         mMessageView = mHoverView.mScreen.getTabMessageView(mHoverView.mSelectedSectionId);
+        mMessageView.setMessageView(mSelectedSection.getTabMessageView());
         mMessageView.appear(mHoverView.mCollapsedDock, new Runnable() {
             @Override
             public void run() {
