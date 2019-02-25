@@ -50,7 +50,7 @@ class HoverViewStateAnchored extends BaseHoverViewState {
         mSelectedTab.dock(new Runnable() {
             @Override
             public void run() {
-                if (!hasControl()) {
+                if (!hasControl() || !mHoverView.mIsAddedToWindow) {
                     return;
                 }
                 activateTouchController();

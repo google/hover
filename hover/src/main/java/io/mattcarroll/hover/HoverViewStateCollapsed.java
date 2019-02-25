@@ -293,6 +293,9 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
 
     private void onDocked() {
         Log.d(TAG, "Docked. Activating dragger.");
+        if (!mHoverView.mIsAddedToWindow) {
+            return;
+        }
         mIsDocked = true;
         activateDragger();
         scheduleHoverViewAlphaChange();
