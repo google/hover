@@ -61,13 +61,15 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
     }
 
     @Override
-    protected void moveTabTo(@NonNull Point position) {
+    protected void moveTabTo(View touchView, @NonNull Point position) {
         if (mHoverView == null) {
             return;
         }
 
         final int floatingTabOffset = mMessageView.getWidth() / 2;
-        if (mHoverView.mCollapsedDock.sidePosition().getSide() == SideDock.SidePosition.RIGHT) {
+        if (touchView.getTag() != null && touchView.getTag().equals(mFloatingTab.getTag())) {
+            mFloatingTab.moveTo(position);
+        } else if (mHoverView.mCollapsedDock.sidePosition().getSide() == SideDock.SidePosition.RIGHT) {
             mFloatingTab.moveTo(new Point(position.x + floatingTabOffset, position.y));
         } else {
             mFloatingTab.moveTo(new Point(position.x - floatingTabOffset, position.y));

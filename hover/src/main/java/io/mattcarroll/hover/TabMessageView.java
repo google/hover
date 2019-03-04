@@ -11,18 +11,18 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.TranslateAnimation;
+import android.widget.FrameLayout;
 
-public class TabMessageView extends HoverFrameLayout {
+public class TabMessageView extends FrameLayout {
     private static final String TAG = "TabMessageView";
 
     private final FloatingTab mFloatingTab;
     private SideDock mSideDock;
     private View mMessageView;
 
-    private final OnPositionChangeListener mOnTabPositionChangeListener = new OnPositionChangeListener() {
+    private final FloatingTab.OnPositionChangeListener mOnTabPositionChangeListener = new FloatingTab.OnPositionChangeListener() {
         @Override
-        public void onPositionChange(@NonNull View view) {
-            final Point position = mFloatingTab.getPosition();
+        public void onPositionChange(@NonNull Point position) {
             Log.d(TAG, mFloatingTab + " tab moved to " + position);
             final float tabSizeHalf = mFloatingTab.getTabSize() / 2f;
             if (mSideDock != null && mSideDock.sidePosition().getSide() == SideDock.SidePosition.RIGHT) {
@@ -32,7 +32,6 @@ public class TabMessageView extends HoverFrameLayout {
                 setX(position.x + tabSizeHalf);
                 setY(position.y - tabSizeHalf);
             }
-            notifyListenersOfPositionChange(TabMessageView.this);
         }
 
         @Override
@@ -43,7 +42,6 @@ public class TabMessageView extends HoverFrameLayout {
                     appear(sideDock, null);
                 }
             }
-            notifyListenersOfDockChange(dock);
         }
     };
 

@@ -38,15 +38,10 @@ public abstract class BaseTouchController {
         }
     };
 
-    private final HoverFrameLayout.OnPositionChangeListener mOnLayoutChangeListener = new HoverFrameLayout.OnPositionChangeListener() {
+    private final View.OnLayoutChangeListener mOnLayoutChangeListener = new View.OnLayoutChangeListener() {
         @Override
-        public void onPositionChange(@NonNull View view) {
+        public void onLayoutChange(View view, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
             moveTouchViewTo(mTouchViewMap.get(view.getTag()), new PointF(view.getX(), view.getY()));
-        }
-
-        @Override
-        public void onDockChange(@NonNull Dock dock) {
-
         }
     };
 
@@ -72,10 +67,9 @@ public abstract class BaseTouchController {
                 View touchView = createTouchView(rect);
                 moveTouchViewTo(touchView, new PointF(view.getX(), view.getY()));
                 touchView.setOnTouchListener(mDragTouchListener);
+                touchView.setTag(tag);
                 mTouchViewMap.put(tag, touchView);
-                if (view instanceof HoverFrameLayout) {
-                    ((HoverFrameLayout) view).addOnPositionChangeListener(mOnLayoutChangeListener);
-                }
+                view.addOnLayoutChangeListener(mOnLayoutChangeListener);
             }
             updateTouchControlViewAppearance();
         }
@@ -86,9 +80,7 @@ public abstract class BaseTouchController {
             Log.d(TAG, "Deactivating.");
             for (View view : mViewList) {
                 view.setOnTouchListener(null);
-                if (view instanceof HoverFrameLayout) {
-                    ((HoverFrameLayout) view).removeOnPositionChangeListener(mOnLayoutChangeListener);
-                }
+                view.removeOnLayoutChangeListener(mOnLayoutChangeListener);
             }
 
             for (View touchView : mTouchViewMap.values()) {

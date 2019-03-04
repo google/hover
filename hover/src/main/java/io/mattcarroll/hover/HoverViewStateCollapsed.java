@@ -312,7 +312,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         mHoverView.notifyOnDocked(this);
     }
 
-    protected void moveTabTo(@NonNull Point position) {
+    protected void moveTabTo(View touchView, @NonNull Point position) {
         mFloatingTab.moveTo(position);
     }
 
@@ -349,17 +349,17 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         }
 
         @Override
-        public void onDragStart(float x, float y) {
+        public void onDragStart(View touchView, float x, float y) {
             mOwner.onPickedUpByUser();
         }
 
         @Override
-        public void onDragTo(float x, float y) {
-            mOwner.moveTabTo(new Point((int) x, (int) y));
+        public void onDragTo(View touchView, float x, float y) {
+            mOwner.moveTabTo(touchView, new Point((int) x, (int) y));
         }
 
         @Override
-        public void onReleasedAt(float x, float y) {
+        public void onReleasedAt(View touchView, float x, float y) {
             mOwner.onDroppedByUser();
         }
 

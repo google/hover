@@ -64,9 +64,9 @@ public abstract class Dragger extends BaseTouchController {
                             // Dragging just started
                             Log.d(TAG, "MOVE Start Drag.");
                             mIsDragging = true;
-                            mDragListener.onDragStart(mCurrentViewPosition.x, mCurrentViewPosition.y);
+                            mDragListener.onDragStart(view, mCurrentViewPosition.x, mCurrentViewPosition.y);
                         } else {
-                            mDragListener.onDragTo(mCurrentViewPosition.x, mCurrentViewPosition.y);
+                            mDragListener.onDragTo(view, mCurrentViewPosition.x, mCurrentViewPosition.y);
                         }
                     }
 
@@ -78,7 +78,7 @@ public abstract class Dragger extends BaseTouchController {
                         mTouchListener.onTap();
                     } else {
                         Log.d(TAG, "Reporting as a drag release at: " + mCurrentViewPosition);
-                        mDragListener.onReleasedAt(mCurrentViewPosition.x, mCurrentViewPosition.y);
+                        mDragListener.onReleasedAt(view, mCurrentViewPosition.x, mCurrentViewPosition.y);
                     }
                     return true;
                 default:
@@ -125,25 +125,28 @@ public abstract class Dragger extends BaseTouchController {
         /**
          * The user has begun dragging.
          *
+         * @param view the view that is being dragged
          * @param x x-coordinate of the user's drag start (in the parent View's coordinate space)
          * @param y y-coordiante of the user's drag start (in the parent View's coordinate space)
          */
-        void onDragStart(float x, float y);
+        void onDragStart(View view, float x, float y);
 
         /**
          * The user has dragged to the given coordinates.
          *
+         * @param view the view that is being dragged
          * @param x x-coordinate of the user's drag (in the parent View's coordinate space)
          * @param y y-coordiante of the user's drag (in the parent View's coordinate space)
          */
-        void onDragTo(float x, float y);
+        void onDragTo(View view, float x, float y);
 
         /**
          * The user has stopped touching the drag area.
          *
+         * @param view the view that is being dragged
          * @param x x-coordinate of the user's release (in the parent View's coordinate space)
          * @param y y-coordiante of the user's release (in the parent View's coordinate space)
          */
-        void onReleasedAt(float x, float y);
+        void onReleasedAt(View view, float x, float y);
     }
 }

@@ -40,7 +40,7 @@ class TabChain {
 
     private final FloatingTab.OnPositionChangeListener mOnPredecessorPositionChange = new FloatingTab.OnPositionChangeListener() {
         @Override
-        public void onPositionChange(@NonNull View view) {
+        public void onPositionChange(@NonNull Point position) {
             // No-op. We only care when our predecessor's dock changes.
         }
 
