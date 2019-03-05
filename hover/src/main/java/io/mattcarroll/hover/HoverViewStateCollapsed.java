@@ -50,7 +50,6 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     protected HoverMenu.Section mSelectedSection;
     private int mSelectedSectionIndex = -1;
     private boolean mIsCollapsed = false;
-    private boolean mIsDocked = false;
     private Handler mHandler = new Handler();
     private Runnable mAlphaChanger = new Runnable() {
         @Override
@@ -62,18 +61,6 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         }
     };
     private Runnable mOnStateChanged;
-
-    protected final View.OnLayoutChangeListener mOnLayoutChangeListener = new View.OnLayoutChangeListener() {
-        @Override
-        public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-            if (hasControl() && mIsDocked) {
-                // We're docked. Adjust the tab position in case the screen was rotated. This should
-                // only be a concern when displaying as a window overlay, but not when displaying
-                // within a view hierarchy.
-                moveToDock();
-            }
-        }
-    };
 
     @Override
     public void takeControl(@NonNull HoverView hoverView, final Runnable onStateChanged) {
@@ -125,8 +112,6 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
             }
         });
 
-        mFloatingTab.addOnLayoutChangeListener(mOnLayoutChangeListener);
-
         if (null != mHoverView.mMenu) {
             listenForMenuChanges();
         }
@@ -139,15 +124,12 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         Log.d(TAG, "Giving up control.");
         restoreHoverViewAlphaValue();
 
-        mFloatingTab.removeOnLayoutChangeListener(mOnLayoutChangeListener);
-
         if (null != mHoverView.mMenu) {
             mHoverView.mMenu.setUpdatedCallback(null);
         }
 
         mHoverView.mScreen.getExitView().setVisibility(GONE);
 
-        mIsDocked = false;
         deactivateDragger();
         mFloatingTab = null;
         super.giveUpControl(nextState);
@@ -171,15 +153,12 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
                 if (mSelectedSectionIndex == position) {
                     Log.d(TAG, "Selected tab removed. Displaying a new tab.");
                     // TODO: externalize a selection strategy for when the selected section disappears
-                    mFloatingTab.removeOnLayoutChangeListener(mOnLayoutChangeListener);
                     mHoverView.mScreen.destroyChainedTab(mFloatingTab);
 
                     mSelectedSectionIndex = mSelectedSectionIndex > 0 ? mSelectedSectionIndex - 1 : 0;
                     mSelectedSection = mHoverView.mMenu.getSection(mSelectedSectionIndex);
                     mHoverView.mSelectedSectionId = mSelectedSection.getId();
                     mFloatingTab = mHoverView.mScreen.createChainedTab(mSelectedSection);
-
-                    mFloatingTab.addOnLayoutChangeListener(mOnLayoutChangeListener);
                 }
             }
 
@@ -212,7 +191,6 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     }
 
     private void onPickedUpByUser() {
-        mIsDocked = false;
         mHoverView.mScreen.getExitView().setVisibility(VISIBLE);
         restoreHoverViewAlphaValue();
         mHoverView.notifyOnDragStart(this);
@@ -296,7 +274,6 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         if (!mHoverView.mIsAddedToWindow) {
             return;
         }
-        mIsDocked = true;
         activateDragger();
         scheduleHoverViewAlphaChange();
 

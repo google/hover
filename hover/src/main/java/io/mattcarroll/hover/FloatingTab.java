@@ -20,6 +20,7 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.support.annotation.NonNull;
@@ -87,6 +88,14 @@ class FloatingTab extends FrameLayout {
         layoutParams.width = mTabSize;
         layoutParams.height = mTabSize;
         setLayoutParams(layoutParams);
+    }
+
+    @Override
+    protected void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (mDock != null) {
+            moveTo(mDock.position());
+        }
     }
 
     @Override
