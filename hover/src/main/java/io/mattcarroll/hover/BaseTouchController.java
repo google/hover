@@ -90,6 +90,7 @@ public abstract class BaseTouchController {
             mIsActivated = false;
             mTouchViewMap.clear();
             mViewList = null;
+            mTouchListener = null;
         }
     }
 

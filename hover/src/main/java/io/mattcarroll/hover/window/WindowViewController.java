@@ -104,4 +104,10 @@ public class WindowViewController {
         mWindowManager.updateViewLayout(view, params);
     }
 
+    public Point getWindowSize() {
+        final Point windowSize = new Point();
+        mWindowManager.getDefaultDisplay().getSize(windowSize);
+        return new Point(windowSize.x, windowSize.y);
+    }
+
 }

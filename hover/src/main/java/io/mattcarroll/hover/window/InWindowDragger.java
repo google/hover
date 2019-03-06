@@ -16,6 +16,7 @@
 package io.mattcarroll.hover.window;
 
 import android.content.Context;
+import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.support.annotation.NonNull;
@@ -57,6 +58,11 @@ public class InWindowDragger extends Dragger {
     @Override
     public PointF getTouchViewPosition(@NonNull View touchView) {
         return new PointF(mWindowViewController.getViewPosition(touchView));
+    }
+
+    @Override
+    public Point getContainerSize() {
+        return mWindowViewController.getWindowSize();
     }
 
     @Override

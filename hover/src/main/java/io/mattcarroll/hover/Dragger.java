@@ -15,6 +15,7 @@
  */
 package io.mattcarroll.hover;
 
+import android.graphics.Point;
 import android.graphics.PointF;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -48,9 +49,14 @@ public abstract class Dragger extends BaseTouchController {
                     mOriginalViewPosition = convertCornerToCenter(view, getTouchViewPosition(view));
                     mCurrentViewPosition = new PointF(mOriginalViewPosition.x, mOriginalViewPosition.y);
                     mOriginalTouchPosition.set(motionEvent.getRawX(), motionEvent.getRawY());
-                    mTouchListener.onPress();
+                    if (mTouchListener != null) {
+                        mTouchListener.onPress();
+                    }
                     return true;
                 case MotionEvent.ACTION_MOVE:
+                    if (mDragListener == null) {
+                        return false;
+                    }
                     Log.d(TAG, "ACTION_MOVE. motionX: " + motionEvent.getRawX() + ", motionY: " + motionEvent.getRawY());
                     float dragDeltaX = motionEvent.getRawX() - mOriginalTouchPosition.x;
                     float dragDeltaY = motionEvent.getRawY() - mOriginalTouchPosition.y;
@@ -75,8 +81,10 @@ public abstract class Dragger extends BaseTouchController {
                     Log.d(TAG, "ACTION_UP");
                     if (!mIsDragging) {
                         Log.d(TAG, "Reporting as a tap.");
-                        mTouchListener.onTap();
-                    } else {
+                        if (mTouchListener != null) {
+                            mTouchListener.onTap();
+                        }
+                    } else if (mDragListener != null) {
                         Log.d(TAG, "Reporting as a drag release at: " + mCurrentViewPosition);
                         mDragListener.onReleasedAt(view, mCurrentViewPosition.x, mCurrentViewPosition.y);
                     }
@@ -93,11 +101,23 @@ public abstract class Dragger extends BaseTouchController {
 
     public abstract PointF getTouchViewPosition(@NonNull View touchView);
 
+    public abstract Point getContainerSize();
+
     public void activate(@NonNull DragListener dragListener, @NonNull List<View> viewList) {
-        super.activate(dragListener, viewList);
-        mDragListener = dragListener;
-        for (View touchView : mTouchViewMap.values()) {
-            touchView.setOnTouchListener(mDragTouchListener);
+        if (!mIsActivated) {
+            super.activate(dragListener, viewList);
+            mDragListener = dragListener;
+            for (View touchView : mTouchViewMap.values()) {
+                touchView.setOnTouchListener(mDragTouchListener);
+            }
+        }
+    }
+
+    @Override
+    public void deactivate() {
+        if (mIsActivated) {
+            super.deactivate();
+            mDragListener = null;
         }
     }
 

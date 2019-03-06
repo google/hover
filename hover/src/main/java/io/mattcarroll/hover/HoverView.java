@@ -415,9 +415,13 @@ public class HoverView extends RelativeLayout {
     }
 
     public Point getScreenSize() {
-        final Point screenSize = new Point();
-        ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getSize(screenSize);
-        return screenSize;
+        if (mDragger == null) {
+            final Point screenSize = new Point();
+            ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getSize(screenSize);
+            return screenSize;
+        } else {
+            return mDragger.getContainerSize();
+        }
     }
 
     // State of the HoverMenuView that is persisted across configuration change and other brief OS

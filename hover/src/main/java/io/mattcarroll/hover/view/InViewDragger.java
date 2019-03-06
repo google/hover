@@ -15,6 +15,7 @@
  */
 package io.mattcarroll.hover.view;
 
+import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.support.annotation.NonNull;
@@ -59,6 +60,13 @@ public class InViewDragger extends Dragger {
                 touchView.getX(),
                 touchView.getY()
         );
+    }
+
+    @Override
+    public Point getContainerSize() {
+        Rect area = new Rect();
+        mContainer.getGlobalVisibleRect(area);
+        return new Point(area.right, area.bottom);
     }
 
     @Override
