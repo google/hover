@@ -1,0 +1,36 @@
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'com.github.dcendents.android-maven'
+
+group = project.group
+version = project.version
+
+Properties prop = new Properties()
+String propFileName = 'local.properties'
+
+try {
+    File file = project.rootProject.file(propFileName, PathValidation.EXISTS)
+    prop.load(file.newDataInputStream())
+} catch (InvalidUserDataException e) {
+    print("File not found : " + propFileName)
+}
+
+bintray {
+    user = project.hasProperty('user') ? project.user : prop.getProperty("bintray.user")
+    key = project.hasProperty('key') ? project.key : prop.getProperty("bintray.apikey")
+    configurations = ['archives']
+    publish = false
+
+    pkg {
+        repo = 'maven'
+        name = 'hover'
+        desc = 'Buzzvil hover Android SDK'
+        userOrg = 'buzzvil'
+        licenses = ['Apache-2.0']
+        vcsUrl = 'https://github.com/Buzzvil/hover'
+        publicDownloadNumbers = true
+        version {
+            name = project.version
+            released = new Date()
+        }
+    }
+}
