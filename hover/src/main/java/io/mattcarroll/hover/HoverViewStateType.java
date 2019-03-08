@@ -5,5 +5,5 @@ public enum HoverViewStateType {
     COLLAPSED,
     PREVIEWED,
     EXPANDED,
-    ANCHORED,
+    HIDDEN,
 }

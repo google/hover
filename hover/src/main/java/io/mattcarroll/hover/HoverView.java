@@ -89,7 +89,7 @@ public class HoverView extends RelativeLayout {
     private final HoverViewState mCollapsed = new HoverViewStateCollapsed();
     private final HoverViewState mPreviewed = new HoverViewStatePreviewed();
     private final HoverViewState mExpanded = new HoverViewStateExpanded();
-    private final HoverViewState mAnchored = new HoverViewStateAnchored();
+    private final HoverViewState mHidden = new HoverViewStateHidden();
     final WindowViewController mWindowViewController;
     final Dragger mDragger;
     final Screen mScreen;
@@ -322,12 +322,12 @@ public class HoverView extends RelativeLayout {
         });
     }
 
-    public void anchor() {
-        setState(mAnchored, new Runnable() {
+    public void hide() {
+        setState(mHidden, new Runnable() {
             @Override
             public void run() {
                 for (OnStateChangeListener onStateChangeListener : mOnStateChangeListeners) {
-                    onStateChangeListener.onAnchored();
+                    onStateChangeListener.onHidden();
                 }
             }
         });
@@ -593,7 +593,7 @@ public class HoverView extends RelativeLayout {
 
         void onClosed();
 
-        void onAnchored();
+        void onHidden();
     }
 
     public static class DefaultOnStateChangeListener implements OnStateChangeListener {
@@ -614,7 +614,7 @@ public class HoverView extends RelativeLayout {
         }
 
         @Override
-        public void onAnchored() {
+        public void onHidden() {
         }
     }
 
