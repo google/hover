@@ -56,7 +56,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         public void run() {
             final HoverViewState state = mHoverView.getState();
             if (!(state instanceof HoverViewStatePreviewed) && state instanceof HoverViewStateCollapsed) {
-                mHoverView.setAlpha(0.5f);
+                mHoverView.setAlpha(0.4f);
             }
         }
     };
