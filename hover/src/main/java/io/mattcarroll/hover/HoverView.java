@@ -101,6 +101,7 @@ public class HoverView extends RelativeLayout {
     boolean mIsTouchableInWindow;
     boolean mIsDebugMode = false;
     int mTabSize;
+    private PositionDock mPositionToHide;
     OnExitListener mOnExitListener;
     private final Set<OnStateChangeListener> mOnStateChangeListeners = new CopyOnWriteArraySet<>();
     private final Set<OnInteractionListener> mOnInteractionListeners = new CopyOnWriteArraySet<>();
@@ -243,6 +244,19 @@ public class HoverView extends RelativeLayout {
 
         mDragger.enableDebugMode(debugMode);
         mScreen.enableDrugMode(debugMode);
+    }
+
+    public void setPositionToHide(Point position) {
+        if (position == null) {
+            this.mPositionToHide = null;
+        } else {
+            this.mPositionToHide = new PositionDock(position);
+        }
+    }
+
+    @Nullable
+    public PositionDock getPositionToHide() {
+        return mPositionToHide;
     }
 
     void setState(@NonNull HoverViewState newState, Runnable onStateChanged) {
