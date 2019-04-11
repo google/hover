@@ -105,6 +105,7 @@ public class HoverView extends RelativeLayout {
     OnExitListener mOnExitListener;
     private final Set<OnStateChangeListener> mOnStateChangeListeners = new CopyOnWriteArraySet<>();
     private final Set<OnInteractionListener> mOnInteractionListeners = new CopyOnWriteArraySet<>();
+    private boolean mKeepVisible;
 
     // Public for use with XML inflation. Clients should use static methods for construction.
     public HoverView(@NonNull Context context, @Nullable AttributeSet attrs) {
@@ -345,6 +346,14 @@ public class HoverView extends RelativeLayout {
                 }
             }
         });
+    }
+
+    public void setKeepVisible(boolean keepVisible) {
+        this.mKeepVisible = keepVisible;
+    }
+
+    public boolean shouldKeepVisible() {
+        return mKeepVisible;
     }
 
     public void setOnExitListener(@Nullable OnExitListener listener) {
