@@ -195,7 +195,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         // No-op
     }
 
-    private void onPickedUpByUser() {
+    protected void onPickedUpByUser() {
         mHoverView.mScreen.getExitView().setVisibility(VISIBLE);
         restoreHoverViewAlphaValue();
         mHoverView.notifyOnDragStart(this);
@@ -277,7 +277,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         }
     }
 
-    private void onDocked() {
+    protected void onDocked() {
         Log.d(TAG, "Docked. Activating dragger.");
         if (!mHoverView.mIsAddedToWindow) {
             return;
