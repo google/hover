@@ -23,7 +23,6 @@ public class TabMessageView extends FrameLayout {
     private final FloatingTab.OnPositionChangeListener mOnTabPositionChangeListener = new FloatingTab.OnPositionChangeListener() {
         @Override
         public void onPositionChange(@NonNull Point position) {
-            Log.d(TAG, mFloatingTab + " tab moved to " + position);
             final float tabSizeHalf = mFloatingTab.getTabSize() / 2f;
             if (mSideDock != null && mSideDock.sidePosition().getSide() == SideDock.SidePosition.RIGHT) {
                 setX(position.x - tabSizeHalf - getWidth());
