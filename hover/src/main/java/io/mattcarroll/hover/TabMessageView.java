@@ -21,16 +21,27 @@ public class TabMessageView extends FrameLayout {
     private View mMessageView;
 
     private final FloatingTab.OnPositionChangeListener mOnTabPositionChangeListener = new FloatingTab.OnPositionChangeListener() {
+        private static final int DEFAULT_SIDE = SideDock.SidePosition.LEFT;
+
+        private Point mLastPosition;
+        private int mLastSide;
+
         @Override
         public void onPositionChange(@NonNull Point position) {
+            final Integer side = getSide();
+            if (side.equals(mLastSide) && position.equals(mLastPosition) || getWidth() == 0) {
+                return;
+            }
+            Log.d(TAG, mFloatingTab + " tab moved to " + position);
             final float tabSizeHalf = mFloatingTab.getTabSize() / 2f;
-            if (mSideDock != null && mSideDock.sidePosition().getSide() == SideDock.SidePosition.RIGHT) {
+            if (side == SideDock.SidePosition.RIGHT) {
                 setX(position.x - tabSizeHalf - getWidth());
-                setY(position.y - tabSizeHalf);
             } else {
                 setX(position.x + tabSizeHalf);
-                setY(position.y - tabSizeHalf);
             }
+            setY(position.y - tabSizeHalf);
+            mLastPosition = position;
+            mLastSide = side;
         }
 
         @Override
@@ -41,6 +52,13 @@ public class TabMessageView extends FrameLayout {
                     appear(sideDock, null);
                 }
             }
+        }
+
+        private int getSide() {
+            if (mSideDock != null) {
+                return mSideDock.sidePosition().getSide();
+            }
+            return DEFAULT_SIDE;
         }
     };
 

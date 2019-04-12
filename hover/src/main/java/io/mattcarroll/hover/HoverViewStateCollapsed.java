@@ -33,9 +33,9 @@ import static android.view.View.VISIBLE;
  * {@link HoverViewState} that operates the {@link HoverView} when it is collapsed. Collapsed means
  * that the only thing visible is the selected {@link FloatingTab}.  This tab docks itself against
  * the left or right sides of the screen.  The user can drag the tab around and drop it.
- *
+ * <p>
  * If the tab is tapped, the {@code HoverView} is transitioned to its expanded state.
- *
+ * <p>
  * If the tab is dropped on the exit region, the {@code HoverView} is transitioned to its closed state.
  */
 class HoverViewStateCollapsed extends BaseHoverViewState {
