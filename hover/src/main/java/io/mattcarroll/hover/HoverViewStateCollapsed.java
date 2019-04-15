@@ -201,7 +201,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         mHoverView.notifyOnDragStart(this);
     }
 
-    private void onDroppedByUser() {
+    protected void onDroppedByUser() {
         mHoverView.mScreen.getExitView().setVisibility(GONE);
         boolean droppedOnExit = mHoverView.mScreen.getExitView().isInExitZone(mFloatingTab.getPosition());
         if (droppedOnExit) {

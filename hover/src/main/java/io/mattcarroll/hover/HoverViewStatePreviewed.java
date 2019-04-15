@@ -85,6 +85,12 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
     }
 
     @Override
+    protected void onDroppedByUser() {
+        mCollapseOnDocked = false;
+        super.onDroppedByUser();
+    }
+
+    @Override
     protected void activateDragger() {
         final ArrayList<View> list = new ArrayList<>();
         list.add(mFloatingTab);
