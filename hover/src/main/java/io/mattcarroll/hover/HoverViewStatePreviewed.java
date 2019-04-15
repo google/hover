@@ -32,7 +32,6 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
     private static final String TAG = "HoverViewStatePreviewed";
     private TabMessageView mMessageView;
     private boolean mCollapseOnDocked = false;
-    private boolean mTurnOffNextCollapseAnimation = false;
 
     @Override
     public void takeControl(@NonNull HoverView hoverView, final Runnable onStateChanged) {
@@ -54,9 +53,9 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
     @Override
     public void giveUpControl(@NonNull final HoverViewState nextState) {
         Log.d(TAG, "Giving up control.");
-        if (nextState instanceof HoverViewStateCollapsed) {
-            mMessageView.disappear(!mTurnOffNextCollapseAnimation);
-            mTurnOffNextCollapseAnimation = false;
+        if (nextState instanceof HoverViewStateCollapsed
+                && mMessageView.getVisibility() == View.VISIBLE) {
+            mMessageView.disappear(true);
         } else {
             mMessageView.disappear(false);
         }
@@ -98,7 +97,6 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
     protected void onDocked() {
         super.onDocked();
         if (mCollapseOnDocked) {
-            mTurnOffNextCollapseAnimation = true;
             mHoverView.collapse();
             mCollapseOnDocked = false;
         }
