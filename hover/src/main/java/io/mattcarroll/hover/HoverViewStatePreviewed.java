@@ -89,9 +89,9 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
     }
 
     @Override
-    protected void onDroppedByUser() {
+    protected void onClose(final boolean userDropped) {
+        super.onClose(userDropped);
         init();
-        super.onDroppedByUser();
     }
 
     @Override

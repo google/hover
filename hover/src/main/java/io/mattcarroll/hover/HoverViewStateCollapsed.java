@@ -60,7 +60,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
                 if (mHoverView.shouldKeepVisible()) {
                     mHoverView.setAlpha(ALPHA_IDLE_VALUE);
                 } else {
-                    mHoverView.close();
+                    onClose(false);
                 }
             }
         }
@@ -201,12 +201,11 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         mHoverView.notifyOnDragStart(this);
     }
 
-    protected void onDroppedByUser() {
+    private void onDroppedByUser() {
         mHoverView.mScreen.getExitView().setVisibility(GONE);
         boolean droppedOnExit = mHoverView.mScreen.getExitView().isInExitZone(mFloatingTab.getPosition());
         if (droppedOnExit) {
-            Log.d(TAG, "User dropped floating tab on exit.");
-            mHoverView.close();
+            onClose(true);
         } else {
             int tabSize = mHoverView.getResources().getDimensionPixelSize(R.dimen.hover_tab_size);
             Point screenSize = mHoverView.getScreenSize();
@@ -233,6 +232,15 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
 
             sendToDock();
         }
+    }
+
+    protected void onClose(final boolean userDropped) {
+        if (userDropped) {
+            Log.d(TAG, "User dropped floating tab on exit.");
+        } else {
+            Log.d(TAG, "Auto dropped.");
+        }
+        mHoverView.close();
     }
 
     private void onTap() {
