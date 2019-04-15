@@ -39,8 +39,12 @@ public abstract class Dragger extends BaseTouchController {
     public abstract Point getContainerSize();
 
     @Override
-    protected void setEventListener(final TouchViewItem touchViewItem) {
-        touchViewItem.mTouchView.setOnTouchListener(new DragDetector(touchViewItem.mOriginalView, (DragListener) touchViewItem.mTouchListener));
+    protected TouchDetector createTouchDetector(final View originalView, TouchListener touchListener) {
+        if (touchListener instanceof DragListener) {
+            return new DragDetector(originalView, (DragListener) touchListener);
+        } else {
+            return super.createTouchDetector(originalView, touchListener);
+        }
     }
 
     private boolean isTouchWithinSlopOfOriginalTouch(float dx, float dy) {

@@ -82,7 +82,7 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
 
     @Override
     protected void activateDragger() {
-        ArrayList<Pair<? extends View, ? extends BaseTouchController.TouchListener>> list = new ArrayList<>();
+        ArrayList<Pair<? extends HoverFrameLayout, ? extends BaseTouchController.TouchListener>> list = new ArrayList<>();
         list.add(new Pair<>(mFloatingTab, mFloatingTabDragListener));
         list.add(new Pair<>(mMessageView, mMessageViewDragListener));
         mHoverView.mDragger.activate(list);
@@ -109,24 +109,36 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
     protected static final class MessageViewDragListener implements Dragger.DragListener {
 
         private final HoverViewStateCollapsed mOwner;
+        private float mOriginalX;
+        private float mOriginalY;
 
         protected MessageViewDragListener(@NonNull HoverViewStateCollapsed owner) {
             mOwner = owner;
+            init();
         }
 
         @Override
         public void onDragStart(View messageView, float x, float y) {
+            mOriginalX = messageView.getX() + messageView.getWidth() / 2;
+            mOriginalY = messageView.getY() + messageView.getHeight() / 2;
+            if (messageView instanceof TabMessageView) {
+                ((TabMessageView) messageView).moveCenterTo(new Point((int) x, (int) mOriginalY));
+            }
         }
 
         @Override
         public void onDragTo(View messageView, float x, float y) {
             if (messageView instanceof TabMessageView) {
-                ((TabMessageView) messageView).moveTo(new Point((int) x, (int) y));
+                ((TabMessageView) messageView).moveCenterTo(new Point((int) x, (int) mOriginalY));
             }
         }
 
         @Override
         public void onReleasedAt(View messageView, float x, float y) {
+            if (messageView instanceof TabMessageView) {
+                ((TabMessageView) messageView).moveCenterTo(new Point((int) mOriginalX, (int) mOriginalY));
+            }
+            init();
         }
 
         @Override
@@ -136,6 +148,11 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
         @Override
         public void onTap(View messageView) {
             mOwner.onTap();
+        }
+
+        private void init() {
+            mOriginalX = 0;
+            mOriginalY = 0;
         }
     }
 }

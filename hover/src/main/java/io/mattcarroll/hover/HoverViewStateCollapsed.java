@@ -311,7 +311,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     }
 
     protected void activateDragger() {
-        ArrayList<Pair<? extends View, ? extends BaseTouchController.TouchListener>> list = new ArrayList<>();
+        ArrayList<Pair<? extends HoverFrameLayout, ? extends BaseTouchController.TouchListener>> list = new ArrayList<>();
         list.add(new Pair<>(mFloatingTab, mFloatingTabDragListener));
         mHoverView.mDragger.activate(list);
     }

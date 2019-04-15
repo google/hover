@@ -19,9 +19,9 @@ public abstract class BaseTouchController {
     protected boolean mIsActivated;
     private boolean mIsDebugMode;
 
-    private final View.OnLayoutChangeListener mOnLayoutChangeListener = new View.OnLayoutChangeListener() {
+    private final HoverFrameLayout.OnPositionChangeListener mOnPositionChangeListener = new HoverFrameLayout.OnPositionChangeListener() {
         @Override
-        public void onLayoutChange(View view, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+        public void onPositionChange(@NonNull View view) {
             moveTouchViewTo(mTouchViewMap.get(view.getTag()).mTouchView, new PointF(view.getX(), view.getY()));
         }
     };
@@ -32,14 +32,14 @@ public abstract class BaseTouchController {
 
     public abstract void moveTouchViewTo(@NonNull View touchView, @NonNull PointF position);
 
-    public void activate(final List<Pair<? extends View, ? extends TouchListener>> viewList) {
+    public void activate(final List<Pair<? extends HoverFrameLayout, ? extends TouchListener>> viewList) {
         if (!mIsActivated) {
             Log.d(TAG, "Activating.");
             mIsActivated = true;
 
             clearTouchViewMap();
             for (int i = 0; i < viewList.size(); i++) {
-                final Pair<? extends View, ? extends TouchListener> viewItem = viewList.get(i);
+                final Pair<? extends HoverFrameLayout, ? extends TouchListener> viewItem = viewList.get(i);
                 final String tag = "view" + i;
                 final TouchViewItem touchViewItem = createTouchViewItem(viewItem.first, viewItem.second, tag);
                 mTouchViewMap.put(tag, touchViewItem);
@@ -61,22 +61,12 @@ public abstract class BaseTouchController {
         updateTouchControlViewAppearance();
     }
 
-    private TouchViewItem createTouchViewItem(final View originalView, final TouchListener listener, final String tag) {
-        originalView.setTag(tag);
-
-        Rect rect = new Rect();
-        originalView.getDrawingRect(rect);
-        View touchView = createTouchView(rect);
-        moveTouchViewTo(touchView, new PointF(originalView.getX(), originalView.getY()));
-        touchView.setTag(tag);
-        final TouchViewItem touchViewItem = new TouchViewItem<>(originalView, touchView, listener);
-        setEventListener(touchViewItem);
-        originalView.addOnLayoutChangeListener(mOnLayoutChangeListener);
-        return touchViewItem;
+    private TouchViewItem createTouchViewItem(final HoverFrameLayout originalView, final TouchListener listener, final String tag) {
+        return new TouchViewItem<>(originalView, createTouchViewFrom(originalView), listener, tag);
     }
 
-    protected void setEventListener(final TouchViewItem touchViewItem) {
-        touchViewItem.mTouchView.setOnTouchListener(new TouchDetector<>(touchViewItem.mOriginalView, touchViewItem.mTouchListener));
+    protected TouchDetector createTouchDetector(final View originalView, final TouchListener touchListener) {
+        return new TouchDetector<>(originalView, touchListener);
     }
 
     private void clearTouchViewMap() {
@@ -97,6 +87,19 @@ public abstract class BaseTouchController {
                 }
             }
         }
+    }
+
+    private Rect getRectFrom(final View view) {
+        final Rect rect = new Rect();
+        view.getDrawingRect(rect);
+        return rect;
+
+    }
+
+    private View createTouchViewFrom(final View originalView) {
+        final View touchView = createTouchView(getRectFrom(originalView));
+        moveTouchViewTo(touchView, new PointF(originalView.getX(), originalView.getY()));
+        return touchView;
     }
 
     public interface TouchListener {
@@ -133,19 +136,25 @@ public abstract class BaseTouchController {
     }
 
     protected class TouchViewItem<T extends TouchListener> {
-        final View mOriginalView;
+        final HoverFrameLayout mOriginalView;
         final View mTouchView;
         final T mTouchListener;
 
-        TouchViewItem(final View originalView, final View touchView, final T touchListener) {
+        TouchViewItem(final HoverFrameLayout originalView, final View touchView, final T touchListener, final String tag) {
             this.mOriginalView = originalView;
             this.mTouchView = touchView;
             this.mTouchListener = touchListener;
+
+            mOriginalView.setTag(tag);
+            mTouchView.setTag(tag);
+
+            mTouchView.setOnTouchListener(createTouchDetector(mOriginalView, mTouchListener));
+            mOriginalView.addOnPositionChangeListener(mOnPositionChangeListener);
         }
 
         void destroy() {
-            mOriginalView.setOnTouchListener(null);
-            mOriginalView.removeOnLayoutChangeListener(mOnLayoutChangeListener);
+            mTouchView.setOnTouchListener(null);
+            mOriginalView.removeOnPositionChangeListener(mOnPositionChangeListener);
             destroyTouchView(mTouchView);
         }
     }
