@@ -31,6 +31,11 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
 
     private static final String TAG = "HoverViewStatePreviewed";
     private TabMessageView mMessageView;
+    private boolean mCollapseOnDocked = false;
+
+    HoverViewStatePreviewed() {
+        init();
+    }
 
     @Override
     public void takeControl(@NonNull HoverView hoverView, final Runnable onStateChanged) {
@@ -77,6 +82,19 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
     }
 
     @Override
+    protected void onPickedUpByUser() {
+        mMessageView.disappear(true);
+        mCollapseOnDocked = true;
+        super.onPickedUpByUser();
+    }
+
+    @Override
+    protected void onClose(final boolean userDropped) {
+        super.onClose(userDropped);
+        init();
+    }
+
+    @Override
     protected void activateDragger() {
         final ArrayList<View> list = new ArrayList<>();
         list.add(mFloatingTab);
@@ -85,7 +103,20 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
     }
 
     @Override
+    protected void onDocked() {
+        super.onDocked();
+        if (mCollapseOnDocked) {
+            mHoverView.collapse();
+            mCollapseOnDocked = false;
+        }
+    }
+
+    @Override
     public HoverViewStateType getStateType() {
         return HoverViewStateType.PREVIEWED;
+    }
+
+    private void init() {
+        mCollapseOnDocked = false;
     }
 }

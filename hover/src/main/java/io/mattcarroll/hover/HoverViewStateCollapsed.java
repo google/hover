@@ -33,9 +33,9 @@ import static android.view.View.VISIBLE;
  * {@link HoverViewState} that operates the {@link HoverView} when it is collapsed. Collapsed means
  * that the only thing visible is the selected {@link FloatingTab}.  This tab docks itself against
  * the left or right sides of the screen.  The user can drag the tab around and drop it.
- *
+ * <p>
  * If the tab is tapped, the {@code HoverView} is transitioned to its expanded state.
- *
+ * <p>
  * If the tab is dropped on the exit region, the {@code HoverView} is transitioned to its closed state.
  */
 class HoverViewStateCollapsed extends BaseHoverViewState {
@@ -60,7 +60,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
                 if (mHoverView.shouldKeepVisible()) {
                     mHoverView.setAlpha(ALPHA_IDLE_VALUE);
                 } else {
-                    mHoverView.close();
+                    onClose(false);
                 }
             }
         }
@@ -195,7 +195,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         // No-op
     }
 
-    private void onPickedUpByUser() {
+    protected void onPickedUpByUser() {
         mHoverView.mScreen.getExitView().setVisibility(VISIBLE);
         restoreHoverViewAlphaValue();
         mHoverView.notifyOnDragStart(this);
@@ -205,8 +205,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         mHoverView.mScreen.getExitView().setVisibility(GONE);
         boolean droppedOnExit = mHoverView.mScreen.getExitView().isInExitZone(mFloatingTab.getPosition());
         if (droppedOnExit) {
-            Log.d(TAG, "User dropped floating tab on exit.");
-            mHoverView.close();
+            onClose(true);
         } else {
             int tabSize = mHoverView.getResources().getDimensionPixelSize(R.dimen.hover_tab_size);
             Point screenSize = mHoverView.getScreenSize();
@@ -233,6 +232,15 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
 
             sendToDock();
         }
+    }
+
+    protected void onClose(final boolean userDropped) {
+        if (userDropped) {
+            Log.d(TAG, "User dropped floating tab on exit.");
+        } else {
+            Log.d(TAG, "Auto dropped.");
+        }
+        mHoverView.close();
     }
 
     private void onTap() {
@@ -277,7 +285,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         }
     }
 
-    private void onDocked() {
+    protected void onDocked() {
         Log.d(TAG, "Docked. Activating dragger.");
         if (!mHoverView.mIsAddedToWindow) {
             return;
