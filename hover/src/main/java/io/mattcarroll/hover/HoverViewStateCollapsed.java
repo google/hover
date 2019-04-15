@@ -272,7 +272,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
                 mHoverView.getScreenSize(),
                 mFloatingTab.getTabSize()
         );
-        mFloatingTab.moveTo(dockPosition);
+        mFloatingTab.moveCenterTo(dockPosition);
     }
 
     private void initDockPosition() {
@@ -307,7 +307,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     }
 
     void moveFloatingTabTo(View floatingTab, @NonNull Point position) {
-        mFloatingTab.moveTo(position);
+        mFloatingTab.moveCenterTo(position);
     }
 
     protected void activateDragger() {

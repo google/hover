@@ -94,7 +94,7 @@ class FloatingTab extends FrameLayout {
     protected void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         if (mDock != null) {
-            moveTo(mDock.position());
+            moveCenterTo(mDock.position());
         }
     }
 
@@ -287,11 +287,11 @@ class FloatingTab extends FrameLayout {
     }
 
     public void dockImmediately() {
-        moveTo(mDock.position());
+        moveCenterTo(mDock.position());
     }
 
-    public void moveTo(@NonNull Point floatPosition) {
-        Point cornerPosition = convertCenterToCorner(floatPosition);
+    public void moveCenterTo(@NonNull Point centerPosition) {
+        Point cornerPosition = convertCenterToCorner(centerPosition);
         setX(cornerPosition.x);
         setY(cornerPosition.y);
         notifyListenersOfPositionChange();
