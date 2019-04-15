@@ -108,6 +108,7 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
 
     protected static final class MessageViewDragListener implements Dragger.DragListener {
 
+        private static final float ALPHA_THRESHOLD = 400;
         private final HoverViewStateCollapsed mOwner;
         private float mOriginalX;
         private float mOriginalY;
@@ -123,6 +124,7 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
             mOriginalY = messageView.getY() + messageView.getHeight() / 2;
             if (messageView instanceof TabMessageView) {
                 ((TabMessageView) messageView).moveCenterTo(new Point((int) x, (int) mOriginalY));
+                updateAlpha(messageView, x);
             }
         }
 
@@ -130,6 +132,7 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
         public void onDragTo(View messageView, float x, float y) {
             if (messageView instanceof TabMessageView) {
                 ((TabMessageView) messageView).moveCenterTo(new Point((int) x, (int) mOriginalY));
+                updateAlpha(messageView, x);
             }
         }
 
@@ -137,6 +140,7 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
         public void onReleasedAt(View messageView, float x, float y) {
             if (messageView instanceof TabMessageView) {
                 ((TabMessageView) messageView).moveCenterTo(new Point((int) mOriginalX, (int) mOriginalY));
+                updateAlpha(messageView, mOriginalX);
             }
             init();
         }
@@ -153,6 +157,10 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
         private void init() {
             mOriginalX = 0;
             mOriginalY = 0;
+        }
+
+        private void updateAlpha(final View view, final float current) {
+            view.setAlpha(1 - Math.max(0, Math.min(1, (Math.abs(current - mOriginalX) / ALPHA_THRESHOLD))));
         }
     }
 }
