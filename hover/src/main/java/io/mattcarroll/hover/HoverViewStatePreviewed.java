@@ -33,6 +33,10 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
     private TabMessageView mMessageView;
     private boolean mCollapseOnDocked = false;
 
+    HoverViewStatePreviewed() {
+        init();
+    }
+
     @Override
     public void takeControl(@NonNull HoverView hoverView, final Runnable onStateChanged) {
         super.takeControl(hoverView, null);
@@ -86,7 +90,7 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
 
     @Override
     protected void onDroppedByUser() {
-        mCollapseOnDocked = false;
+        init();
         super.onDroppedByUser();
     }
 
@@ -110,5 +114,9 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
     @Override
     public HoverViewStateType getStateType() {
         return HoverViewStateType.PREVIEWED;
+    }
+
+    private void init() {
+        mCollapseOnDocked = false;
     }
 }
