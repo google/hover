@@ -17,6 +17,7 @@ package io.mattcarroll.hover;
 
 import android.graphics.Point;
 import android.support.annotation.NonNull;
+import android.support.v4.util.Pair;
 import android.util.Log;
 import android.view.View;
 
@@ -31,6 +32,7 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
 
     private static final String TAG = "HoverViewStatePreviewed";
     private TabMessageView mMessageView;
+    protected final Dragger.DragListener mMessageViewDragListener = new MessageViewDragListener(this);
     private boolean mCollapseOnDocked = false;
 
     HoverViewStatePreviewed() {
@@ -66,22 +68,6 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
     }
 
     @Override
-    protected void moveTabTo(View touchView, @NonNull Point position) {
-        if (mHoverView == null) {
-            return;
-        }
-
-        final int floatingTabOffset = mMessageView.getWidth() / 2;
-        if (touchView.getTag() != null && touchView.getTag().equals(mFloatingTab.getTag())) {
-            mFloatingTab.moveTo(position);
-        } else if (mHoverView.mCollapsedDock.sidePosition().getSide() == SideDock.SidePosition.RIGHT) {
-            mFloatingTab.moveTo(new Point(position.x + floatingTabOffset, position.y));
-        } else {
-            mFloatingTab.moveTo(new Point(position.x - floatingTabOffset, position.y));
-        }
-    }
-
-    @Override
     protected void onPickedUpByUser() {
         mMessageView.disappear(true);
         mCollapseOnDocked = true;
@@ -96,10 +82,10 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
 
     @Override
     protected void activateDragger() {
-        final ArrayList<View> list = new ArrayList<>();
-        list.add(mFloatingTab);
-        list.add(mMessageView);
-        mHoverView.mDragger.activate(mDragListener, list);
+        ArrayList<Pair<? extends View, ? extends BaseTouchController.TouchListener>> list = new ArrayList<>();
+        list.add(new Pair<>(mFloatingTab, mFloatingTabDragListener));
+        list.add(new Pair<>(mMessageView, mMessageViewDragListener));
+        mHoverView.mDragger.activate(list);
     }
 
     @Override
@@ -118,5 +104,38 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
 
     private void init() {
         mCollapseOnDocked = false;
+    }
+
+    protected static final class MessageViewDragListener implements Dragger.DragListener {
+
+        private final HoverViewStateCollapsed mOwner;
+
+        protected MessageViewDragListener(@NonNull HoverViewStateCollapsed owner) {
+            mOwner = owner;
+        }
+
+        @Override
+        public void onDragStart(View messageView, float x, float y) {
+        }
+
+        @Override
+        public void onDragTo(View messageView, float x, float y) {
+            if (messageView instanceof TabMessageView) {
+                ((TabMessageView) messageView).moveTo(new Point((int) x, (int) y));
+            }
+        }
+
+        @Override
+        public void onReleasedAt(View messageView, float x, float y) {
+        }
+
+        @Override
+        public void onPress(View messageView) {
+        }
+
+        @Override
+        public void onTap(View messageView) {
+            mOwner.onTap();
+        }
     }
 }

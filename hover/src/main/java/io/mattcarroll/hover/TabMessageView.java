@@ -128,4 +128,9 @@ public class TabMessageView extends FrameLayout {
         }
         setVisibility(GONE);
     }
+
+    public void moveTo(@NonNull Point newPosition) {
+        setX(newPosition.x);
+        setY(newPosition.y);
+    }
 }
