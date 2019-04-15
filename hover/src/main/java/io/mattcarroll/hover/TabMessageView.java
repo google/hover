@@ -84,40 +84,42 @@ public class TabMessageView extends FrameLayout {
     public void appear(final SideDock dock, @Nullable final Runnable onAppeared) {
         mSideDock = dock;
         mFloatingTab.addOnPositionChangeListener(mOnTabPositionChangeListener);
-        final AnimationSet animation = new AnimationSet(true);
-        final AlphaAnimation alpha = new AlphaAnimation(0, 1);
-        final float fromXDelta = getResources().getDimensionPixelSize(R.dimen.hover_message_animate_translation_x)
-                * (dock.sidePosition().getSide() == SideDock.SidePosition.LEFT ? -1 : 1);
-        final float fromYDelta = getResources().getDimensionPixelSize(R.dimen.hover_message_animate_translation_y);
-        TranslateAnimation translate = new TranslateAnimation(fromXDelta, 0, fromYDelta, 0);
-        animation.setDuration(300);
-        animation.setInterpolator(new LinearOutSlowInInterpolator());
-        animation.addAnimation(alpha);
-        animation.addAnimation(translate);
-        animation.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                if (onAppeared != null) {
-                    onAppeared.run();
+        if (getVisibility() != View.VISIBLE) {
+            final AnimationSet animation = new AnimationSet(true);
+            final AlphaAnimation alpha = new AlphaAnimation(0, 1);
+            final float fromXDelta = getResources().getDimensionPixelSize(R.dimen.hover_message_animate_translation_x)
+                    * (dock.sidePosition().getSide() == SideDock.SidePosition.LEFT ? -1 : 1);
+            final float fromYDelta = getResources().getDimensionPixelSize(R.dimen.hover_message_animate_translation_y);
+            TranslateAnimation translate = new TranslateAnimation(fromXDelta, 0, fromYDelta, 0);
+            animation.setDuration(300);
+            animation.setInterpolator(new LinearOutSlowInInterpolator());
+            animation.addAnimation(alpha);
+            animation.addAnimation(translate);
+            animation.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
                 }
-            }
 
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-            }
-        });
-        startAnimation(animation);
-        setVisibility(VISIBLE);
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    if (onAppeared != null) {
+                        onAppeared.run();
+                    }
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+                }
+            });
+            startAnimation(animation);
+            setVisibility(VISIBLE);
+        }
     }
 
     public void disappear(final boolean withAnimation) {
         mFloatingTab.removeOnPositionChangeListener(mOnTabPositionChangeListener);
         mSideDock = null;
-        if (withAnimation) {
+        if (withAnimation && getVisibility() == View.VISIBLE) {
             final AnimationSet animation = new AnimationSet(true);
             final AlphaAnimation alpha = new AlphaAnimation(1, 0);
             alpha.setDuration(300);

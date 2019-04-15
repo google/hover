@@ -53,8 +53,7 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
     @Override
     public void giveUpControl(@NonNull final HoverViewState nextState) {
         Log.d(TAG, "Giving up control.");
-        if (nextState instanceof HoverViewStateCollapsed
-                && mMessageView.getVisibility() == View.VISIBLE) {
+        if (nextState instanceof HoverViewStateCollapsed) {
             mMessageView.disappear(true);
         } else {
             mMessageView.disappear(false);
