@@ -120,11 +120,14 @@ public class TabMessageView extends HoverFrameLayout {
     }
 
     public void disappear(final boolean withAnimation) {
+        disappear(withAnimation, 1);
+    }
+    public void disappear(final boolean withAnimation, float startAlpha) {
         mFloatingTab.removeOnPositionChangeListener(mOnFloatingTabChangeListener);
         mSideDock = null;
         if (withAnimation && getVisibility() == View.VISIBLE) {
             final AnimationSet animation = new AnimationSet(true);
-            final AlphaAnimation alpha = new AlphaAnimation(1, 0);
+            final AlphaAnimation alpha = new AlphaAnimation(startAlpha, 0);
             alpha.setDuration(300);
             animation.addAnimation(alpha);
             startAnimation(animation);

@@ -106,9 +106,20 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
         mCollapseOnDocked = false;
     }
 
+    private void hidePreview(final float startAlpha) {
+        if (mHoverView == null) {
+            return;
+        }
+        if (mMessageView != null) {
+            mMessageView.disappear(false, startAlpha);
+        }
+        mHoverView.collapse();
+    }
+
     protected static final class MessageViewDragListener implements Dragger.DragListener {
 
         private static final float ALPHA_THRESHOLD = 400;
+        private static final float COLLAPSE_THRESHOLD = 300;
         private final HoverViewStateCollapsed mOwner;
         private float mOriginalX;
         private float mOriginalY;
@@ -133,15 +144,22 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
         public void onDragTo(View messageView, float x, float y) {
             if (messageView instanceof TabMessageView) {
                 ((TabMessageView) messageView).moveCenterTo(new Point((int) x, (int) mOriginalY));
+                Log.d("ALPHA", "" + (Math.abs(x - mOriginalX) / 200));
                 updateAlpha(messageView, x);
             }
         }
 
         @Override
-        public void onReleasedAt(View messageView, float x, float y) {
+        public void onReleasedAt(final View messageView, float x, float y) {
             if (messageView instanceof TabMessageView) {
                 ((TabMessageView) messageView).moveCenterTo(new Point((int) mOriginalX, (int) mOriginalY));
                 updateAlpha(messageView, mOriginalX);
+                if (Math.abs(x - mOriginalX) > COLLAPSE_THRESHOLD) {
+                    updateAlpha(messageView, mOriginalX);
+                    if (mOwner instanceof HoverViewStatePreviewed) {
+                        ((HoverViewStatePreviewed) mOwner).hidePreview(getAlpha(x));
+                    }
+                }
             }
             mOwner.setHoverMenuMode(HoverMenu.HoverMenuState.IDLE);
             init();
@@ -162,7 +180,11 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
         }
 
         private void updateAlpha(final View view, final float current) {
-            view.setAlpha(1 - Math.max(0, Math.min(1, (Math.abs(current - mOriginalX) / ALPHA_THRESHOLD))));
+            view.setAlpha(getAlpha(current));
+        }
+
+        private float getAlpha(final float current) {
+            return 1 - Math.max(0, Math.min(1, (Math.abs(current - mOriginalX) / ALPHA_THRESHOLD)));
         }
     }
 }
