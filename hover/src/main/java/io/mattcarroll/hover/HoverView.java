@@ -290,6 +290,10 @@ public class HoverView extends RelativeLayout {
         if (null == mSelectedSectionId || null == mMenu.getSection(mSelectedSectionId)) {
             mSelectedSectionId = mMenu.getSection(0).getId();
         }
+        final FloatingTab selectedTab = mScreen.getChainedTab(mSelectedSectionId);
+        if (selectedTab != null) {
+            selectedTab.setTabView(mMenu.getSection(mSelectedSectionId).getTabView());
+        }
         mState.setMenu(menu);
     }
 
