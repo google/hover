@@ -26,7 +26,7 @@ import java.util.List;
 
 /**
  * A {@code HoverMenu} models the structure of a menu that appears within a {@link HoverView}.
- *
+ * <p>
  * A {@code HoverMenu} includes an ordered list of {@link Section}s.  Each {@code Section} has a tab
  * {@code View} that represents the section, and the {@link Content} of the given section.
  */
@@ -34,8 +34,13 @@ public abstract class HoverMenu {
 
     private static final String TAG = "HoverMenu";
 
+    public enum HoverMenuState {
+        IDLE, REMOVE_PREVIEW
+    }
+
     private List<Section> mSections = new ArrayList<>();
     private ListUpdateCallback mListUpdateCallback;
+    private HoverMenuState mState = HoverMenuState.IDLE;
 
     public abstract String getId();
 
@@ -59,6 +64,8 @@ public abstract class HoverMenu {
     @NonNull
     public abstract List<Section> getSections();
 
+    protected abstract void onHoverMenuStateChanged(HoverMenuState state);
+
     void setUpdatedCallback(@Nullable ListUpdateCallback listUpdatedCallback) {
         mListUpdateCallback = listUpdatedCallback;
     }
@@ -74,6 +81,14 @@ public abstract class HoverMenu {
             // expect many Sections.
             DiffUtil.DiffResult result = DiffUtil.calculateDiff(diffCallback, true);
             result.dispatchUpdatesTo(mListUpdateCallback);
+        }
+    }
+
+    public void setState(final HoverMenuState newState) {
+        final boolean changed = this.mState != newState;
+        this.mState = newState;
+        if (changed) {
+            onHoverMenuStateChanged(this.mState);
         }
     }
 

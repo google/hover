@@ -120,11 +120,12 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
 
         @Override
         public void onDragStart(View messageView, float x, float y) {
-            mOriginalX = messageView.getX() + messageView.getWidth() / 2;
-            mOriginalY = messageView.getY() + messageView.getHeight() / 2;
             if (messageView instanceof TabMessageView) {
+                mOriginalX = messageView.getX() + messageView.getWidth() / 2;
+                mOriginalY = messageView.getY() + messageView.getHeight() / 2;
                 ((TabMessageView) messageView).moveCenterTo(new Point((int) x, (int) mOriginalY));
                 updateAlpha(messageView, x);
+                mOwner.setHoverMenuMode(HoverMenu.HoverMenuState.REMOVE_PREVIEW);
             }
         }
 
@@ -142,6 +143,7 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
                 ((TabMessageView) messageView).moveCenterTo(new Point((int) mOriginalX, (int) mOriginalY));
                 updateAlpha(messageView, mOriginalX);
             }
+            mOwner.setHoverMenuMode(HoverMenu.HoverMenuState.IDLE);
             init();
         }
 

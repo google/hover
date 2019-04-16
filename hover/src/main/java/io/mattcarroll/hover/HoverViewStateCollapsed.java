@@ -123,6 +123,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         }
 
         scheduleHoverViewAlphaChange();
+        setHoverMenuMode(HoverMenu.HoverMenuState.IDLE);
     }
 
     @Override
@@ -327,6 +328,16 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     protected void restoreHoverViewAlphaValue() {
         mHandler.removeCallbacks(mAlphaChanger);
         mHoverView.setAlpha(1f);
+    }
+
+    protected void setHoverMenuMode(final HoverMenu.HoverMenuState state) {
+        if (mHoverView == null) {
+            return;
+        }
+        if (mHoverView.mMenu == null) {
+            return;
+        }
+        mHoverView.mMenu.setState(state);
     }
 
     @Override
