@@ -52,6 +52,7 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
                     return;
                 }
                 onStateChanged.run();
+                activateDragger();
             }
         });
     }
