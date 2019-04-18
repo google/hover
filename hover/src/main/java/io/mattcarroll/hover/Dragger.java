@@ -19,6 +19,7 @@ import android.graphics.Point;
 import android.graphics.PointF;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -97,6 +98,8 @@ public abstract class Dragger extends BaseTouchController {
     }
 
     private class DragDetector extends TouchDetector<DragListener> {
+
+        private final GestureDetector mGestureDetector;
         private boolean mIsDragging;
         private PointF mOriginalViewPosition = new PointF();
         private PointF mCurrentViewPosition = new PointF();
@@ -104,10 +107,16 @@ public abstract class Dragger extends BaseTouchController {
 
         public DragDetector(final View originalView, final DragListener dragListener) {
             super(originalView, dragListener);
+            mGestureDetector = new GestureDetector(null, new GestureDetector.SimpleOnGestureListener() {
+                public void onLongPress(final MotionEvent e) {
+                    tryDragStart("LONG_PRESS");
+                }
+            });
         }
 
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
+            mGestureDetector.onTouchEvent(motionEvent);
             switch (motionEvent.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     Log.d(TAG, "ACTION_DOWN");
@@ -133,12 +142,7 @@ public abstract class Dragger extends BaseTouchController {
                     );
 
                     if (mIsDragging || !isTouchWithinSlopOfOriginalTouch(dragDeltaX, dragDeltaY)) {
-                        if (!mIsDragging) {
-                            // Dragging just started
-                            Log.d(TAG, "MOVE Start Drag.");
-                            mIsDragging = true;
-                            mEventListener.onDragStart(mOriginalView, mCurrentViewPosition.x, mCurrentViewPosition.y);
-                        } else {
+                        if (!tryDragStart("ACTION_MOVE")) {
                             mEventListener.onDragTo(mOriginalView, mCurrentViewPosition.x, mCurrentViewPosition.y);
                         }
                     }
@@ -159,6 +163,17 @@ public abstract class Dragger extends BaseTouchController {
                 default:
                     return false;
             }
+        }
+
+        private boolean tryDragStart(final String reason) {
+            if (mIsDragging) {
+                return false;
+            }
+            // Dragging is just started by reason
+            Log.d(TAG, "" + reason + " starts drag.");
+            mIsDragging = true;
+            mEventListener.onDragStart(mOriginalView, mCurrentViewPosition.x, mCurrentViewPosition.y);
+            return true;
         }
     }
 }
