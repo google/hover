@@ -117,15 +117,29 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
         mHoverView.collapse();
     }
 
+    private void notifyTabMessageViewOnTouchDown() {
+        if (mHoverView == null) {
+            return;
+        }
+        mHoverView.notifyMessageViewOnTouchDown();
+    }
+
+    private void notifyTabMessageViewOnTouchUp() {
+        if (mHoverView == null) {
+            return;
+        }
+        mHoverView.notifyMessageViewOnTouchUp();
+    }
+
     protected static final class MessageViewDragListener implements Dragger.DragListener {
 
         private static final float ALPHA_THRESHOLD = 400;
         private static final float COLLAPSE_THRESHOLD = 300;
-        private final HoverViewStateCollapsed mOwner;
+        private final HoverViewStatePreviewed mOwner;
         private float mOriginalX;
         private float mOriginalY;
 
-        protected MessageViewDragListener(@NonNull HoverViewStateCollapsed owner) {
+        protected MessageViewDragListener(@NonNull HoverViewStatePreviewed owner) {
             mOwner = owner;
             init();
         }
@@ -157,9 +171,7 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
                 updateAlpha(messageView, mOriginalX);
                 if (Math.abs(x - mOriginalX) > COLLAPSE_THRESHOLD) {
                     updateAlpha(messageView, mOriginalX);
-                    if (mOwner instanceof HoverViewStatePreviewed) {
-                        ((HoverViewStatePreviewed) mOwner).hidePreview(getAlpha(x));
-                    }
+                    mOwner.hidePreview(getAlpha(x));
                 }
             }
             mOwner.setHoverMenuMode(HoverMenu.HoverMenuState.IDLE);
@@ -167,12 +179,18 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
         }
 
         @Override
-        public void onPress(View messageView) {
+        public void onTap(View messageView) {
+            mOwner.onTap();
         }
 
         @Override
-        public void onTap(View messageView) {
-            mOwner.onTap();
+        public void onTouchDown(View messageView) {
+            mOwner.notifyTabMessageViewOnTouchDown();
+        }
+
+        @Override
+        public void onTouchUp(View messageView) {
+            mOwner.notifyTabMessageViewOnTouchUp();
         }
 
         private void init() {

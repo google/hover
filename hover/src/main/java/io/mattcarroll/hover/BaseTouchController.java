@@ -103,17 +103,21 @@ public abstract class BaseTouchController {
     }
 
     public interface TouchListener {
-        void onPress(View view);
-
         void onTap(View view);
+
+        void onTouchDown(View view);
+
+        void onTouchUp(View view);
     }
 
     protected class TouchDetector<T extends TouchListener> implements View.OnTouchListener {
 
+        @NonNull
         protected final View mOriginalView;
+        @NonNull
         protected final T mEventListener;
 
-        TouchDetector(final View originalView, final T touchListener) {
+        TouchDetector(@NonNull final View originalView, @NonNull final T touchListener) {
             this.mOriginalView = originalView;
             this.mEventListener = touchListener;
         }
@@ -123,10 +127,11 @@ public abstract class BaseTouchController {
             switch (motionEvent.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     Log.d(TAG, "ACTION_DOWN");
-                    mEventListener.onPress(mOriginalView);
+                    mEventListener.onTouchDown(mOriginalView);
                     return true;
                 case MotionEvent.ACTION_UP:
                     Log.d(TAG, "ACTION_UP");
+                    mEventListener.onTouchUp(mOriginalView);
                     mEventListener.onTap(mOriginalView);
                     return true;
                 default:

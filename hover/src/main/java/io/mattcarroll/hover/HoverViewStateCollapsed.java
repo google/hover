@@ -369,12 +369,16 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         }
 
         @Override
-        public void onPress(View floatingTab) {
+        public void onTap(View floatingTab) {
+            mOwner.onTap();
         }
 
         @Override
-        public void onTap(View floatingTab) {
-            mOwner.onTap();
+        public void onTouchDown(View floatingTab) {
+        }
+
+        @Override
+        public void onTouchUp(View floatingTab) {
         }
     }
 }

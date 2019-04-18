@@ -104,7 +104,8 @@ public class HoverView extends RelativeLayout {
     private PositionDock mPositionToHide;
     OnExitListener mOnExitListener;
     private final Set<OnStateChangeListener> mOnStateChangeListeners = new CopyOnWriteArraySet<>();
-    private final Set<OnInteractionListener> mOnInteractionListeners = new CopyOnWriteArraySet<>();
+    private final Set<OnFloatingTabInteractionListener> mOnFloatingTabInteractionListeners = new CopyOnWriteArraySet<>();
+    private final Set<OnTabMessageViewInteractionListener> mOnTabMessageViewInteractionListeners = new CopyOnWriteArraySet<>();
     private boolean mKeepVisible;
 
     // Public for use with XML inflation. Clients should use static methods for construction.
@@ -372,29 +373,50 @@ public class HoverView extends RelativeLayout {
         mOnStateChangeListeners.remove(onStateChangeListener);
     }
 
-    public void addOnInteractionListener(@NonNull OnInteractionListener onInteractionListener) {
-        mOnInteractionListeners.add(onInteractionListener);
+    public void addOnFloatingTabInteractionListener(@NonNull OnFloatingTabInteractionListener onFloatingTabInteractionListener) {
+        mOnFloatingTabInteractionListeners.add(onFloatingTabInteractionListener);
     }
 
-    public void removeOnInteractionListener(@NonNull OnInteractionListener onInteractionListener) {
-        mOnInteractionListeners.remove(onInteractionListener);
+    public void removeOnFloatingTabInteractionListener(@NonNull OnFloatingTabInteractionListener onFloatingTabInteractionListener) {
+        mOnFloatingTabInteractionListeners.remove(onFloatingTabInteractionListener);
     }
+
+    public void addOnTabMessageViewInteractionListener(@NonNull OnTabMessageViewInteractionListener onTabMessageViewInteractionListener) {
+        mOnTabMessageViewInteractionListeners.add(onTabMessageViewInteractionListener);
+    }
+
+    public void removeOnTabMessageViewInteractionListener(@NonNull OnTabMessageViewInteractionListener onTabMessageViewInteractionListener) {
+        mOnTabMessageViewInteractionListeners.remove(onTabMessageViewInteractionListener);
+    }
+
 
     void notifyOnTap(HoverViewState state) {
-        for (OnInteractionListener onInteractionListener : mOnInteractionListeners) {
-            onInteractionListener.onTap(state.getStateType());
+        for (OnFloatingTabInteractionListener onFloatingTabInteractionListener : mOnFloatingTabInteractionListeners) {
+            onFloatingTabInteractionListener.onTap(state.getStateType());
         }
     }
 
     void notifyOnDragStart(HoverViewState state) {
-        for (OnInteractionListener onInteractionListener : mOnInteractionListeners) {
-            onInteractionListener.onDragStart(state.getStateType());
+        for (OnFloatingTabInteractionListener onFloatingTabInteractionListener : mOnFloatingTabInteractionListeners) {
+            onFloatingTabInteractionListener.onDragStart(state.getStateType());
         }
     }
 
     void notifyOnDocked(HoverViewState state) {
-        for (OnInteractionListener onInteractionListener : mOnInteractionListeners) {
-            onInteractionListener.onDocked(state.getStateType());
+        for (OnFloatingTabInteractionListener onFloatingTabInteractionListener : mOnFloatingTabInteractionListeners) {
+            onFloatingTabInteractionListener.onDocked(state.getStateType());
+        }
+    }
+
+    void notifyMessageViewOnTouchDown() {
+        for (final OnTabMessageViewInteractionListener listener : mOnTabMessageViewInteractionListeners) {
+            listener.onTouchDown();
+        }
+    }
+
+    void notifyMessageViewOnTouchUp() {
+        for (final OnTabMessageViewInteractionListener listener : mOnTabMessageViewInteractionListeners) {
+            listener.onTouchUp();
         }
     }
 
@@ -645,11 +667,17 @@ public class HoverView extends RelativeLayout {
         }
     }
 
-    public interface OnInteractionListener {
+    public interface OnFloatingTabInteractionListener {
         void onTap(HoverViewStateType stateType);
 
         void onDragStart(HoverViewStateType stateType);
 
         void onDocked(HoverViewStateType stateType);
+    }
+
+    public interface OnTabMessageViewInteractionListener {
+        void onTouchDown();
+
+        void onTouchUp();
     }
 }

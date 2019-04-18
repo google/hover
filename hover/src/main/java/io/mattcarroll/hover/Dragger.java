@@ -125,14 +125,9 @@ public abstract class Dragger extends BaseTouchController {
                     mOriginalViewPosition = convertCornerToCenter(view, getTouchViewPosition(view));
                     mCurrentViewPosition = new PointF(mOriginalViewPosition.x, mOriginalViewPosition.y);
                     mOriginalTouchPosition.set(motionEvent.getRawX(), motionEvent.getRawY());
-                    if (mEventListener != null) {
-                        mEventListener.onPress(mOriginalView);
-                    }
+                    mEventListener.onTouchDown(view);
                     return true;
                 case MotionEvent.ACTION_MOVE:
-                    if (mEventListener == null) {
-                        return false;
-                    }
                     Log.d(TAG, "ACTION_MOVE. motionX: " + motionEvent.getRawX() + ", motionY: " + motionEvent.getRawY());
                     float dragDeltaX = motionEvent.getRawX() - mOriginalTouchPosition.x;
                     float dragDeltaY = motionEvent.getRawY() - mOriginalTouchPosition.y;
@@ -150,12 +145,11 @@ public abstract class Dragger extends BaseTouchController {
                     return true;
                 case MotionEvent.ACTION_UP:
                     Log.d(TAG, "ACTION_UP");
+                    mEventListener.onTouchUp(view);
                     if (!mIsDragging) {
                         Log.d(TAG, "Reporting as a tap.");
-                        if (mEventListener != null) {
-                            mEventListener.onTap(mOriginalView);
-                        }
-                    } else if (mEventListener != null) {
+                        mEventListener.onTap(mOriginalView);
+                    } else {
                         Log.d(TAG, "Reporting as a drag release at: " + mCurrentViewPosition);
                         mEventListener.onReleasedAt(mOriginalView, mCurrentViewPosition.x, mCurrentViewPosition.y);
                     }
