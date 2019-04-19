@@ -67,10 +67,13 @@ public class TabMessageView extends HoverFrameLayout {
 
     public TabMessageView(@NonNull Context context, @NonNull FloatingTab floatingTab) {
         super(context);
-        setClipToPadding(false);
-        setClipChildren(false);
         mFloatingTab = floatingTab;
         setVisibility(GONE);
+
+        // To prevent child's shadow clipping
+        setClipToPadding(false);
+        setClipChildren(false);
+        setPadding(10, 20, 10, 20);
     }
 
     public void setMessageView(@Nullable View view) {
@@ -122,6 +125,7 @@ public class TabMessageView extends HoverFrameLayout {
     public void disappear(final boolean withAnimation) {
         disappear(withAnimation, 1);
     }
+
     public void disappear(final boolean withAnimation, float startAlpha) {
         mFloatingTab.removeOnPositionChangeListener(mOnFloatingTabChangeListener);
         mSideDock = null;
