@@ -58,7 +58,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
             final HoverViewState state = mHoverView.getState();
             if (!(state instanceof HoverViewStatePreviewed) && state instanceof HoverViewStateCollapsed) {
                 if (mHoverView.shouldKeepVisible()) {
-                    mHoverView.setAlpha(ALPHA_IDLE_VALUE);
+                    mFloatingTab.setAlpha(ALPHA_IDLE_VALUE);
                 } else {
                     onClose(false);
                 }
