@@ -431,6 +431,14 @@ public class HoverView extends RelativeLayout {
         }
     }
 
+    @Nullable
+    public TabMessageView getTabMessageView() {
+        if (mScreen == null) {
+            return null;
+        }
+        return mScreen.getTabMessageView(mSelectedSectionId);
+    }
+
     void makeTouchableInWindow() {
         mIsTouchableInWindow = true;
         if (mIsAddedToWindow) {

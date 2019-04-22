@@ -32,11 +32,9 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
     private TabMessageView mMessageView;
     private Dragger.DragListener<TabMessageView> mDefaultMessageViewDragListener;
     private Dragger.DragListener<TabMessageView> mCustomMessageViewDragListener;
-    private boolean mCollapseOnDocked = false;
 
     HoverViewStatePreviewed() {
         mDefaultMessageViewDragListener = new DefaultMessageViewDragListener();
-        init();
     }
 
     @Override
@@ -70,15 +68,12 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
 
     @Override
     protected void onPickedUpByUser() {
-        mMessageView.disappear(true);
-        mCollapseOnDocked = true;
         super.onPickedUpByUser();
     }
 
     @Override
     protected void onClose(final boolean userDropped) {
         super.onClose(userDropped);
-        init();
     }
 
     @Override
@@ -92,10 +87,6 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
     @Override
     protected void onDocked() {
         super.onDocked();
-        if (mCollapseOnDocked) {
-            mHoverView.collapse();
-            mCollapseOnDocked = false;
-        }
     }
 
     @Override
@@ -105,10 +96,6 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
 
     public void setMessageViewDragListener(final Dragger.DragListener<TabMessageView> messageViewDragListener) {
         this.mCustomMessageViewDragListener = messageViewDragListener;
-    }
-
-    private void init() {
-        mCollapseOnDocked = false;
     }
 
     private class DefaultMessageViewDragListener implements Dragger.DragListener<TabMessageView> {
