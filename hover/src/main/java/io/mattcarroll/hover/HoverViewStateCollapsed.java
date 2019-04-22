@@ -48,7 +48,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     private static final float ALPHA_IDLE_VALUE = 0.4f;
 
     protected FloatingTab mFloatingTab;
-    protected final Dragger.DragListener mFloatingTabDragListener = new FloatingTabDragListener(this);
+    protected final FloatingTabDragListener mFloatingTabDragListener = new FloatingTabDragListener(this);
     protected HoverMenu.Section mSelectedSection;
     private int mSelectedSectionIndex = -1;
     private boolean mIsCollapsed = false;
@@ -123,7 +123,6 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         }
 
         scheduleHoverViewAlphaChange();
-        setHoverMenuMode(HoverMenu.HoverMenuState.IDLE);
     }
 
     @Override
@@ -330,22 +329,12 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         mHoverView.setAlpha(1f);
     }
 
-    protected void setHoverMenuMode(final HoverMenu.HoverMenuState state) {
-        if (mHoverView == null) {
-            return;
-        }
-        if (mHoverView.mMenu == null) {
-            return;
-        }
-        mHoverView.mMenu.setState(state);
-    }
-
     @Override
     public HoverViewStateType getStateType() {
         return HoverViewStateType.COLLAPSED;
     }
 
-    protected static final class FloatingTabDragListener implements Dragger.DragListener {
+    protected static final class FloatingTabDragListener implements Dragger.DragListener<FloatingTab> {
 
         private final HoverViewStateCollapsed mOwner;
 
@@ -354,31 +343,31 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         }
 
         @Override
-        public void onDragStart(View floatingTab, float x, float y) {
+        public void onDragStart(FloatingTab floatingTab, float x, float y) {
             mOwner.onPickedUpByUser();
         }
 
         @Override
-        public void onDragTo(View floatingTab, float x, float y) {
+        public void onDragTo(FloatingTab floatingTab, float x, float y) {
             mOwner.moveFloatingTabTo(floatingTab, new Point((int) x, (int) y));
         }
 
         @Override
-        public void onReleasedAt(View floatingTab, float x, float y) {
+        public void onReleasedAt(FloatingTab floatingTab, float x, float y) {
             mOwner.onDroppedByUser();
         }
 
         @Override
-        public void onTap(View floatingTab) {
+        public void onTap(FloatingTab floatingTab) {
             mOwner.onTap();
         }
 
         @Override
-        public void onTouchDown(View floatingTab) {
+        public void onTouchDown(FloatingTab floatingTab) {
         }
 
         @Override
-        public void onTouchUp(View floatingTab) {
+        public void onTouchUp(FloatingTab floatingTab) {
         }
     }
 }

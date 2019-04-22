@@ -34,13 +34,8 @@ public abstract class HoverMenu {
 
     private static final String TAG = "HoverMenu";
 
-    public enum HoverMenuState {
-        IDLE, REMOVE_PREVIEW
-    }
-
     private List<Section> mSections = new ArrayList<>();
     private ListUpdateCallback mListUpdateCallback;
-    private HoverMenuState mState = HoverMenuState.IDLE;
 
     public abstract String getId();
 
@@ -64,8 +59,6 @@ public abstract class HoverMenu {
     @NonNull
     public abstract List<Section> getSections();
 
-    protected abstract void onHoverMenuStateChanged(HoverMenuState state);
-
     void setUpdatedCallback(@Nullable ListUpdateCallback listUpdatedCallback) {
         mListUpdateCallback = listUpdatedCallback;
     }
@@ -81,14 +74,6 @@ public abstract class HoverMenu {
             // expect many Sections.
             DiffUtil.DiffResult result = DiffUtil.calculateDiff(diffCallback, true);
             result.dispatchUpdatesTo(mListUpdateCallback);
-        }
-    }
-
-    public void setState(final HoverMenuState newState) {
-        final boolean changed = this.mState != newState;
-        this.mState = newState;
-        if (changed) {
-            onHoverMenuStateChanged(this.mState);
         }
     }
 

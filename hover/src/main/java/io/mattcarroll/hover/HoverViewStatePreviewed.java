@@ -15,11 +15,9 @@
  */
 package io.mattcarroll.hover;
 
-import android.graphics.Point;
 import android.support.annotation.NonNull;
 import android.support.v4.util.Pair;
 import android.util.Log;
-import android.view.View;
 
 import java.util.ArrayList;
 
@@ -32,10 +30,12 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
 
     private static final String TAG = "HoverViewStatePreviewed";
     private TabMessageView mMessageView;
-    protected final Dragger.DragListener mMessageViewDragListener = new MessageViewDragListener(this);
+    private Dragger.DragListener<TabMessageView> mDefaultMessageViewDragListener;
+    private Dragger.DragListener<TabMessageView> mCustomMessageViewDragListener;
     private boolean mCollapseOnDocked = false;
 
     HoverViewStatePreviewed() {
+        mDefaultMessageViewDragListener = new DefaultMessageViewDragListener();
         init();
     }
 
@@ -85,7 +85,7 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
     protected void activateDragger() {
         ArrayList<Pair<? extends HoverFrameLayout, ? extends BaseTouchController.TouchListener>> list = new ArrayList<>();
         list.add(new Pair<>(mFloatingTab, mFloatingTabDragListener));
-        list.add(new Pair<>(mMessageView, mMessageViewDragListener));
+        list.add(new Pair<>(mMessageView, mDefaultMessageViewDragListener));
         mHoverView.mDragger.activate(list);
     }
 
@@ -103,111 +103,64 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
         return HoverViewStateType.PREVIEWED;
     }
 
+    public void setMessageViewDragListener(final Dragger.DragListener<TabMessageView> messageViewDragListener) {
+        this.mCustomMessageViewDragListener = messageViewDragListener;
+    }
+
     private void init() {
         mCollapseOnDocked = false;
     }
 
-    private void hidePreview(final float startAlpha) {
-        if (mHoverView == null) {
-            return;
+    private class DefaultMessageViewDragListener implements Dragger.DragListener<TabMessageView> {
+
+        @Override
+        public void onDragStart(TabMessageView view, float x, float y) {
+            if (mCustomMessageViewDragListener == null) {
+                return;
+            }
+            mCustomMessageViewDragListener.onDragStart(view, x, y);
+
         }
-        if (mMessageView != null) {
-            mMessageView.disappear(false, startAlpha);
+
+        @Override
+        public void onDragTo(TabMessageView view, float x, float y) {
+            if (mCustomMessageViewDragListener == null) {
+                return;
+            }
+            mCustomMessageViewDragListener.onDragTo(view, x, y);
         }
-        mHoverView.collapse();
+
+        @Override
+        public void onReleasedAt(TabMessageView view, float x, float y) {
+            if (mCustomMessageViewDragListener == null) {
+                return;
+            }
+            mCustomMessageViewDragListener.onReleasedAt(view, x, y);
+        }
+
+        @Override
+        public void onTap(TabMessageView view) {
+            if (mCustomMessageViewDragListener == null) {
+                return;
+            }
+            mCustomMessageViewDragListener.onTap(view);
+        }
+
+        @Override
+        public void onTouchDown(TabMessageView view) {
+            if (mCustomMessageViewDragListener == null) {
+                return;
+            }
+            mCustomMessageViewDragListener.onTouchDown(view);
+        }
+
+        @Override
+        public void onTouchUp(TabMessageView view) {
+            if (mCustomMessageViewDragListener == null) {
+                return;
+            }
+            mCustomMessageViewDragListener.onTouchUp(view);
+        }
     }
 
-    private void notifyTabMessageViewOnTouchDown(final TabMessageView tabMessageView) {
-        if (mHoverView == null) {
-            return;
-        }
-        mHoverView.notifyMessageViewOnTouchDown(tabMessageView);
-    }
-
-    private void notifyTabMessageViewOnTouchUp(final TabMessageView tabMessageView) {
-        if (mHoverView == null) {
-            return;
-        }
-        mHoverView.notifyMessageViewOnTouchUp(tabMessageView);
-    }
-
-    protected static final class MessageViewDragListener implements Dragger.DragListener {
-
-        private static final float ALPHA_THRESHOLD = 400;
-        private static final float COLLAPSE_THRESHOLD = 300;
-        private final HoverViewStatePreviewed mOwner;
-        private float mOriginalX;
-        private float mOriginalY;
-
-        protected MessageViewDragListener(@NonNull HoverViewStatePreviewed owner) {
-            mOwner = owner;
-            init();
-        }
-
-        @Override
-        public void onDragStart(View messageView, float x, float y) {
-            if (messageView instanceof TabMessageView) {
-                mOriginalX = messageView.getX() + messageView.getWidth() / 2;
-                mOriginalY = messageView.getY() + messageView.getHeight() / 2;
-                ((TabMessageView) messageView).moveCenterTo(new Point((int) x, (int) mOriginalY));
-                updateAlpha(messageView, x);
-                mOwner.setHoverMenuMode(HoverMenu.HoverMenuState.REMOVE_PREVIEW);
-            }
-        }
-
-        @Override
-        public void onDragTo(View messageView, float x, float y) {
-            if (messageView instanceof TabMessageView) {
-                ((TabMessageView) messageView).moveCenterTo(new Point((int) x, (int) mOriginalY));
-                Log.d("ALPHA", "" + (Math.abs(x - mOriginalX) / 200));
-                updateAlpha(messageView, x);
-            }
-        }
-
-        @Override
-        public void onReleasedAt(final View messageView, float x, float y) {
-            if (messageView instanceof TabMessageView) {
-                ((TabMessageView) messageView).moveCenterTo(new Point((int) mOriginalX, (int) mOriginalY));
-                updateAlpha(messageView, mOriginalX);
-                if (Math.abs(x - mOriginalX) > COLLAPSE_THRESHOLD) {
-                    updateAlpha(messageView, mOriginalX);
-                    mOwner.hidePreview(getAlpha(x));
-                }
-            }
-            mOwner.setHoverMenuMode(HoverMenu.HoverMenuState.IDLE);
-            init();
-        }
-
-        @Override
-        public void onTap(View messageView) {
-            mOwner.onTap();
-        }
-
-        @Override
-        public void onTouchDown(View messageView) {
-            if (messageView instanceof TabMessageView) {
-                mOwner.notifyTabMessageViewOnTouchDown((TabMessageView) messageView);
-            }
-        }
-
-        @Override
-        public void onTouchUp(View messageView) {
-            if (messageView instanceof TabMessageView) {
-                mOwner.notifyTabMessageViewOnTouchUp((TabMessageView) messageView);
-            }
-        }
-
-        private void init() {
-            mOriginalX = 0;
-            mOriginalY = 0;
-        }
-
-        private void updateAlpha(final View view, final float current) {
-            view.setAlpha(getAlpha(current));
-        }
-
-        private float getAlpha(final float current) {
-            return 1 - Math.max(0, Math.min(1, (Math.abs(current - mOriginalX) / ALPHA_THRESHOLD)));
-        }
-    }
 }

@@ -61,11 +61,11 @@ public abstract class BaseTouchController {
         updateTouchControlViewAppearance();
     }
 
-    private TouchViewItem createTouchViewItem(final HoverFrameLayout originalView, final TouchListener listener, final String tag) {
+    private <T extends TouchListener<V>, V extends HoverFrameLayout> TouchViewItem createTouchViewItem(final V originalView, final T listener, final String tag) {
         return new TouchViewItem<>(originalView, createTouchViewFrom(originalView), listener, tag);
     }
 
-    protected TouchDetector createTouchDetector(final View originalView, final TouchListener touchListener) {
+    protected <T extends TouchListener<V>, V extends View> TouchDetector createTouchDetector(final V originalView, final T touchListener) {
         return new TouchDetector<>(originalView, touchListener);
     }
 
@@ -102,22 +102,22 @@ public abstract class BaseTouchController {
         return touchView;
     }
 
-    public interface TouchListener {
-        void onTap(View view);
+    public interface TouchListener <V extends View> {
+        void onTap(V view);
 
-        void onTouchDown(View view);
+        void onTouchDown(V view);
 
-        void onTouchUp(View view);
+        void onTouchUp(V view);
     }
 
-    protected class TouchDetector<T extends TouchListener> implements View.OnTouchListener {
+    protected class TouchDetector<T extends TouchListener<V>, V extends View> implements View.OnTouchListener {
 
         @NonNull
-        protected final View mOriginalView;
+        protected final V mOriginalView;
         @NonNull
         protected final T mEventListener;
 
-        TouchDetector(@NonNull final View originalView, @NonNull final T touchListener) {
+        TouchDetector(@NonNull final V originalView, @NonNull final T touchListener) {
             this.mOriginalView = originalView;
             this.mEventListener = touchListener;
         }
@@ -140,12 +140,12 @@ public abstract class BaseTouchController {
         }
     }
 
-    protected class TouchViewItem<T extends TouchListener> {
-        final HoverFrameLayout mOriginalView;
+    protected class TouchViewItem<V extends HoverFrameLayout, T extends TouchListener<V>> {
+        final V mOriginalView;
         final View mTouchView;
         final T mTouchListener;
 
-        TouchViewItem(final HoverFrameLayout originalView, final View touchView, final T touchListener, final String tag) {
+        TouchViewItem(final V originalView, final View touchView, final T touchListener, final String tag) {
             this.mOriginalView = originalView;
             this.mTouchView = touchView;
             this.mTouchListener = touchListener;
