@@ -124,6 +124,13 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
             }
             mCustomMessageViewDragListener.onReleasedAt(view, x, y);
         }
+        @Override
+        public void onDragCancel(TabMessageView view) {
+            if (mCustomMessageViewDragListener == null) {
+                return;
+            }
+            mCustomMessageViewDragListener.onDragCancel(view);
+        }
 
         @Override
         public void onTap(TabMessageView view) {

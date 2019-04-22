@@ -358,6 +358,11 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         }
 
         @Override
+        public void onDragCancel(FloatingTab floatingTab) {
+            mOwner.onDroppedByUser();
+        }
+
+        @Override
         public void onTap(FloatingTab floatingTab) {
             mOwner.onTap();
         }

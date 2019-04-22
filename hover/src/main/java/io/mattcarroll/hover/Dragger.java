@@ -95,6 +95,13 @@ public abstract class Dragger extends BaseTouchController {
          * @param y    y-coordiante of the user's release (in the parent View's coordinate space)
          */
         void onReleasedAt(V view, float x, float y);
+
+        /**
+         * The drag is cancelled (ex: due to screen off).
+         *
+         * @param view the view that is being dragged
+         */
+        void onDragCancel(V view);
     }
 
     private class DragDetector<T extends DragListener<V>, V extends View> extends TouchDetector<T, V> {
@@ -152,7 +159,15 @@ public abstract class Dragger extends BaseTouchController {
                     } else {
                         Log.d(TAG, "Reporting as a drag release at: " + mCurrentViewPosition);
                         mEventListener.onReleasedAt(mOriginalView, mCurrentViewPosition.x, mCurrentViewPosition.y);
+                        mIsDragging = false;
                     }
+                    return true;
+                case MotionEvent.ACTION_CANCEL:
+                    Log.d(TAG, "ACTION_CANCEL");
+                    if (mIsDragging) {
+                        mEventListener.onDragCancel(mOriginalView);
+                    }
+                    mIsDragging = false;
                     return true;
                 default:
                     return false;
