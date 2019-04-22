@@ -325,7 +325,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
 
     protected void restoreHoverViewAlphaValue() {
         mHandler.removeCallbacks(mAlphaChanger);
-        mHoverView.setAlpha(1f);
+        mFloatingTab.setAlpha(1f);
     }
 
     @Override
