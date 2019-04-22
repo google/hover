@@ -274,7 +274,7 @@ public class HoverView extends RelativeLayout {
         return mState;
     }
 
-    public void setMessageViewDragListener(@Nullable final Dragger.DragListener<TabMessageView> messageViewDragListener) {
+    public void setTabMessageViewInteractionListener(@Nullable final OnTabMessageViewInteractionListener messageViewDragListener) {
         ((HoverViewStatePreviewed) mPreviewed).setMessageViewDragListener(messageViewDragListener);
     }
 
@@ -665,4 +665,6 @@ public class HoverView extends RelativeLayout {
         void onDocked(HoverViewStateType stateType);
     }
 
+    public abstract static class OnTabMessageViewInteractionListener implements Dragger.DragListener<TabMessageView> {
+    }
 }
