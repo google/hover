@@ -408,15 +408,15 @@ public class HoverView extends RelativeLayout {
         }
     }
 
-    void notifyMessageViewOnTouchDown() {
+    void notifyMessageViewOnTouchDown(final TabMessageView tabMessageView) {
         for (final OnTabMessageViewInteractionListener listener : mOnTabMessageViewInteractionListeners) {
-            listener.onTouchDown();
+            listener.onTouchDown(tabMessageView);
         }
     }
 
-    void notifyMessageViewOnTouchUp() {
+    void notifyMessageViewOnTouchUp(final TabMessageView tabMessageView) {
         for (final OnTabMessageViewInteractionListener listener : mOnTabMessageViewInteractionListeners) {
-            listener.onTouchUp();
+            listener.onTouchUp(tabMessageView);
         }
     }
 
@@ -676,8 +676,8 @@ public class HoverView extends RelativeLayout {
     }
 
     public interface OnTabMessageViewInteractionListener {
-        void onTouchDown();
+        void onTouchDown(TabMessageView tabMessageView);
 
-        void onTouchUp();
+        void onTouchUp(TabMessageView tabMessageView);
     }
 }

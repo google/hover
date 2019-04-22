@@ -117,18 +117,18 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
         mHoverView.collapse();
     }
 
-    private void notifyTabMessageViewOnTouchDown() {
+    private void notifyTabMessageViewOnTouchDown(final TabMessageView tabMessageView) {
         if (mHoverView == null) {
             return;
         }
-        mHoverView.notifyMessageViewOnTouchDown();
+        mHoverView.notifyMessageViewOnTouchDown(tabMessageView);
     }
 
-    private void notifyTabMessageViewOnTouchUp() {
+    private void notifyTabMessageViewOnTouchUp(final TabMessageView tabMessageView) {
         if (mHoverView == null) {
             return;
         }
-        mHoverView.notifyMessageViewOnTouchUp();
+        mHoverView.notifyMessageViewOnTouchUp(tabMessageView);
     }
 
     protected static final class MessageViewDragListener implements Dragger.DragListener {
@@ -185,12 +185,16 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
 
         @Override
         public void onTouchDown(View messageView) {
-            mOwner.notifyTabMessageViewOnTouchDown();
+            if (messageView instanceof TabMessageView) {
+                mOwner.notifyTabMessageViewOnTouchDown((TabMessageView) messageView);
+            }
         }
 
         @Override
         public void onTouchUp(View messageView) {
-            mOwner.notifyTabMessageViewOnTouchUp();
+            if (messageView instanceof TabMessageView) {
+                mOwner.notifyTabMessageViewOnTouchUp((TabMessageView) messageView);
+            }
         }
 
         private void init() {
