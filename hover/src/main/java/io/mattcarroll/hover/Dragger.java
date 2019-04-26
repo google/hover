@@ -19,10 +19,9 @@ import android.graphics.Point;
 import android.graphics.PointF;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
-
-import java.util.List;
 
 /**
  * Reports user drag behavior on the screen to a {@link DragListener}.
@@ -31,69 +30,6 @@ public abstract class Dragger extends BaseTouchController {
     private static final String TAG = "Dragger";
 
     private final int mTapTouchSlop;
-    private DragListener mDragListener;
-    private boolean mIsDragging;
-
-    private PointF mOriginalViewPosition = new PointF();
-    private PointF mCurrentViewPosition = new PointF();
-    private PointF mOriginalTouchPosition = new PointF();
-
-    protected final View.OnTouchListener mDragTouchListener = new View.OnTouchListener() {
-        @Override
-        public boolean onTouch(View view, MotionEvent motionEvent) {
-            switch (motionEvent.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    Log.d(TAG, "ACTION_DOWN");
-                    mIsDragging = false;
-
-                    mOriginalViewPosition = convertCornerToCenter(view, getTouchViewPosition(view));
-                    mCurrentViewPosition = new PointF(mOriginalViewPosition.x, mOriginalViewPosition.y);
-                    mOriginalTouchPosition.set(motionEvent.getRawX(), motionEvent.getRawY());
-                    if (mTouchListener != null) {
-                        mTouchListener.onPress();
-                    }
-                    return true;
-                case MotionEvent.ACTION_MOVE:
-                    if (mDragListener == null) {
-                        return false;
-                    }
-                    Log.d(TAG, "ACTION_MOVE. motionX: " + motionEvent.getRawX() + ", motionY: " + motionEvent.getRawY());
-                    float dragDeltaX = motionEvent.getRawX() - mOriginalTouchPosition.x;
-                    float dragDeltaY = motionEvent.getRawY() - mOriginalTouchPosition.y;
-                    mCurrentViewPosition = new PointF(
-                            mOriginalViewPosition.x + dragDeltaX,
-                            mOriginalViewPosition.y + dragDeltaY
-                    );
-
-                    if (mIsDragging || !isTouchWithinSlopOfOriginalTouch(dragDeltaX, dragDeltaY)) {
-                        if (!mIsDragging) {
-                            // Dragging just started
-                            Log.d(TAG, "MOVE Start Drag.");
-                            mIsDragging = true;
-                            mDragListener.onDragStart(view, mCurrentViewPosition.x, mCurrentViewPosition.y);
-                        } else {
-                            mDragListener.onDragTo(view, mCurrentViewPosition.x, mCurrentViewPosition.y);
-                        }
-                    }
-
-                    return true;
-                case MotionEvent.ACTION_UP:
-                    Log.d(TAG, "ACTION_UP");
-                    if (!mIsDragging) {
-                        Log.d(TAG, "Reporting as a tap.");
-                        if (mTouchListener != null) {
-                            mTouchListener.onTap();
-                        }
-                    } else if (mDragListener != null) {
-                        Log.d(TAG, "Reporting as a drag release at: " + mCurrentViewPosition);
-                        mDragListener.onReleasedAt(view, mCurrentViewPosition.x, mCurrentViewPosition.y);
-                    }
-                    return true;
-                default:
-                    return false;
-            }
-        }
-    };
 
     public Dragger(int mTapTouchSlop) {
         this.mTapTouchSlop = mTapTouchSlop;
@@ -103,21 +39,12 @@ public abstract class Dragger extends BaseTouchController {
 
     public abstract Point getContainerSize();
 
-    public void activate(@NonNull DragListener dragListener, @NonNull List<View> viewList) {
-        if (!mIsActivated) {
-            super.activate(dragListener, viewList);
-            mDragListener = dragListener;
-            for (View touchView : mTouchViewMap.values()) {
-                touchView.setOnTouchListener(mDragTouchListener);
-            }
-        }
-    }
-
     @Override
-    public void deactivate() {
-        if (mIsActivated) {
-            super.deactivate();
-            mDragListener = null;
+    protected <T extends TouchListener<V>, V extends View> TouchDetector createTouchDetector(final V originalView, final T touchListener) {
+        if (touchListener instanceof DragListener) {
+            return new DragDetector<>(originalView, (DragListener<V>) touchListener);
+        } else {
+            return super.createTouchDetector(originalView, touchListener);
         }
     }
 
@@ -141,32 +68,121 @@ public abstract class Dragger extends BaseTouchController {
         );
     }
 
-    public interface DragListener extends TouchListener {
+    public interface DragListener<V extends View> extends TouchListener<V> {
         /**
          * The user has begun dragging.
          *
          * @param view the view that is being dragged
-         * @param x x-coordinate of the user's drag start (in the parent View's coordinate space)
-         * @param y y-coordiante of the user's drag start (in the parent View's coordinate space)
+         * @param x    x-coordinate of the user's drag start (in the parent View's coordinate space)
+         * @param y    y-coordiante of the user's drag start (in the parent View's coordinate space)
          */
-        void onDragStart(View view, float x, float y);
+        void onDragStart(V view, float x, float y);
 
         /**
          * The user has dragged to the given coordinates.
          *
          * @param view the view that is being dragged
-         * @param x x-coordinate of the user's drag (in the parent View's coordinate space)
-         * @param y y-coordiante of the user's drag (in the parent View's coordinate space)
+         * @param x    x-coordinate of the user's drag (in the parent View's coordinate space)
+         * @param y    y-coordiante of the user's drag (in the parent View's coordinate space)
          */
-        void onDragTo(View view, float x, float y);
+        void onDragTo(V view, float x, float y);
 
         /**
          * The user has stopped touching the drag area.
          *
          * @param view the view that is being dragged
-         * @param x x-coordinate of the user's release (in the parent View's coordinate space)
-         * @param y y-coordiante of the user's release (in the parent View's coordinate space)
+         * @param x    x-coordinate of the user's release (in the parent View's coordinate space)
+         * @param y    y-coordiante of the user's release (in the parent View's coordinate space)
          */
-        void onReleasedAt(View view, float x, float y);
+        void onReleasedAt(V view, float x, float y);
+
+        /**
+         * The drag is cancelled (ex: due to screen off).
+         *
+         * @param view the view that is being dragged
+         */
+        void onDragCancel(V view);
+    }
+
+    private class DragDetector<T extends DragListener<V>, V extends View> extends TouchDetector<T, V> {
+
+        private final GestureDetector mGestureDetector;
+        private boolean mIsDragging;
+        private PointF mOriginalViewPosition = new PointF();
+        private PointF mCurrentViewPosition = new PointF();
+        private PointF mOriginalTouchPosition = new PointF();
+
+        public DragDetector(final V originalView, final T dragListener) {
+            super(originalView, dragListener);
+            mGestureDetector = new GestureDetector(null, new GestureDetector.SimpleOnGestureListener() {
+                public void onLongPress(final MotionEvent e) {
+                    tryDragStart("LONG_PRESS");
+                }
+            });
+        }
+
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            mGestureDetector.onTouchEvent(motionEvent);
+            switch (motionEvent.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    Log.d(TAG, "ACTION_DOWN");
+                    mIsDragging = false;
+
+                    mOriginalViewPosition = convertCornerToCenter(view, getTouchViewPosition(view));
+                    mCurrentViewPosition = new PointF(mOriginalViewPosition.x, mOriginalViewPosition.y);
+                    mOriginalTouchPosition.set(motionEvent.getRawX(), motionEvent.getRawY());
+                    mEventListener.onTouchDown(mOriginalView);
+                    return true;
+                case MotionEvent.ACTION_MOVE:
+                    Log.d(TAG, "ACTION_MOVE. motionX: " + motionEvent.getRawX() + ", motionY: " + motionEvent.getRawY());
+                    float dragDeltaX = motionEvent.getRawX() - mOriginalTouchPosition.x;
+                    float dragDeltaY = motionEvent.getRawY() - mOriginalTouchPosition.y;
+                    mCurrentViewPosition = new PointF(
+                            mOriginalViewPosition.x + dragDeltaX,
+                            mOriginalViewPosition.y + dragDeltaY
+                    );
+
+                    if (mIsDragging || !isTouchWithinSlopOfOriginalTouch(dragDeltaX, dragDeltaY)) {
+                        if (!tryDragStart("ACTION_MOVE")) {
+                            mEventListener.onDragTo(mOriginalView, mCurrentViewPosition.x, mCurrentViewPosition.y);
+                        }
+                    }
+
+                    return true;
+                case MotionEvent.ACTION_UP:
+                    Log.d(TAG, "ACTION_UP");
+                    mEventListener.onTouchUp(mOriginalView);
+                    if (!mIsDragging) {
+                        Log.d(TAG, "Reporting as a tap.");
+                        mEventListener.onTap(mOriginalView);
+                    } else {
+                        Log.d(TAG, "Reporting as a drag release at: " + mCurrentViewPosition);
+                        mEventListener.onReleasedAt(mOriginalView, mCurrentViewPosition.x, mCurrentViewPosition.y);
+                        mIsDragging = false;
+                    }
+                    return true;
+                case MotionEvent.ACTION_CANCEL:
+                    Log.d(TAG, "ACTION_CANCEL");
+                    if (mIsDragging) {
+                        mEventListener.onDragCancel(mOriginalView);
+                    }
+                    mIsDragging = false;
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private boolean tryDragStart(final String reason) {
+            if (mIsDragging) {
+                return false;
+            }
+            // Dragging is just started by reason
+            Log.d(TAG, "" + reason + " starts drag.");
+            mIsDragging = true;
+            mEventListener.onDragStart(mOriginalView, mCurrentViewPosition.x, mCurrentViewPosition.y);
+            return true;
+        }
     }
 }

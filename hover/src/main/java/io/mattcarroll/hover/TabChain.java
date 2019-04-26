@@ -21,9 +21,6 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
 
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
-
 /**
  * Connects one {@link FloatingTab}s position to that of another {@link FloatingTab}. The space
  * between the tabs can be configured at construction time.
@@ -36,11 +33,10 @@ class TabChain {
     private final int mTabSpacingInPx;
     private Point mLockedPosition;
     private FloatingTab mPredecessorTab;
-    private final Set<FloatingTab.OnPositionChangeListener> mOnPositionChangeListeners = new CopyOnWriteArraySet<FloatingTab.OnPositionChangeListener>();
 
-    private final FloatingTab.OnPositionChangeListener mOnPredecessorPositionChange = new FloatingTab.OnPositionChangeListener() {
+    private final FloatingTab.OnFloatingTabChangeListener mOnPredecessorPositionChange = new FloatingTab.OnFloatingTabChangeListener() {
         @Override
-        public void onPositionChange(@NonNull Point position) {
+        public void onPositionChange(@NonNull View view) {
             // No-op. We only care when our predecessor's dock changes.
         }
 

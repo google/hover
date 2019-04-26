@@ -62,7 +62,8 @@ class ContentDisplay extends RelativeLayout {
 
     private final FloatingTab.OnPositionChangeListener mOnTabPositionChangeListener = new FloatingTab.OnPositionChangeListener() {
         @Override
-        public void onPositionChange(@NonNull Point position) {
+        public void onPositionChange(@NonNull View view) {
+            final Point position = new Point((int) view.getX() + (view.getWidth() / 2), (int) view.getY() + (view.getHeight() / 2));
             Log.d(TAG, mSelectedTab + " tab moved to " + position);
             updateTabSelectorPosition();
 
@@ -70,11 +71,6 @@ class ContentDisplay extends RelativeLayout {
 
             // We have received an affirmative position for the selected tab. Show tab selector.
             mTabSelectorView.setVisibility(VISIBLE);
-        }
-
-        @Override
-        public void onDockChange(@NonNull Dock dock) {
-            // No-op.
         }
     };
 

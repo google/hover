@@ -26,7 +26,7 @@ import java.util.List;
 
 /**
  * A {@code HoverMenu} models the structure of a menu that appears within a {@link HoverView}.
- *
+ * <p>
  * A {@code HoverMenu} includes an ordered list of {@link Section}s.  Each {@code Section} has a tab
  * {@code View} that represents the section, and the {@link Content} of the given section.
  */

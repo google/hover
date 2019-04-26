@@ -15,10 +15,9 @@
  */
 package io.mattcarroll.hover;
 
-import android.graphics.Point;
 import android.support.annotation.NonNull;
+import android.support.v4.util.Pair;
 import android.util.Log;
-import android.view.View;
 
 import java.util.ArrayList;
 
@@ -31,10 +30,11 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
 
     private static final String TAG = "HoverViewStatePreviewed";
     private TabMessageView mMessageView;
-    private boolean mCollapseOnDocked = false;
+    private Dragger.DragListener<TabMessageView> mDefaultMessageViewDragListener;
+    private Dragger.DragListener<TabMessageView> mCustomMessageViewDragListener;
 
     HoverViewStatePreviewed() {
-        init();
+        mDefaultMessageViewDragListener = new DefaultMessageViewDragListener();
     }
 
     @Override
@@ -50,6 +50,7 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
                     return;
                 }
                 onStateChanged.run();
+                activateDragger();
             }
         });
     }
@@ -66,49 +67,26 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
     }
 
     @Override
-    protected void moveTabTo(View touchView, @NonNull Point position) {
-        if (mHoverView == null) {
-            return;
-        }
-
-        final int floatingTabOffset = mMessageView.getWidth() / 2;
-        if (touchView.getTag() != null && touchView.getTag().equals(mFloatingTab.getTag())) {
-            mFloatingTab.moveTo(position);
-        } else if (mHoverView.mCollapsedDock.sidePosition().getSide() == SideDock.SidePosition.RIGHT) {
-            mFloatingTab.moveTo(new Point(position.x + floatingTabOffset, position.y));
-        } else {
-            mFloatingTab.moveTo(new Point(position.x - floatingTabOffset, position.y));
-        }
-    }
-
-    @Override
     protected void onPickedUpByUser() {
-        mMessageView.disappear(true);
-        mCollapseOnDocked = true;
         super.onPickedUpByUser();
     }
 
     @Override
     protected void onClose(final boolean userDropped) {
         super.onClose(userDropped);
-        init();
     }
 
     @Override
     protected void activateDragger() {
-        final ArrayList<View> list = new ArrayList<>();
-        list.add(mFloatingTab);
-        list.add(mMessageView);
-        mHoverView.mDragger.activate(mDragListener, list);
+        ArrayList<Pair<? extends HoverFrameLayout, ? extends BaseTouchController.TouchListener>> list = new ArrayList<>();
+        list.add(new Pair<>(mFloatingTab, mFloatingTabDragListener));
+        list.add(new Pair<>(mMessageView, mDefaultMessageViewDragListener));
+        mHoverView.mDragger.activate(list);
     }
 
     @Override
     protected void onDocked() {
         super.onDocked();
-        if (mCollapseOnDocked) {
-            mHoverView.collapse();
-            mCollapseOnDocked = false;
-        }
     }
 
     @Override
@@ -116,7 +94,67 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
         return HoverViewStateType.PREVIEWED;
     }
 
-    private void init() {
-        mCollapseOnDocked = false;
+    public void setMessageViewDragListener(final Dragger.DragListener<TabMessageView> messageViewDragListener) {
+        this.mCustomMessageViewDragListener = messageViewDragListener;
     }
+
+    private class DefaultMessageViewDragListener implements Dragger.DragListener<TabMessageView> {
+
+        @Override
+        public void onDragStart(TabMessageView view, float x, float y) {
+            if (mCustomMessageViewDragListener == null) {
+                return;
+            }
+            mCustomMessageViewDragListener.onDragStart(view, x, y);
+
+        }
+
+        @Override
+        public void onDragTo(TabMessageView view, float x, float y) {
+            if (mCustomMessageViewDragListener == null) {
+                return;
+            }
+            mCustomMessageViewDragListener.onDragTo(view, x, y);
+        }
+
+        @Override
+        public void onReleasedAt(TabMessageView view, float x, float y) {
+            if (mCustomMessageViewDragListener == null) {
+                return;
+            }
+            mCustomMessageViewDragListener.onReleasedAt(view, x, y);
+        }
+        @Override
+        public void onDragCancel(TabMessageView view) {
+            if (mCustomMessageViewDragListener == null) {
+                return;
+            }
+            mCustomMessageViewDragListener.onDragCancel(view);
+        }
+
+        @Override
+        public void onTap(TabMessageView view) {
+            if (mCustomMessageViewDragListener == null) {
+                return;
+            }
+            mCustomMessageViewDragListener.onTap(view);
+        }
+
+        @Override
+        public void onTouchDown(TabMessageView view) {
+            if (mCustomMessageViewDragListener == null) {
+                return;
+            }
+            mCustomMessageViewDragListener.onTouchDown(view);
+        }
+
+        @Override
+        public void onTouchUp(TabMessageView view) {
+            if (mCustomMessageViewDragListener == null) {
+                return;
+            }
+            mCustomMessageViewDragListener.onTouchUp(view);
+        }
+    }
+
 }

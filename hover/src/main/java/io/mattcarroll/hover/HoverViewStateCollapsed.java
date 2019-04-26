@@ -19,6 +19,7 @@ import android.graphics.Point;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.util.Pair;
 import android.support.v7.util.ListUpdateCallback;
 import android.util.Log;
 import android.view.View;
@@ -47,7 +48,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     private static final float ALPHA_IDLE_VALUE = 0.4f;
 
     protected FloatingTab mFloatingTab;
-    protected final Dragger.DragListener mDragListener = new FloatingTabDragListener(this);
+    protected final FloatingTabDragListener mFloatingTabDragListener = new FloatingTabDragListener(this);
     protected HoverMenu.Section mSelectedSection;
     private int mSelectedSectionIndex = -1;
     private boolean mIsCollapsed = false;
@@ -68,8 +69,8 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     private Runnable mOnStateChanged;
 
     @Override
-    public void takeControl(@NonNull HoverView hoverView, final Runnable onStateChanged) {
-        super.takeControl(hoverView, onStateChanged);
+    public void takeControl(@NonNull HoverView floatingTab, final Runnable onStateChanged) {
+        super.takeControl(floatingTab, onStateChanged);
         Log.d(TAG, "Taking control.");
         mOnStateChanged = onStateChanged;
         mHoverView.makeUntouchableInWindow();
@@ -243,7 +244,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         mHoverView.close();
     }
 
-    private void onTap() {
+    protected void onTap() {
         Log.d(TAG, "Floating tab was tapped.");
         if (mHoverView != null) {
             mHoverView.notifyOnTap(this);
@@ -271,7 +272,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
                 mHoverView.getScreenSize(),
                 mFloatingTab.getTabSize()
         );
-        mFloatingTab.moveTo(dockPosition);
+        mFloatingTab.moveCenterTo(dockPosition);
     }
 
     private void initDockPosition() {
@@ -305,14 +306,14 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         mHoverView.notifyOnDocked(this);
     }
 
-    protected void moveTabTo(View touchView, @NonNull Point position) {
-        mFloatingTab.moveTo(position);
+    void moveFloatingTabTo(View floatingTab, @NonNull Point position) {
+        mFloatingTab.moveCenterTo(position);
     }
 
     protected void activateDragger() {
-        ArrayList<View> list = new ArrayList<>();
-        list.add(mFloatingTab);
-        mHoverView.mDragger.activate(mDragListener, list);
+        ArrayList<Pair<? extends HoverFrameLayout, ? extends BaseTouchController.TouchListener>> list = new ArrayList<>();
+        list.add(new Pair<>(mFloatingTab, mFloatingTabDragListener));
+        mHoverView.mDragger.activate(list);
     }
 
     protected void deactivateDragger() {
@@ -333,7 +334,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         return HoverViewStateType.COLLAPSED;
     }
 
-    protected static final class FloatingTabDragListener implements Dragger.DragListener {
+    protected static final class FloatingTabDragListener implements Dragger.DragListener<FloatingTab> {
 
         private final HoverViewStateCollapsed mOwner;
 
@@ -342,27 +343,36 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         }
 
         @Override
-        public void onDragStart(View touchView, float x, float y) {
+        public void onDragStart(FloatingTab floatingTab, float x, float y) {
             mOwner.onPickedUpByUser();
         }
 
         @Override
-        public void onDragTo(View touchView, float x, float y) {
-            mOwner.moveTabTo(touchView, new Point((int) x, (int) y));
+        public void onDragTo(FloatingTab floatingTab, float x, float y) {
+            mOwner.moveFloatingTabTo(floatingTab, new Point((int) x, (int) y));
         }
 
         @Override
-        public void onReleasedAt(View touchView, float x, float y) {
+        public void onReleasedAt(FloatingTab floatingTab, float x, float y) {
             mOwner.onDroppedByUser();
         }
 
         @Override
-        public void onPress() {
+        public void onDragCancel(FloatingTab floatingTab) {
+            mOwner.onDroppedByUser();
         }
 
         @Override
-        public void onTap() {
+        public void onTap(FloatingTab floatingTab) {
             mOwner.onTap();
+        }
+
+        @Override
+        public void onTouchDown(FloatingTab floatingTab) {
+        }
+
+        @Override
+        public void onTouchUp(FloatingTab floatingTab) {
         }
     }
 }

@@ -104,7 +104,7 @@ public class HoverView extends RelativeLayout {
     private PositionDock mPositionToHide;
     OnExitListener mOnExitListener;
     private final Set<OnStateChangeListener> mOnStateChangeListeners = new CopyOnWriteArraySet<>();
-    private final Set<OnInteractionListener> mOnInteractionListeners = new CopyOnWriteArraySet<>();
+    private final Set<OnFloatingTabInteractionListener> mOnFloatingTabInteractionListeners = new CopyOnWriteArraySet<>();
     private boolean mKeepVisible;
 
     // Public for use with XML inflation. Clients should use static methods for construction.
@@ -274,6 +274,10 @@ public class HoverView extends RelativeLayout {
         return mState;
     }
 
+    public void setTabMessageViewInteractionListener(@Nullable final OnTabMessageViewInteractionListener messageViewDragListener) {
+        ((HoverViewStatePreviewed) mPreviewed).setMessageViewDragListener(messageViewDragListener);
+    }
+
     private void onBackPressed() {
         mState.onBackPressed();
     }
@@ -289,6 +293,10 @@ public class HoverView extends RelativeLayout {
 
         if (null == mSelectedSectionId || null == mMenu.getSection(mSelectedSectionId)) {
             mSelectedSectionId = mMenu.getSection(0).getId();
+        }
+        final FloatingTab selectedTab = mScreen.getChainedTab(mSelectedSectionId);
+        if (selectedTab != null) {
+            selectedTab.setTabView(mMenu.getSection(mSelectedSectionId).getTabView());
         }
         mState.setMenu(menu);
     }
@@ -368,29 +376,29 @@ public class HoverView extends RelativeLayout {
         mOnStateChangeListeners.remove(onStateChangeListener);
     }
 
-    public void addOnInteractionListener(@NonNull OnInteractionListener onInteractionListener) {
-        mOnInteractionListeners.add(onInteractionListener);
+    public void addOnFloatingTabInteractionListener(@NonNull OnFloatingTabInteractionListener onFloatingTabInteractionListener) {
+        mOnFloatingTabInteractionListeners.add(onFloatingTabInteractionListener);
     }
 
-    public void removeOnInteractionListener(@NonNull OnInteractionListener onInteractionListener) {
-        mOnInteractionListeners.remove(onInteractionListener);
+    public void removeOnFloatingTabInteractionListener(@NonNull OnFloatingTabInteractionListener onFloatingTabInteractionListener) {
+        mOnFloatingTabInteractionListeners.remove(onFloatingTabInteractionListener);
     }
 
     void notifyOnTap(HoverViewState state) {
-        for (OnInteractionListener onInteractionListener : mOnInteractionListeners) {
-            onInteractionListener.onTap(state.getStateType());
+        for (OnFloatingTabInteractionListener onFloatingTabInteractionListener : mOnFloatingTabInteractionListeners) {
+            onFloatingTabInteractionListener.onTap(state.getStateType());
         }
     }
 
     void notifyOnDragStart(HoverViewState state) {
-        for (OnInteractionListener onInteractionListener : mOnInteractionListeners) {
-            onInteractionListener.onDragStart(state.getStateType());
+        for (OnFloatingTabInteractionListener onFloatingTabInteractionListener : mOnFloatingTabInteractionListeners) {
+            onFloatingTabInteractionListener.onDragStart(state.getStateType());
         }
     }
 
     void notifyOnDocked(HoverViewState state) {
-        for (OnInteractionListener onInteractionListener : mOnInteractionListeners) {
-            onInteractionListener.onDocked(state.getStateType());
+        for (OnFloatingTabInteractionListener onFloatingTabInteractionListener : mOnFloatingTabInteractionListeners) {
+            onFloatingTabInteractionListener.onDocked(state.getStateType());
         }
     }
 
@@ -421,6 +429,14 @@ public class HoverView extends RelativeLayout {
             mIsAddedToWindow = false;
             release();
         }
+    }
+
+    @Nullable
+    public TabMessageView getTabMessageView() {
+        if (mScreen == null) {
+            return null;
+        }
+        return mScreen.getTabMessageView(mSelectedSectionId);
     }
 
     void makeTouchableInWindow() {
@@ -641,11 +657,14 @@ public class HoverView extends RelativeLayout {
         }
     }
 
-    public interface OnInteractionListener {
+    public interface OnFloatingTabInteractionListener {
         void onTap(HoverViewStateType stateType);
 
         void onDragStart(HoverViewStateType stateType);
 
         void onDocked(HoverViewStateType stateType);
+    }
+
+    public abstract static class OnTabMessageViewInteractionListener implements Dragger.DragListener<TabMessageView> {
     }
 }

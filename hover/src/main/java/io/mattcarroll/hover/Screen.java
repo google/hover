@@ -95,10 +95,10 @@ class Screen {
             FloatingTab chainedTab = new FloatingTab(mContainer.getContext(), tabId);
             chainedTab.setTabView(tabView);
             chainedTab.enableDebugMode(mIsDebugMode);
-            mContainer.addView(chainedTab);
             mTabs.put(tabId, chainedTab);
             final TabMessageView messageView = new TabMessageView(tabView.getContext(), chainedTab);
             mContainer.addView(messageView);
+            mContainer.addView(chainedTab);
             mTabMessageViews.put(tabId, messageView);
             return chainedTab;
         }

@@ -11,23 +11,26 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.TranslateAnimation;
-import android.widget.FrameLayout;
 
-public class TabMessageView extends FrameLayout {
+public class TabMessageView extends HoverFrameLayout {
     private static final String TAG = "TabMessageView";
 
     private final FloatingTab mFloatingTab;
     private SideDock mSideDock;
     private View mMessageView;
 
-    private final FloatingTab.OnPositionChangeListener mOnTabPositionChangeListener = new FloatingTab.OnPositionChangeListener() {
+    private final FloatingTab.OnFloatingTabChangeListener mOnFloatingTabChangeListener = new FloatingTab.OnFloatingTabChangeListener() {
         private static final int DEFAULT_SIDE = SideDock.SidePosition.LEFT;
 
         private Point mLastPosition;
         private int mLastSide;
 
         @Override
-        public void onPositionChange(@NonNull Point position) {
+        public void onPositionChange(View view) {
+            if (!(view instanceof FloatingTab)) {
+                return;
+            }
+            final Point position = ((FloatingTab) view).getPosition();
             final Integer side = getSide();
             if (side.equals(mLastSide) && position.equals(mLastPosition) || getWidth() == 0) {
                 return;
@@ -64,10 +67,13 @@ public class TabMessageView extends FrameLayout {
 
     public TabMessageView(@NonNull Context context, @NonNull FloatingTab floatingTab) {
         super(context);
-        setClipToPadding(false);
-        setClipChildren(false);
         mFloatingTab = floatingTab;
         setVisibility(GONE);
+
+        // To prevent child's shadow clipping
+        setClipToPadding(false);
+        setClipChildren(false);
+        setPadding(10, 20, 10, 20);
     }
 
     public void setMessageView(@Nullable View view) {
@@ -83,7 +89,7 @@ public class TabMessageView extends FrameLayout {
 
     public void appear(final SideDock dock, @Nullable final Runnable onAppeared) {
         mSideDock = dock;
-        mFloatingTab.addOnPositionChangeListener(mOnTabPositionChangeListener);
+        mFloatingTab.addOnPositionChangeListener(mOnFloatingTabChangeListener);
         if (getVisibility() != View.VISIBLE) {
             final AnimationSet animation = new AnimationSet(true);
             final AlphaAnimation alpha = new AlphaAnimation(0, 1);
@@ -117,15 +123,33 @@ public class TabMessageView extends FrameLayout {
     }
 
     public void disappear(final boolean withAnimation) {
-        mFloatingTab.removeOnPositionChangeListener(mOnTabPositionChangeListener);
+        disappear(withAnimation, 1);
+    }
+
+    public void disappear(final boolean withAnimation, float startAlpha) {
+        mFloatingTab.removeOnPositionChangeListener(mOnFloatingTabChangeListener);
         mSideDock = null;
         if (withAnimation && getVisibility() == View.VISIBLE) {
             final AnimationSet animation = new AnimationSet(true);
-            final AlphaAnimation alpha = new AlphaAnimation(1, 0);
+            final AlphaAnimation alpha = new AlphaAnimation(startAlpha, 0);
             alpha.setDuration(300);
             animation.addAnimation(alpha);
             startAnimation(animation);
         }
         setVisibility(GONE);
+    }
+
+    public void moveCenterTo(@NonNull Point floatPosition) {
+        Point cornerPosition = convertCenterToCorner(floatPosition);
+        setX(cornerPosition.x);
+        setY(cornerPosition.y);
+        notifyListenersOfPositionChange(this);
+    }
+
+    private Point convertCenterToCorner(@NonNull Point centerPosition) {
+        return new Point(
+                (int) (centerPosition.x - (getWidth() / 2)),
+                (int) (centerPosition.y - (getHeight() / 2))
+        );
     }
 }
