@@ -43,9 +43,6 @@ class HoverViewStateClosed extends BaseHoverViewState {
                         return;
                     }
                     mHoverView.mScreen.destroyChainedTab(selectedTab);
-                    if (null != mHoverView.mOnExitListener) {
-                        mHoverView.mOnExitListener.onExit();
-                    }
                     onStateChanged.run();
                 }
             });

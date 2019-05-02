@@ -225,6 +225,9 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     protected void onClose(final boolean userDropped) {
         if (userDropped) {
             Log.d(TAG, "User dropped floating tab on exit.");
+            if (null != mHoverView.mOnExitListener) {
+                mHoverView.mOnExitListener.onExit();
+            }
         } else {
             Log.d(TAG, "Auto dropped.");
         }
