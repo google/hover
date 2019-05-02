@@ -87,6 +87,11 @@ public class TabMessageView extends HoverFrameLayout {
         }
     }
 
+    @Nullable
+    public View getMessageView() {
+        return mMessageView;
+    }
+
     public void appear(final SideDock dock, @Nullable final Runnable onAppeared) {
         mSideDock = dock;
         mFloatingTab.addOnPositionChangeListener(mOnFloatingTabChangeListener);

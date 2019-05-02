@@ -26,6 +26,7 @@ import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.WindowManager;
 import android.widget.RelativeLayout;
@@ -105,7 +106,7 @@ public class HoverView extends RelativeLayout {
     OnExitListener mOnExitListener;
     private final Set<OnStateChangeListener> mOnStateChangeListeners = new CopyOnWriteArraySet<>();
     private final Set<OnFloatingTabInteractionListener> mOnFloatingTabInteractionListeners = new CopyOnWriteArraySet<>();
-    private boolean mKeepVisible;
+    private HoverViewIdleAction mIdleAction;
 
     // Public for use with XML inflation. Clients should use static methods for construction.
     public HoverView(@NonNull Context context, @Nullable AttributeSet attrs) {
@@ -356,12 +357,12 @@ public class HoverView extends RelativeLayout {
         });
     }
 
-    public void setKeepVisible(boolean keepVisible) {
-        this.mKeepVisible = keepVisible;
+    public void setIdleAction(HoverViewIdleAction idleAction) {
+        this.mIdleAction = idleAction;
     }
 
-    public boolean shouldKeepVisible() {
-        return mKeepVisible;
+    public HoverViewIdleAction getIdleAction() {
+        return mIdleAction;
     }
 
     public void setOnExitListener(@Nullable OnExitListener listener) {
@@ -666,5 +667,11 @@ public class HoverView extends RelativeLayout {
     }
 
     public abstract static class OnTabMessageViewInteractionListener implements Dragger.DragListener<TabMessageView> {
+    }
+
+    public interface HoverViewIdleAction {
+        void changeState(View iconView);
+
+        void restoreState(View iconView);
     }
 }

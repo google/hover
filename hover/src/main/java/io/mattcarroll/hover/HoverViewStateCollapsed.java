@@ -44,8 +44,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     private static final String TAG = "HoverViewStateCollapsed";
     private static final float MIN_TAB_VERTICAL_POSITION = 0.0f;
     private static final float MAX_TAB_VERTICAL_POSITION = 1.0f;
-    private static final long ALPHA_IDLE_MILLIS = 5000;
-    private static final float ALPHA_IDLE_VALUE = 0.4f;
+    private static final long DEFAULT_IDLE_MILLIS = 5000;
 
     protected FloatingTab mFloatingTab;
     protected final FloatingTabDragListener mFloatingTabDragListener = new FloatingTabDragListener(this);
@@ -53,19 +52,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     private int mSelectedSectionIndex = -1;
     private boolean mIsCollapsed = false;
     private Handler mHandler = new Handler();
-    private Runnable mAlphaChanger = new Runnable() {
-        @Override
-        public void run() {
-            final HoverViewState state = mHoverView.getState();
-            if (!(state instanceof HoverViewStatePreviewed) && state instanceof HoverViewStateCollapsed) {
-                if (mHoverView.shouldKeepVisible()) {
-                    mFloatingTab.setAlpha(ALPHA_IDLE_VALUE);
-                } else {
-                    onClose(false);
-                }
-            }
-        }
-    };
+    private Runnable mIdleActionRunnable;
     private Runnable mOnStateChanged;
 
     @Override
@@ -122,13 +109,13 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
             listenForMenuChanges();
         }
 
-        scheduleHoverViewAlphaChange();
+        initIdleActionRunnable();
     }
 
     @Override
     public void giveUpControl(@NonNull HoverViewState nextState) {
         Log.d(TAG, "Giving up control.");
-        restoreHoverViewAlphaValue();
+        restoreHoverViewIdleAction();
 
         if (null != mHoverView.mMenu) {
             mHoverView.mMenu.setUpdatedCallback(null);
@@ -198,7 +185,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
 
     protected void onPickedUpByUser() {
         mHoverView.mScreen.getExitView().setVisibility(VISIBLE);
-        restoreHoverViewAlphaValue();
+        restoreHoverViewIdleAction();
         mHoverView.notifyOnDragStart(this);
     }
 
@@ -292,7 +279,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
             return;
         }
         activateDragger();
-        scheduleHoverViewAlphaChange();
+        scheduleHoverViewIdleAction();
 
         // We consider ourselves having gone from "collapsing" to "collapsed" upon the very first dock.
         boolean didJustCollapse = !mIsCollapsed;
@@ -320,13 +307,36 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         mHoverView.mDragger.deactivate();
     }
 
-    private void scheduleHoverViewAlphaChange() {
-        mHandler.postDelayed(mAlphaChanger, ALPHA_IDLE_MILLIS);
+    private void initIdleActionRunnable() {
+        this.mIdleActionRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (mHoverView == null) {
+                    return;
+                }
+
+                final HoverViewState state = mHoverView.getState();
+                if (!(state instanceof HoverViewStatePreviewed) && state instanceof HoverViewStateCollapsed) {
+                    final HoverView.HoverViewIdleAction idleAction = mHoverView.getIdleAction();
+                    if (idleAction != null) {
+                        idleAction.changeState(mFloatingTab);
+                    }
+
+                }
+            }
+        };
     }
 
-    protected void restoreHoverViewAlphaValue() {
-        mHandler.removeCallbacks(mAlphaChanger);
-        mFloatingTab.setAlpha(1f);
+    private void scheduleHoverViewIdleAction() {
+        mHandler.postDelayed(mIdleActionRunnable, DEFAULT_IDLE_MILLIS);
+    }
+
+    protected void restoreHoverViewIdleAction() {
+        mHandler.removeCallbacks(mIdleActionRunnable);
+        final HoverView.HoverViewIdleAction idleAction = mHoverView.getIdleAction();
+        if (idleAction != null) {
+            idleAction.restoreState(mFloatingTab);
+        }
     }
 
     @Override
