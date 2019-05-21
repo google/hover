@@ -35,6 +35,10 @@ public class WindowViewController {
     }
 
     public void addView(int width, int height, boolean isTouchable, @NonNull View view) {
+        addViewToWindow(view, buildLayoutParams(width, height, isTouchable));
+    }
+
+    private WindowManager.LayoutParams buildLayoutParams(final int width, final int height, final boolean isTouchable) {
         // If this view is untouchable then add the corresponding flag, otherwise set to zero which
         // won't have any effect on the OR'ing of flags.
         int touchableFlag = isTouchable ? 0 : WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
@@ -50,11 +54,13 @@ public class WindowViewController {
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS | touchableFlag,
                 PixelFormat.TRANSLUCENT
         );
+
+
         params.gravity = Gravity.TOP | Gravity.LEFT;
         params.x = 0;
         params.y = 0;
 
-        mWindowManager.addView(view, params);
+        return params;
     }
 
     public void removeView(@NonNull View view) {
@@ -70,9 +76,14 @@ public class WindowViewController {
 
     public void moveViewTo(View view, int x, int y) {
         WindowManager.LayoutParams params = (WindowManager.LayoutParams) view.getLayoutParams();
+        if (params == null) {
+            params = buildLayoutParams(view.getWidth(), view.getHeight(), true);
+        }
+
         params.x = x;
         params.y = y;
-        mWindowManager.updateViewLayout(view, params);
+
+        updateViewLayout(view, params);
     }
 
     public void showView(View view) {
@@ -94,14 +105,39 @@ public class WindowViewController {
 
     public void makeTouchable(View view) {
         WindowManager.LayoutParams params = (WindowManager.LayoutParams) view.getLayoutParams();
+        if (params == null) {
+            params = buildLayoutParams(view.getWidth(), view.getHeight(), true);
+        }
         params.flags = params.flags & ~WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE & ~WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
-        mWindowManager.updateViewLayout(view, params);
+
+        updateViewLayout(view, params);
     }
 
     public void makeUntouchable(View view) {
         WindowManager.LayoutParams params = (WindowManager.LayoutParams) view.getLayoutParams();
+        if (params == null) {
+            params = buildLayoutParams(view.getWidth(), view.getHeight(), true);
+        }
         params.flags = params.flags | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
-        mWindowManager.updateViewLayout(view, params);
+
+        updateViewLayout(view, params);
+    }
+
+    private void updateViewLayout(final View view, final WindowManager.LayoutParams params) {
+        try {
+            mWindowManager.updateViewLayout(view, params);
+        } catch (IllegalArgumentException e) {
+            // View is not attached to the window manager
+            addViewToWindow(view, params);
+        }
+    }
+
+    private void addViewToWindow(final View view, final WindowManager.LayoutParams params) {
+        try {
+            mWindowManager.addView(view, params);
+        } catch (WindowManager.BadTokenException e) {
+            // Permission denied. Cannot add the View to the Window.
+        }
     }
 
     public Point getWindowSize() {

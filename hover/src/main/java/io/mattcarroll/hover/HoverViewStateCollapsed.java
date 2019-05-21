@@ -184,12 +184,20 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     }
 
     protected void onPickedUpByUser() {
+        if (!hasControl()) {
+            return;
+        }
+
         mHoverView.mScreen.getExitView().setVisibility(VISIBLE);
         restoreHoverViewIdleAction();
         mHoverView.notifyOnDragStart(this);
     }
 
     private void onDroppedByUser() {
+        if (!hasControl()) {
+            return;
+        }
+
         mHoverView.mScreen.getExitView().setVisibility(GONE);
         boolean droppedOnExit = mHoverView.mScreen.getExitView().isInExitZone(mFloatingTab.getPosition());
         if (droppedOnExit) {
@@ -223,6 +231,10 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     }
 
     protected void onClose(final boolean userDropped) {
+        if (!hasControl()) {
+            return;
+        }
+
         if (userDropped) {
             Log.d(TAG, "User dropped floating tab on exit.");
             if (null != mHoverView.mOnExitListener) {
@@ -278,7 +290,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
 
     protected void onDocked() {
         Log.d(TAG, "Docked. Activating dragger.");
-        if (!mHoverView.mIsAddedToWindow) {
+        if (!hasControl() || !mHoverView.mIsAddedToWindow) {
             return;
         }
         activateDragger();
