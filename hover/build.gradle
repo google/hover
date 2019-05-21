@@ -2,7 +2,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'checkstyle'
 
 project.group = 'com.buzzvil'
-project.version = '1.0.0-rc.6'
+project.version = '1.0.0-rc.7'
 
 android {
     compileSdkVersion project.compileSdkVersion.toInteger()
