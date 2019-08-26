@@ -30,15 +30,15 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.WindowManager;
 import android.widget.RelativeLayout;
-
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
-
 import io.mattcarroll.hover.view.InViewDragger;
 import io.mattcarroll.hover.window.InWindowDragger;
 import io.mattcarroll.hover.window.WindowViewController;
 
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
+
 import static io.mattcarroll.hover.SideDock.SidePosition.LEFT;
+import static io.mattcarroll.hover.SideDock.SidePosition.RIGHT;
 
 /**
  * {@code HoverMenuView} is a floating menu implementation. This implementation displays tabs along
@@ -98,6 +98,7 @@ public class HoverView extends RelativeLayout {
     HoverMenu mMenu;
     HoverMenu.SectionId mSelectedSectionId;
     SideDock mCollapsedDock;
+    SideDock.SidePosition mInitialDockPosition;
     boolean mIsAddedToWindow;
     boolean mIsTouchableInWindow;
     boolean mIsDebugMode = false;
@@ -139,6 +140,7 @@ public class HoverView extends RelativeLayout {
         mDragger = dragger;
         mScreen = new Screen(this);
         mWindowViewController = windowViewController;
+        mInitialDockPosition = initialDockPosition;
 
         init();
 
@@ -574,7 +576,7 @@ public class HoverView extends RelativeLayout {
         }
 
         public void restore(@NonNull HoverView hoverView, @NonNull HoverMenu menu) {
-            SideDock.SidePosition sidePosition = getSidePosition(menu.getId());
+            SideDock.SidePosition sidePosition = getSidePosition(menu.getId(), hoverView.mInitialDockPosition);
             hoverView.mCollapsedDock = new SideDock(
                     hoverView,
                     hoverView.mTabSize,
@@ -590,10 +592,10 @@ public class HoverView extends RelativeLayout {
                     + ", Section ID: " + selectedSectionId);
         }
 
-        private SideDock.SidePosition getSidePosition(@NonNull String menuId) {
+        private SideDock.SidePosition getSidePosition(@NonNull String menuId, @Nullable SideDock.SidePosition initialDockPosition) {
             return new SideDock.SidePosition(
-                    mPrefs.getInt(menuId + SAVED_STATE_DOCKS_SIDE, LEFT),
-                    mPrefs.getFloat(menuId + SAVED_STATE_DOCK_POSITION, 0.5f)
+                    mPrefs.getInt(menuId + SAVED_STATE_DOCKS_SIDE, initialDockPosition != null ? initialDockPosition.getSide() : RIGHT),
+                    mPrefs.getFloat(menuId + SAVED_STATE_DOCK_POSITION, initialDockPosition != null ? initialDockPosition.getVerticalDockPositionPercentage() : 0.6f)
             );
         }
 
