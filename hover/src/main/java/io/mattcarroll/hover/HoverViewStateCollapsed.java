@@ -121,7 +121,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
             mHoverView.mMenu.setUpdatedCallback(null);
         }
 
-        mHoverView.mScreen.getExitView().setVisibility(GONE);
+        mHoverView.mScreen.getExitView().hide();
 
         deactivateDragger();
         mFloatingTab = null;
@@ -188,7 +188,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
             return;
         }
 
-        mHoverView.mScreen.getExitView().setVisibility(VISIBLE);
+        mHoverView.mScreen.getExitView().show();
         restoreHoverViewIdleAction();
         mHoverView.notifyOnDragStart(this);
     }
@@ -198,7 +198,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
             return;
         }
 
-        mHoverView.mScreen.getExitView().setVisibility(GONE);
+        mHoverView.mScreen.getExitView().hide();
         boolean droppedOnExit = mHoverView.mScreen.getExitView().isInExitZone(mFloatingTab.getPosition());
         if (droppedOnExit) {
             onClose(true);

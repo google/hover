@@ -15,6 +15,8 @@
  */
 package io.mattcarroll.hover;
 
+import android.animation.Animator;
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Point;
 import android.support.annotation.NonNull;
@@ -32,6 +34,7 @@ class ExitView extends RelativeLayout {
 
     private static final String TAG = "ExitView";
 
+    private static final int FADE_DURATION = 250;
     private int mExitRadiusInPx;
     private View mExitIcon;
 
@@ -70,5 +73,35 @@ class ExitView extends RelativeLayout {
         return Math.sqrt(
                 Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2)
         );
+    }
+
+    public void show() {
+        ObjectAnimator fadeOut = ObjectAnimator.ofFloat(this, "alpha", 1.0f);
+        fadeOut.setDuration(FADE_DURATION);
+        fadeOut.start();
+
+        setVisibility(VISIBLE);
+    }
+
+    public void hide() {
+        ObjectAnimator fadeOut = ObjectAnimator.ofFloat(this, "alpha", 0.0f);
+        fadeOut.setDuration(FADE_DURATION);
+        fadeOut.start();
+
+        fadeOut.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) { }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                setVisibility(GONE);
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) { }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) { }
+        });
     }
 }
