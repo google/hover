@@ -26,9 +26,7 @@ import android.view.View;
 
 import java.util.ArrayList;
 
-import static android.view.View.GONE;
 import static android.view.View.INVISIBLE;
-import static android.view.View.VISIBLE;
 
 /**
  * {@link HoverViewState} that operates the {@link HoverView} when it is collapsed. Collapsed means
@@ -199,7 +197,9 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         }
 
         mHoverView.mScreen.getExitView().hide();
-        boolean droppedOnExit = mHoverView.mScreen.getExitView().isInExitZone(mFloatingTab.getPosition());
+        int exitYThreshold = mHoverView.getScreenSize().y * 3 / 4;
+
+        boolean droppedOnExit = mHoverView.mScreen.getExitView().isInExitZone(mFloatingTab.getPosition(), mHoverView.getScreenSize().y, exitYThreshold);
         if (droppedOnExit) {
             onClose(true);
         } else {
@@ -309,6 +309,19 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     }
 
     void moveFloatingTabTo(View floatingTab, @NonNull Point position) {
+        Log.d(TAG, "TRACK_DEBUG moveFloatingTabTo position = " + position);
+        Point screenSize = mHoverView.getScreenSize();
+        int exitYThreshold = screenSize.y * 3 / 4;
+
+        Log.d(TAG, "TRACK_DEBUG moveFloatingTabTo screenSize.y = " + screenSize.y + ", exitYThreshold = " + exitYThreshold);
+
+        if (exitYThreshold < position.y) {
+            mHoverView.mScreen.getExitView().startEnterExitAnim();
+        } else {
+            mHoverView.mScreen.getExitView().startExitExitAnim();
+        }
+
+//        mHoverView.mScreen.getExitView().enterExitRange(position);
         mFloatingTab.moveCenterTo(position);
     }
 

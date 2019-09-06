@@ -17,6 +17,7 @@ package io.mattcarroll.hover;
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
+import android.animation.PropertyValuesHolder;
 import android.content.Context;
 import android.graphics.Point;
 import android.support.annotation.NonNull;
@@ -25,6 +26,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
 /**
@@ -34,9 +36,20 @@ class ExitView extends RelativeLayout {
 
     private static final String TAG = "ExitView";
 
-    private static final int FADE_DURATION = 250;
+    private static final int FADE_DURATION = 300;
     private int mExitRadiusInPx;
     private View mExitIcon;
+    private View mExitGradient;
+    private ViewGroup mVgExit;
+//    private boolean mAnimated = false;
+//    public ViewPropertyAnimator exitEnterAnim;
+//    public ViewPropertyAnimator exitExitAnim;
+    public ObjectAnimator anim1 = null;
+    public ObjectAnimator anim2 = null;
+    public boolean isExitAnimated = false;
+    private float mDefaultScaleX = 1.0f;
+    private float mDefaultScaleY = 1.0f;
+    private float mDefaultRotation = 0f;
 
     public ExitView(@NonNull Context context) {
         this(context, null);
@@ -51,16 +64,89 @@ class ExitView extends RelativeLayout {
         LayoutInflater.from(getContext()).inflate(R.layout.view_hover_menu_exit, this, true);
 
         mExitIcon = findViewById(R.id.view_exit);
-
+        mVgExit = findViewById(R.id.vg_exit);
+        mExitGradient = findViewById(R.id.view_exit_gradient);
         mExitRadiusInPx = getResources().getDimensionPixelSize(R.dimen.hover_exit_radius);
+
+        setAnimations();
     }
 
-    public boolean isInExitZone(@NonNull Point position) {
-        Point exitCenter = getExitZoneCenter();
-        double distanceToExit = calculateDistance(position, exitCenter);
-        Log.d(TAG, "Drop point: " + position + ", Exit center: " + exitCenter + ", Distance: " + distanceToExit);
-        return distanceToExit <= mExitRadiusInPx;
+    private void setAnimations() {
+        PropertyValuesHolder pv1 = PropertyValuesHolder.ofFloat("scaleX", 1.0f, 1.5f);
+        PropertyValuesHolder pv2 = PropertyValuesHolder.ofFloat("scaleY", 1.0f, 1.5f);
+        PropertyValuesHolder pv3 = PropertyValuesHolder.ofFloat("rotation", 0f, 90f);
+        anim1 = ObjectAnimator.ofPropertyValuesHolder(mExitIcon, pv1, pv2, pv3);
+        anim1.setDuration(300L);
+        anim1.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animator) {
+                Log.d(TAG, "anim1 onAnimationStart");
+                mExitIcon.setScaleY(mDefaultScaleY);
+                mExitIcon.setScaleX(mDefaultScaleX);
+                mExitIcon.setRotation(mDefaultRotation);
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animator) {
+                Log.d(TAG, "anim1 onAnimationEnd");
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animator) {
+//                initExitButtonProperties();
+                Log.d(TAG, "anim1 onAnimationCancel");
+                mExitIcon.setScaleY(mDefaultScaleY);
+                mExitIcon.setScaleX(mDefaultScaleX);
+                mExitIcon.setRotation(mDefaultRotation);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animator) {
+                Log.d(TAG, "anim1 onAnimationRepeat");
+            }
+        });
+
+        PropertyValuesHolder pva1 = PropertyValuesHolder.ofFloat("scaleX", 1.5f, 1.0f);
+        PropertyValuesHolder pva2 = PropertyValuesHolder.ofFloat("scaleY", 1.5f, 1.0f);
+        PropertyValuesHolder pva3 = PropertyValuesHolder.ofFloat("rotation", 90f, 0f);
+        anim2 = ObjectAnimator.ofPropertyValuesHolder(mExitIcon, pva1, pva2, pva3);
+        anim2.setDuration(300L);
+        anim2.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animator) {
+                Log.d(TAG, "anim2 onAnimationStart");
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animator) {
+                Log.d(TAG, "anim2 onAnimationEnd");
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animator) {
+                Log.d(TAG, "anim2 onAnimationCancel");
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animator) {
+                Log.d(TAG, "anim2 onAnimationRepeat");
+            }
+        });
     }
+
+
+    public boolean isInExitZone(@NonNull Point position, int screenY, int threashold) {
+        Point exitCenter = getExitZoneCenter();
+        return threashold < position.y;
+    }
+
+//    public boolean isInExitZone(@NonNull Point position) {
+//        Point exitCenter = getExitZoneCenter();
+//        double distanceToExit = calculateDistance(position, exitCenter);
+//        Log.d(TAG, "Drop point: " + position + ", Exit center: " + exitCenter + ", Distance: " + distanceToExit);
+//        return distanceToExit <= mExitRadiusInPx;
+//    }
 
     private Point getExitZoneCenter() {
         return new Point(
@@ -75,20 +161,165 @@ class ExitView extends RelativeLayout {
         );
     }
 
-    public void show() {
-        ObjectAnimator fadeOut = ObjectAnimator.ofFloat(this, "alpha", 1.0f);
-        fadeOut.setDuration(FADE_DURATION);
-        fadeOut.start();
+    public void startEnterExitAnim() {
+        if ((anim1 == null || !anim1.isRunning()) && !isExitAnimated) {
+
+//                if (anim2 != null && anim2.isRunning()) {
+//                    anim2.cancel();
+//                }
+            anim1.start();
+            isExitAnimated = true;
+        }
+    }
+
+    public void startExitExitAnim() {
+        if ((anim2 == null || !anim2.isRunning()) && isExitAnimated) {
+//                if (anim1 != null && anim1.isRunning()) {
+//                    anim1.cancel();
+//                }
+            anim2.start();
+            isExitAnimated = false;
+        }
+    }
+
+    public void testEnterExitRange(Point position) {
+//        ObjectAnimator fadeOut = ObjectAnimator.ofFloat(mExitIcon, "scaleX", 1.0f, 1.5f);
+//        fadeOut.setDuration(FADE_DURATION);
+//        fadeOut.start();
+//
+//
+//        ObjectAnimator aa = ObjectAnimator.ofFloat(mExitIcon, "scaleY", 1.0f, 1.5f);
+//        aa.setDuration(FADE_DURATION);
+//        aa.start();
+
+//        if (anim1 != null) {
+//            Log.d(TAG, "enterExitRange anim1.isRunning = " + anim1.isRunning());
+//        }
+
+        // case 1 done but seems slow.
+//        if (isInExitZone(position)) {
+//            if ((anim1 == null || !anim1.isRunning()) && !isExitAnimated) {
+//
+////                if (anim2 != null && anim2.isRunning()) {
+////                    anim2.cancel();
+////                }
+//                PropertyValuesHolder pv1 = PropertyValuesHolder.ofFloat("scaleX", 1.0f, 1.5f);
+//                PropertyValuesHolder pv2 = PropertyValuesHolder.ofFloat("scaleY", 1.0f, 1.5f);
+//                PropertyValuesHolder pv3 = PropertyValuesHolder.ofFloat("rotation", 0f, 90f);
+//                anim1 = ObjectAnimator.ofPropertyValuesHolder(mExitIcon, pv1, pv2, pv3);
+//                anim1.setDuration(300L);
+//                anim1.start();
+//                isExitAnimated = true;
+//            }
+//        } else {
+//            if ((anim2 == null || !anim2.isRunning()) && isExitAnimated) {
+////                if (anim1 != null && anim1.isRunning()) {
+////                    anim1.cancel();
+////                }
+//                PropertyValuesHolder pv1 = PropertyValuesHolder.ofFloat("scaleX", 1.5f, 1.0f);
+//                PropertyValuesHolder pv2 = PropertyValuesHolder.ofFloat("scaleY", 1.5f, 1.0f);
+//                PropertyValuesHolder pv3 = PropertyValuesHolder.ofFloat("rotation", 90f, 0f);
+//                anim2 = ObjectAnimator.ofPropertyValuesHolder(mExitIcon, pv1, pv2, pv3);
+//                anim2.setDuration(300L);
+//                anim2.start();
+//                isExitAnimated = false;
+//            }
+//        }
+
+//        mExitIcon.rotation
+
+
+//        if (isInExitZone(position) && !mAnimated) {
+//            Log.d(TAG, "enterExitRange 1 isInExitZone(position) = " + isInExitZone(position) + ", Animated = " + mAnimated);
+//
+////            if (exitEnterAnim != null)
+//            exitEnterAnim = mExitIcon.animate()
+//                    .scaleXBy(0.5f)
+//                    .scaleYBy(0.5f)
+//                    .rotationBy(90)
+//                    .setDuration(300);
+//            exitEnterAnim.start();
+//            mAnimated = true;
+//        } else if (mAnimated) {
+//            Log.d(TAG, "enterExitRange 2 isInExitZone(position) = " + isInExitZone(position) + ", Animated = " + mAnimated);
+//            exitExitAnim = mExitIcon.animate()
+//                    .scaleXBy(0f)
+//                    .scaleYBy(0f)
+//                    .rotationBy(-90)
+//                    .setDuration(300);
+//            exitExitAnim.start();
+//            mAnimated = false;
+//
+//        }
+
+//        Log.d(TAG, "enterExitRange mExitIcon.getAnimation() == null = " + (mExitIcon.getAnimation() == null));
+//        if (isInExitZone(position) && !mAnimated) {
+//            Log.d(TAG, "enterExitRange 1 isInExitZone(position) = " + isInExitZone(position) + ", Animated = " + mAnimated);
+//
+////            if (exitEnterAnim != null)
+//            if (mExitIcon.getAnimation() == null || mExitIcon.getAnimation().hasEnded()) {
+//                exitEnterAnim = mExitIcon.animate()
+//                        .scaleXBy(0.5f)
+//                        .scaleYBy(0.5f)
+//                        .rotationBy(90)
+//                        .setDuration(300);
+//                exitEnterAnim.start();
+//                mAnimated = true;
+//            }
+//        } else if (mAnimated) {
+//            Log.d(TAG, "enterExitRange 2 isInExitZone(position) = " + isInExitZone(position) + ", Animated = " + mAnimated);
+//            if (mExitIcon.getAnimation() == null || mExitIcon.getAnimation().hasEnded()) {
+//                exitExitAnim = mExitIcon.animate()
+//                        .scaleXBy(0f)
+//                        .scaleYBy(0f)
+//                        .rotationBy(-90)
+//                        .setDuration(300);
+//                exitExitAnim.start();
+//                mAnimated = false;
+//            }
+//        }
 
         setVisibility(VISIBLE);
     }
 
-    public void hide() {
-        ObjectAnimator fadeOut = ObjectAnimator.ofFloat(this, "alpha", 0.0f);
-        fadeOut.setDuration(FADE_DURATION);
-        fadeOut.start();
+    public void show() {
+        resetExitButtonAnimation();
 
-        fadeOut.addListener(new Animator.AnimatorListener() {
+        ObjectAnimator exitGradientAnimator = ObjectAnimator.ofFloat(mExitGradient, "alpha", EXIT_VIEW_TARGET_ALPHA);
+        exitGradientAnimator.setDuration(300L);
+        exitGradientAnimator.start();
+
+        ObjectAnimator vgExitAnimator = ObjectAnimator.ofFloat(mVgExit, "y", EXIT_VIEW_BASE_Y, EXIT_VIEW_TARGET_Y);
+        vgExitAnimator.setDuration(300L);
+        vgExitAnimator.start();
+
+        setVisibility(VISIBLE);
+    }
+
+    public void resetExitButtonAnimation() {
+        Log.d(TAG, "resetExitButtonAnimation");
+        isExitAnimated = false;
+        mExitIcon.setScaleY(mDefaultScaleY);
+        mExitIcon.setScaleX(mDefaultScaleX);
+        mExitIcon.setRotation(mDefaultRotation);
+    }
+
+    public static final float EXIT_VIEW_TARGET_ALPHA = 1.0f;
+    public static final float EXIT_VIEW_TARGET_Y = 0f;
+
+    public static final float EXIT_VIEW_BASE_ALPHA = 0f;
+    public static final float EXIT_VIEW_BASE_Y = 800f;
+
+    public void hide() {
+        ObjectAnimator vgExitAnimator = ObjectAnimator.ofFloat(mVgExit, "y", EXIT_VIEW_TARGET_Y, EXIT_VIEW_BASE_Y);
+        vgExitAnimator.setDuration(FADE_DURATION);
+        vgExitAnimator.start();
+
+        ObjectAnimator exitGradientAnimator = ObjectAnimator.ofFloat(mExitGradient, "alpha", EXIT_VIEW_BASE_ALPHA);
+        exitGradientAnimator.setDuration(FADE_DURATION);
+        exitGradientAnimator.start();
+
+        exitGradientAnimator.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) { }
 
