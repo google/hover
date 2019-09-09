@@ -20,6 +20,7 @@ import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.content.Context;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
@@ -41,7 +42,7 @@ class ExitView extends RelativeLayout {
     private View mExitIcon;
     private View mExitGradient;
     private ViewGroup mVgExit;
-//    private boolean mAnimated = false;
+    //    private boolean mAnimated = false;
 //    public ViewPropertyAnimator exitEnterAnim;
 //    public ViewPropertyAnimator exitExitAnim;
     public ObjectAnimator anim1 = null;
@@ -135,18 +136,35 @@ class ExitView extends RelativeLayout {
         });
     }
 
+    public boolean isInExitZone(@NonNull Point position, @NonNull Point screenSize) {
+        int exitXExcludeThresholdLeft = screenSize.x / 18;
+        int exitXExcludeThresholdRight = screenSize.x * 17 / 18;
 
-    public boolean isInExitZone(@NonNull Point position, int screenY, int threashold) {
-        Point exitCenter = getExitZoneCenter();
-        return threashold < position.y;
+        Rect exitArea = new Rect(
+                0 - mExitIcon.getWidth(),
+                screenSize.y * 4 / 6,
+                screenSize.x + mExitIcon.getWidth(),
+                screenSize.y + mExitIcon.getHeight()
+        );
+
+        Rect excludedXExitArea = new Rect(
+                0 - mExitIcon.getWidth(),
+                screenSize.y * 4 / 6,
+                exitXExcludeThresholdLeft,
+                screenSize.y * 5 / 6
+        );
+
+        Rect excludedXExitArea2 = new Rect(
+                exitXExcludeThresholdRight,
+                screenSize.y * 4 / 6,
+                screenSize.x + mExitIcon.getWidth(),
+                screenSize.y * 5 / 6
+        );
+
+        return exitArea.contains(position.x, position.y)
+                && !excludedXExitArea.contains(position.x, position.y)
+                && !excludedXExitArea2.contains(position.x, position.y);
     }
-
-//    public boolean isInExitZone(@NonNull Point position) {
-//        Point exitCenter = getExitZoneCenter();
-//        double distanceToExit = calculateDistance(position, exitCenter);
-//        Log.d(TAG, "Drop point: " + position + ", Exit center: " + exitCenter + ", Distance: " + distanceToExit);
-//        return distanceToExit <= mExitRadiusInPx;
-//    }
 
     private Point getExitZoneCenter() {
         return new Point(
@@ -321,7 +339,8 @@ class ExitView extends RelativeLayout {
 
         exitGradientAnimator.addListener(new Animator.AnimatorListener() {
             @Override
-            public void onAnimationStart(Animator animation) { }
+            public void onAnimationStart(Animator animation) {
+            }
 
             @Override
             public void onAnimationEnd(Animator animation) {
@@ -329,10 +348,12 @@ class ExitView extends RelativeLayout {
             }
 
             @Override
-            public void onAnimationCancel(Animator animation) { }
+            public void onAnimationCancel(Animator animation) {
+            }
 
             @Override
-            public void onAnimationRepeat(Animator animation) { }
+            public void onAnimationRepeat(Animator animation) {
+            }
         });
     }
 }

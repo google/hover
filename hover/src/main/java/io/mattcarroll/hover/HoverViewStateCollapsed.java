@@ -197,9 +197,8 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         }
 
         mHoverView.mScreen.getExitView().hide();
-        int exitYThreshold = mHoverView.getScreenSize().y * 3 / 4;
 
-        boolean droppedOnExit = mHoverView.mScreen.getExitView().isInExitZone(mFloatingTab.getPosition(), mHoverView.getScreenSize().y, exitYThreshold);
+        boolean droppedOnExit = mHoverView.mScreen.getExitView().isInExitZone(mFloatingTab.getPosition(), mHoverView.getScreenSize());
         if (droppedOnExit) {
             onClose(true);
         } else {
@@ -310,12 +309,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
 
     void moveFloatingTabTo(View floatingTab, @NonNull Point position) {
         Log.d(TAG, "TRACK_DEBUG moveFloatingTabTo position = " + position);
-        Point screenSize = mHoverView.getScreenSize();
-        int exitYThreshold = screenSize.y * 3 / 4;
-
-        Log.d(TAG, "TRACK_DEBUG moveFloatingTabTo screenSize.y = " + screenSize.y + ", exitYThreshold = " + exitYThreshold);
-
-        if (exitYThreshold < position.y) {
+        if (mHoverView.mScreen.getExitView().isInExitZone(position, mHoverView.getScreenSize())) {
             mHoverView.mScreen.getExitView().startEnterExitAnim();
         } else {
             mHoverView.mScreen.getExitView().startExitExitAnim();
