@@ -33,7 +33,7 @@ import android.widget.RelativeLayout;
 /**
  * Fullscreen View that provides an exit "drop zone" for users to exit the Hover Menu.
  */
-// TODO 2019.09.09 EXIT POP - Polish code, remove logs
+// TODO 2019.09.09 EXIT POP - Polish code, remove logs, check landscape mode
 class ExitView extends RelativeLayout {
 
     private static final String TAG = "ExitView";
