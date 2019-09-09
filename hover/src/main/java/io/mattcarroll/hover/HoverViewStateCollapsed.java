@@ -52,6 +52,8 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     private Handler mHandler = new Handler();
     private Runnable mIdleActionRunnable;
     private Runnable mOnStateChanged;
+    private Point mStartPoint = null;
+    private long mDragStartMillis = -1L;
 
     @Override
     public void takeControl(@NonNull HoverView floatingTab, final Runnable onStateChanged) {
@@ -186,9 +188,88 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
             return;
         }
 
+        mStartPoint = mFloatingTab.getPosition();
+        mDragStartMillis = System.currentTimeMillis();
+
         mHoverView.mScreen.getExitView().show();
         restoreHoverViewIdleAction();
         mHoverView.notifyOnDragStart(this);
+    }
+
+    private double calculateDistance(@NonNull Point p1, @NonNull Point p2) {
+        return Math.sqrt(
+                Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2)
+        );
+    }
+
+    // Function to find the line given two points
+    Point lineFromPoints(Point p, Point q) {
+        int a = q.y - p.y;
+        int b = p.x - q.x;
+        int c = a * (p.x) + b * (p.y);
+
+        if (b < 0) {
+            Log.d(TAG, "The line passing through points P and Q is: "
+                    + a + "x " + b + "y = " + c);
+        } else {
+            Log.d(TAG, "The line passing through points P and Q is: "
+                    + a + "x + " + b + "y = " + c);
+        }
+
+        int xDirection = 0;
+        int yDirection = 0;
+
+        if (p.x - q.x >= 0) {
+            xDirection = 0;
+        } else {
+            xDirection = 1;
+        }
+
+        if (p.y - q.y >= 0) {
+            yDirection = 0;
+        } else {
+            yDirection = 1;
+        }
+
+        // TODO handle DIVIDE BY ZERO
+        Log.d(TAG, "xDirection = " + xDirection);
+        Log.d(TAG, "yDirection = " + yDirection);
+
+        Log.d(TAG, "x = 0 ->  y = " + (c / b));
+//        Log.d(TAG, "x = " + (c / a) + ", y = 0");
+        Log.d(TAG, "x = mHoverView.getScreenSize().x ->  y = " + ((c - a * mHoverView.getScreenSize().x) / b));
+//        Log.d(TAG, "x = " + ((c - b * mHoverView.getScreenSize().y) / a) + ", y = mHoverView.getScreenSize().y");
+
+        if (xDirection == 0) {
+            return new Point(0, (c / b));
+        } else {
+            return new Point(0, (c - a * mHoverView.getScreenSize().x) / b);
+        }
+
+    }
+
+    static Point lineLineIntersection(Point pointA, Point pointB, Point pointC, Point pointD) {
+        // Line AB represented as a1x + b1y = c1
+        double a1 = pointB.y - pointA.y;
+        double b1 = pointA.x - pointB.x;
+        double c1 = a1 * (pointA.x) + b1 * (pointA.y);
+
+        // Line CD represented as a2x + b2y = c2
+        double a2 = pointD.y - pointC.y;
+        double b2 = pointC.x - pointD.x;
+        double c2 = a2 * (pointC.x) + b2 * (pointC.y);
+
+        double determinant = a1 * b2 - a2 * b1;
+
+        if (determinant == 0) {
+            // The lines are parallel. This is simplified
+            // by returning a pair of FLT_MAX
+            return new Point(Integer.MAX_VALUE, Integer.MAX_VALUE);
+        } else {
+            double x = (b2 * c1 - b1 * c2) / determinant;
+            double y = (a1 * c2 - a2 * c1) / determinant;
+            return new Point((int) x, (int) y);
+        }
     }
 
     private void onDroppedByUser() {
@@ -198,15 +279,24 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
 
         mHoverView.mScreen.getExitView().hide();
 
+        int diffPositionX = mStartPoint.x - mFloatingTab.getPosition().x;
+        int diffPositionY = mStartPoint.y - mFloatingTab.getPosition().y;
+
         boolean droppedOnExit = mHoverView.mScreen.getExitView().isInExitZone(mFloatingTab.getPosition(), mHoverView.getScreenSize());
         if (droppedOnExit) {
             onClose(true);
         } else {
+
+            Log.d(TAG, "TRACK_DEBUG onDroppedByUser diffPositionX = " + diffPositionX + ", diffPositionY = " + diffPositionY);
+            Log.d(TAG, "TRACK_DEBUG onDroppedByUser distance = " + calculateDistance(mStartPoint, mFloatingTab.getPosition()));
+            Log.d(TAG, "TRACK_DEBUG onDroppedByUser diffTimeMillis = " + (System.currentTimeMillis() - mDragStartMillis));
+//            lineFromPoints(mStartPoint, mFloatingTab.getPosition());
+
             int tabSize = mHoverView.getResources().getDimensionPixelSize(R.dimen.hover_tab_size);
             Point screenSize = mHoverView.getScreenSize();
             final float tabHorizontalPositionPercent = (float) mFloatingTab.getPosition().x / screenSize.x;
             final float viewHeightPercent = mFloatingTab.getHeight() / 2f / screenSize.y;
-            float tabVerticalPosition = (float) mFloatingTab.getPosition().y / screenSize.y;
+            float tabVerticalPosition = (float) lineFromPoints(mStartPoint, mFloatingTab.getPosition()).y / screenSize.y;
             if (tabVerticalPosition < MIN_TAB_VERTICAL_POSITION) {
                 tabVerticalPosition = MIN_TAB_VERTICAL_POSITION;
             } else if (tabVerticalPosition > MAX_TAB_VERTICAL_POSITION - viewHeightPercent) {
