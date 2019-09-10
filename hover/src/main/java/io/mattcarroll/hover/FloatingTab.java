@@ -279,6 +279,43 @@ class FloatingTab extends HoverFrameLayout {
         });
     }
 
+    public void closeAnimation(Point targetPosition, @Nullable final Runnable onDocked) {
+        Point destinationCornerPosition = convertCenterToCorner(targetPosition);
+        Log.d(TAG, "Docking to destination point: " + destinationCornerPosition);
+
+        ObjectAnimator xAnimation = ObjectAnimator.ofFloat(this, "x", targetPosition.x);
+        xAnimation.setDuration(500);
+        xAnimation.setInterpolator(new OvershootInterpolator());
+        ObjectAnimator yAnimation = ObjectAnimator.ofFloat(this, "y", targetPosition.y);
+        yAnimation.setDuration(500);
+        yAnimation.setInterpolator(new OvershootInterpolator());
+        AnimatorSet animatorSet = new AnimatorSet();
+        animatorSet.play(xAnimation).with(yAnimation);
+        animatorSet.start();
+
+        animatorSet.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (null != onDocked) {
+                    onDocked.run();
+                }
+//                notifyListenersOfPositionChange(FloatingTab.this);
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+            }
+        });
+    }
+
     public void dockImmediately() {
         moveCenterTo(mDock.position());
     }

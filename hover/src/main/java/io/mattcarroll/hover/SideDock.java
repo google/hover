@@ -65,7 +65,6 @@ public class SideDock extends Dock {
         public @interface Side { }
         public static final int LEFT = 0;
         public static final int RIGHT = 1;
-
         @Side
         private int mSide;
         private float mVerticalDockPositionPercentage;

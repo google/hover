@@ -298,16 +298,18 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
             float tabHorizontalPositionPercent = (float) mFloatingTab.getPosition().x / screenSize.x;
             final float viewHeightPercent = mFloatingTab.getHeight() / 2f / screenSize.y;
 //            float tabVerticalPosition = (float) lineFromPoints(mStartPoint, mFloatingTab.getPosition()).y / screenSize.y;
-            float tabVerticalPosition = (float) mFloatingTab.getPosition().y / screenSize.y;
+            float tabVerticalPositionPercent = (float) mFloatingTab.getPosition().y / screenSize.y;
 
             if (distance > 300) {
                 Log.d(TAG, "distance > 100");
+                Point targetPosition = lineFromPoints(mStartPoint, mFloatingTab.getPosition());
                 float positionY = lineFromPoints(mStartPoint, mFloatingTab.getPosition()).y;
                 positionY = (positionY - mFloatingTab.getPosition().y) * distance / 1000 + mFloatingTab.getPosition().y;
 //                tabVerticalPosition = (float) lineFromPoints(mStartPoint, mFloatingTab.getPosition()).y / screenSize.y;
 //                tabVerticalPosition = tabVerticalPosition * distance / 1000;
-                tabVerticalPosition = positionY / screenSize.y;
-                Log.d(TAG, "distance > 100 tabVerticalPosition = " + tabVerticalPosition);
+                tabVerticalPositionPercent = positionY / screenSize.y;
+                Log.d(TAG, "distance > 100 tabVerticalPosition = " + tabVerticalPositionPercent);
+
 
                 if (diffPositionX > 0) {
                     tabHorizontalPositionPercent = 0f;
@@ -317,29 +319,59 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
 
             } else {
                 Log.d(TAG, "is less than 100");
-                tabVerticalPosition = (float) lineFromPoints(mStartPoint, mFloatingTab.getPosition()).y / screenSize.y;
-                tabVerticalPosition = tabVerticalPosition * 3 / 10;
+                tabVerticalPositionPercent = (float) lineFromPoints(mStartPoint, mFloatingTab.getPosition()).y / screenSize.y;
+                tabVerticalPositionPercent = tabVerticalPositionPercent * 3 / 10;
             }
 
-            if (tabVerticalPosition < MIN_TAB_VERTICAL_POSITION) {
-                tabVerticalPosition = MIN_TAB_VERTICAL_POSITION;
-            } else if (tabVerticalPosition > MAX_TAB_VERTICAL_POSITION - viewHeightPercent) {
-                tabVerticalPosition = MAX_TAB_VERTICAL_POSITION - viewHeightPercent;
-            }
-            Log.d(TAG, "Dropped at horizontal " + tabHorizontalPositionPercent + ", vertical " + tabVerticalPosition);
-            SideDock.SidePosition sidePosition = new SideDock.SidePosition(
-                    tabHorizontalPositionPercent <= 0.5 ? SideDock.SidePosition.LEFT : SideDock.SidePosition.RIGHT,
-                    tabVerticalPosition
-            );
-            mHoverView.mCollapsedDock = new SideDock(
-                    mHoverView,
-                    tabSize,
-                    sidePosition
-            );
-            mHoverView.saveVisualState();
-            Log.d(TAG, "User dropped tab. Sending to new dock: " + mHoverView.mCollapsedDock);
+            int sideDockHorizontalPosition = SideDock.SidePosition.LEFT;
 
-            sendToDock();
+            if (tabVerticalPositionPercent < MIN_TAB_VERTICAL_POSITION) {
+                tabVerticalPositionPercent = MIN_TAB_VERTICAL_POSITION;
+            } else if (tabVerticalPositionPercent > MAX_TAB_VERTICAL_POSITION - viewHeightPercent) {
+                tabVerticalPositionPercent = MAX_TAB_VERTICAL_POSITION - viewHeightPercent;
+            }
+
+            Point targetPosition = new Point();
+            targetPosition.x = (int) (tabHorizontalPositionPercent * (float) mHoverView.getScreenSize().x);
+            targetPosition.y = (int) (tabVerticalPositionPercent * (float) mHoverView.getScreenSize().y);
+
+            Log.d(TAG, "targetPosition.x = " + targetPosition.x);
+            Log.d(TAG, "targetPosition.y = " + targetPosition.y);
+            boolean droppedOnExit2 = mHoverView.mScreen.getExitView().isInExitZone(targetPosition, mHoverView.getScreenSize());
+            if (droppedOnExit2) {
+                Log.d(TAG, "Dropped at horizontal " + tabHorizontalPositionPercent + ", vertical " + tabVerticalPositionPercent);
+                int x = screenSize.x / 2 - ((int) (tabSize * 0.25 * 2));
+
+                int y = (int) (screenSize.y * tabVerticalPositionPercent) - ((int) (tabSize * 0.25 * 2));
+
+                targetPosition.x = x;
+                targetPosition.y = y;
+                closeWithAnimation(targetPosition);
+            } else {
+
+                if (tabHorizontalPositionPercent <= 0.5) {
+                    sideDockHorizontalPosition = SideDock.SidePosition.LEFT;
+                } else if (tabHorizontalPositionPercent <= 1.0) {
+                    sideDockHorizontalPosition = SideDock.SidePosition.RIGHT;
+                } else {
+                    sideDockHorizontalPosition = SideDock.SidePosition.RIGHT;
+                }
+
+                Log.d(TAG, "Dropped at horizontal " + tabHorizontalPositionPercent + ", vertical " + tabVerticalPositionPercent);
+                SideDock.SidePosition sidePosition = new SideDock.SidePosition(
+                        sideDockHorizontalPosition,
+                        tabVerticalPositionPercent
+                );
+                mHoverView.mCollapsedDock = new SideDock(
+                        mHoverView,
+                        tabSize,
+                        sidePosition
+                );
+                mHoverView.saveVisualState();
+                Log.d(TAG, "User dropped tab. Sending to new dock: " + mHoverView.mCollapsedDock);
+                sendToDock();
+
+            }
         }
     }
 
@@ -364,6 +396,18 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         if (mHoverView != null) {
             mHoverView.notifyOnTap(this);
         }
+    }
+
+    private void closeWithAnimation(Point targetPoint) {
+        Log.d(TAG, "Sending floating tab to dock.");
+//        deactivateDragger();
+//        mFloatingTab.setDock(mHoverView.mCollapsedDock);
+        mFloatingTab.closeAnimation(targetPoint, new Runnable() {
+            @Override
+            public void run() {
+                onClose(false);
+            }
+        });
     }
 
     private void sendToDock() {
