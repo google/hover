@@ -287,6 +287,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
             onClose(true);
         } else {
 
+            float distance = (float) calculateDistance(mStartPoint, mFloatingTab.getPosition());
             Log.d(TAG, "TRACK_DEBUG onDroppedByUser diffPositionX = " + diffPositionX + ", diffPositionY = " + diffPositionY);
             Log.d(TAG, "TRACK_DEBUG onDroppedByUser distance = " + calculateDistance(mStartPoint, mFloatingTab.getPosition()));
             Log.d(TAG, "TRACK_DEBUG onDroppedByUser diffTimeMillis = " + (System.currentTimeMillis() - mDragStartMillis));
@@ -294,9 +295,32 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
 
             int tabSize = mHoverView.getResources().getDimensionPixelSize(R.dimen.hover_tab_size);
             Point screenSize = mHoverView.getScreenSize();
-            final float tabHorizontalPositionPercent = (float) mFloatingTab.getPosition().x / screenSize.x;
+            float tabHorizontalPositionPercent = (float) mFloatingTab.getPosition().x / screenSize.x;
             final float viewHeightPercent = mFloatingTab.getHeight() / 2f / screenSize.y;
-            float tabVerticalPosition = (float) lineFromPoints(mStartPoint, mFloatingTab.getPosition()).y / screenSize.y;
+//            float tabVerticalPosition = (float) lineFromPoints(mStartPoint, mFloatingTab.getPosition()).y / screenSize.y;
+            float tabVerticalPosition = (float) mFloatingTab.getPosition().y / screenSize.y;
+
+            if (distance > 300) {
+                Log.d(TAG, "distance > 100");
+                float positionY = lineFromPoints(mStartPoint, mFloatingTab.getPosition()).y;
+                positionY = (positionY - mFloatingTab.getPosition().y) * distance / 1000 + mFloatingTab.getPosition().y;
+//                tabVerticalPosition = (float) lineFromPoints(mStartPoint, mFloatingTab.getPosition()).y / screenSize.y;
+//                tabVerticalPosition = tabVerticalPosition * distance / 1000;
+                tabVerticalPosition = positionY / screenSize.y;
+                Log.d(TAG, "distance > 100 tabVerticalPosition = " + tabVerticalPosition);
+
+                if (diffPositionX > 0) {
+                    tabHorizontalPositionPercent = 0f;
+                } else {
+                    tabHorizontalPositionPercent = 1f;
+                }
+
+            } else {
+                Log.d(TAG, "is less than 100");
+                tabVerticalPosition = (float) lineFromPoints(mStartPoint, mFloatingTab.getPosition()).y / screenSize.y;
+                tabVerticalPosition = tabVerticalPosition * 3 / 10;
+            }
+
             if (tabVerticalPosition < MIN_TAB_VERTICAL_POSITION) {
                 tabVerticalPosition = MIN_TAB_VERTICAL_POSITION;
             } else if (tabVerticalPosition > MAX_TAB_VERTICAL_POSITION - viewHeightPercent) {
