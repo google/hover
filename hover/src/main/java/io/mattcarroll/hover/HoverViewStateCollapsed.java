@@ -254,29 +254,30 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         }
     }
 
-    static Point lineLineIntersection(Point pointA, Point pointB, Point pointC, Point pointD) {
-        // Line AB represented as a1x + b1y = c1
-        double a1 = pointB.y - pointA.y;
-        double b1 = pointA.x - pointB.x;
-        double c1 = a1 * (pointA.x) + b1 * (pointA.y);
-
-        // Line CD represented as a2x + b2y = c2
-        double a2 = pointD.y - pointC.y;
-        double b2 = pointC.x - pointD.x;
-        double c2 = a2 * (pointC.x) + b2 * (pointC.y);
-
-        double determinant = a1 * b2 - a2 * b1;
-
-        if (determinant == 0) {
-            // The lines are parallel. This is simplified
-            // by returning a pair of FLT_MAX
-            return new Point(Integer.MAX_VALUE, Integer.MAX_VALUE);
-        } else {
-            double x = (b2 * c1 - b1 * c2) / determinant;
-            double y = (a1 * c2 - a2 * c1) / determinant;
-            return new Point((int) x, (int) y);
-        }
-    }
+    // TODO remove
+//    static Point lineLineIntersection(Point pointA, Point pointB, Point pointC, Point pointD) {
+//        // Line AB represented as a1x + b1y = c1
+//        double a1 = pointB.y - pointA.y;
+//        double b1 = pointA.x - pointB.x;
+//        double c1 = a1 * (pointA.x) + b1 * (pointA.y);
+//
+//        // Line CD represented as a2x + b2y = c2
+//        double a2 = pointD.y - pointC.y;
+//        double b2 = pointC.x - pointD.x;
+//        double c2 = a2 * (pointC.x) + b2 * (pointC.y);
+//
+//        double determinant = a1 * b2 - a2 * b1;
+//
+//        if (determinant == 0) {
+//            // The lines are parallel. This is simplified
+//            // by returning a pair of FLT_MAX
+//            return new Point(Integer.MAX_VALUE, Integer.MAX_VALUE);
+//        } else {
+//            double x = (b2 * c1 - b1 * c2) / determinant;
+//            double y = (a1 * c2 - a2 * c1) / determinant;
+//            return new Point((int) x, (int) y);
+//        }
+//    }
 
     private void onDroppedByUser() {
         if (!hasControl()) {
@@ -285,12 +286,18 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
 
         mHoverView.mScreen.getExitView().hide();
 
+        // TODO check location
+        if (mPrevPoint == null) {
+            return;
+        }
+
         // TODO Prev can be null
         int diffPositionX = mPrevPoint.x - mFloatingTab.getPosition().x;
         int diffPositionY = mPrevPoint.y - mFloatingTab.getPosition().y;
 
         boolean droppedOnExit = mHoverView.mScreen.getExitView().isInExitZone(mFloatingTab.getPosition(), mHoverView.getScreenSize());
         if (droppedOnExit) {
+            // TODO check userDropped option
             onClose(false);
         } else {
 
@@ -415,6 +422,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         mFloatingTab.closeAnimation(targetPoint, new Runnable() {
             @Override
             public void run() {
+                // TODO check userDropped option
                 onClose(false);
             }
         });
@@ -482,16 +490,9 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         } else {
             mHoverView.mScreen.getExitView().startExitExitAnim();
         }
-
-//        mHoverView.mScreen.getExitView().enterExitRange(position);
         mFloatingTab.moveCenterTo(position);
-
-//        int treshold = 5;
-//        if (Math.abs(mCurrPoint.x - position.x) > treshold || Math.abs(mCurrPoint.y - position.y) > treshold) {
-//            Log.d(TAG, "TRACK_DEBUG moveFloatingTabTo position saved = " + position);
-            mPrevPoint = mCurrPoint;
-            mCurrPoint = position;
-//        }
+        mPrevPoint = mCurrPoint;
+        mCurrPoint = position;
     }
 
     protected void activateDragger() {
