@@ -54,6 +54,8 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     private Runnable mOnStateChanged;
     private Point mStartPoint = null;
     private long mDragStartMillis = -1L;
+    private Point mPrevPoint = null;
+    private Point mCurrPoint = new Point(0, 0);
 
     @Override
     public void takeControl(@NonNull HoverView floatingTab, final Runnable onStateChanged) {
@@ -235,6 +237,11 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         Log.d(TAG, "xDirection = " + xDirection);
         Log.d(TAG, "yDirection = " + yDirection);
 
+        // wrong
+        if (b == 0) {
+            b = 1;
+            Log.d(TAG, "Catch divide by 0!!!");
+        }
         Log.d(TAG, "x = 0 ->  y = " + (c / b));
 //        Log.d(TAG, "x = " + (c / a) + ", y = 0");
         Log.d(TAG, "x = mHoverView.getScreenSize().x ->  y = " + ((c - a * mHoverView.getScreenSize().x) / b));
@@ -245,7 +252,6 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         } else {
             return new Point(0, (c - a * mHoverView.getScreenSize().x) / b);
         }
-
     }
 
     static Point lineLineIntersection(Point pointA, Point pointB, Point pointC, Point pointD) {
@@ -279,33 +285,37 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
 
         mHoverView.mScreen.getExitView().hide();
 
-        int diffPositionX = mStartPoint.x - mFloatingTab.getPosition().x;
-        int diffPositionY = mStartPoint.y - mFloatingTab.getPosition().y;
+        // TODO Prev can be null
+        int diffPositionX = mPrevPoint.x - mFloatingTab.getPosition().x;
+        int diffPositionY = mPrevPoint.y - mFloatingTab.getPosition().y;
 
         boolean droppedOnExit = mHoverView.mScreen.getExitView().isInExitZone(mFloatingTab.getPosition(), mHoverView.getScreenSize());
         if (droppedOnExit) {
-            onClose(true);
+            onClose(false);
         } else {
 
-            float distance = (float) calculateDistance(mStartPoint, mFloatingTab.getPosition());
+            float distance = (float) calculateDistance(mPrevPoint, mFloatingTab.getPosition());
             Log.d(TAG, "TRACK_DEBUG onDroppedByUser diffPositionX = " + diffPositionX + ", diffPositionY = " + diffPositionY);
-            Log.d(TAG, "TRACK_DEBUG onDroppedByUser distance = " + calculateDistance(mStartPoint, mFloatingTab.getPosition()));
+            Log.d(TAG, "TRACK_DEBUG onDroppedByUser distance = " + calculateDistance(mPrevPoint, mFloatingTab.getPosition()));
             Log.d(TAG, "TRACK_DEBUG onDroppedByUser diffTimeMillis = " + (System.currentTimeMillis() - mDragStartMillis));
-//            lineFromPoints(mStartPoint, mFloatingTab.getPosition());
+//            lineFromPoints(mPrevPoint, mFloatingTab.getPosition());
 
             int tabSize = mHoverView.getResources().getDimensionPixelSize(R.dimen.hover_tab_size);
             Point screenSize = mHoverView.getScreenSize();
             float tabHorizontalPositionPercent = (float) mFloatingTab.getPosition().x / screenSize.x;
             final float viewHeightPercent = mFloatingTab.getHeight() / 2f / screenSize.y;
-//            float tabVerticalPosition = (float) lineFromPoints(mStartPoint, mFloatingTab.getPosition()).y / screenSize.y;
+//            float tabVerticalPosition = (float) lineFromPoints(mPrevPoint, mFloatingTab.getPosition()).y / screenSize.y;
             float tabVerticalPositionPercent = (float) mFloatingTab.getPosition().y / screenSize.y;
 
-            if (distance > 300) {
+            // TODO find best threshold
+            if (distance > 30) {
                 Log.d(TAG, "distance > 100");
-                Point targetPosition = lineFromPoints(mStartPoint, mFloatingTab.getPosition());
-                float positionY = lineFromPoints(mStartPoint, mFloatingTab.getPosition()).y;
-                positionY = (positionY - mFloatingTab.getPosition().y) * distance / 1000 + mFloatingTab.getPosition().y;
-//                tabVerticalPosition = (float) lineFromPoints(mStartPoint, mFloatingTab.getPosition()).y / screenSize.y;
+//                Point targetPosition = lineFromPoints(mPrevPoint, mFloatingTab.getPosition());
+                float positionY = lineFromPoints(mPrevPoint, mFloatingTab.getPosition()).y;
+
+                // TODO fine best formula
+//                positionY = (positionY - mFloatingTab.getPosition().y) * distance / 100 + mFloatingTab.getPosition().y;
+//                tabVerticalPosition = (float) lineFromPoints(mPrevPoint, mFloatingTab.getPosition()).y / screenSize.y;
 //                tabVerticalPosition = tabVerticalPosition * distance / 1000;
                 tabVerticalPositionPercent = positionY / screenSize.y;
                 Log.d(TAG, "distance > 100 tabVerticalPosition = " + tabVerticalPositionPercent);
@@ -316,11 +326,11 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
                 } else {
                     tabHorizontalPositionPercent = 1f;
                 }
-
             } else {
                 Log.d(TAG, "is less than 100");
-                tabVerticalPositionPercent = (float) lineFromPoints(mStartPoint, mFloatingTab.getPosition()).y / screenSize.y;
-                tabVerticalPositionPercent = tabVerticalPositionPercent * 3 / 10;
+//                tabVerticalPositionPercent = (float) lineFromPoints(mPrevPoint, mFloatingTab.getPosition()).y / screenSize.y;
+//                tabVerticalPositionPercent = tabVerticalPositionPercent * 3 / 10;
+                tabVerticalPositionPercent = (float) mFloatingTab.getPosition().y / screenSize.y;
             }
 
             int sideDockHorizontalPosition = SideDock.SidePosition.LEFT;
@@ -337,8 +347,8 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
 
             Log.d(TAG, "targetPosition.x = " + targetPosition.x);
             Log.d(TAG, "targetPosition.y = " + targetPosition.y);
-            boolean droppedOnExit2 = mHoverView.mScreen.getExitView().isInExitZone(targetPosition, mHoverView.getScreenSize());
-            if (droppedOnExit2) {
+            boolean flickingExit = mHoverView.mScreen.getExitView().isInExitZone(targetPosition, mHoverView.getScreenSize());
+            if (flickingExit) {
                 Log.d(TAG, "Dropped at horizontal " + tabHorizontalPositionPercent + ", vertical " + tabVerticalPositionPercent);
                 int x = screenSize.x / 2 - ((int) (tabSize * 0.25 * 2));
 
@@ -475,6 +485,13 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
 
 //        mHoverView.mScreen.getExitView().enterExitRange(position);
         mFloatingTab.moveCenterTo(position);
+
+//        int treshold = 5;
+//        if (Math.abs(mCurrPoint.x - position.x) > treshold || Math.abs(mCurrPoint.y - position.y) > treshold) {
+//            Log.d(TAG, "TRACK_DEBUG moveFloatingTabTo position saved = " + position);
+            mPrevPoint = mCurrPoint;
+            mCurrPoint = position;
+//        }
     }
 
     protected void activateDragger() {
