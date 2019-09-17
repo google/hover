@@ -239,28 +239,21 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     }
 
     private void onDroppedByUser() {
-        Log.d(TAG, "TRACK_DEBUG HoverViewStateCollapsed onDroppedByUser");
-
         if (!hasControl()) {
             return;
         }
-
         mHoverView.mScreen.getExitView().hide();
 
         if (mPrevPoint == null) {
             mPrevPoint = mFloatingTab.getPosition();
         }
-
-        int diffPositionX = mPrevPoint.x - mFloatingTab.getPosition().x;
-
-        boolean droppedOnExit = mHoverView.mScreen.getExitView().isInExitZone(mFloatingTab.getPosition(), mHoverView.getScreenSize());
+        Point screenSize = mHoverView.getScreenSize();
+        boolean droppedOnExit = mHoverView.mScreen.getExitView().isInExitZone(mFloatingTab.getPosition(), screenSize);
         if (droppedOnExit) {
             onClose(true);
         } else {
             float distance = (float) calculateDistance(mPrevPoint, mFloatingTab.getPosition());
-
             int tabSize = mHoverView.getResources().getDimensionPixelSize(R.dimen.hover_tab_size);
-            Point screenSize = mHoverView.getScreenSize();
             float tabHorizontalPositionPercent = (float) mFloatingTab.getPosition().x / screenSize.x;
             final float viewHeightPercent = mFloatingTab.getHeight() / 2f / screenSize.y;
             float tabVerticalPositionPercent;
@@ -268,6 +261,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
                 float positionY = getTargetYPosition(mPrevPoint, mFloatingTab.getPosition());
                 tabVerticalPositionPercent = positionY / screenSize.y;
 
+                int diffPositionX = mPrevPoint.x - mFloatingTab.getPosition().x;
                 if (diffPositionX > 0) {
                     tabHorizontalPositionPercent = 0f;
                 } else {
@@ -283,15 +277,15 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
                 tabVerticalPositionPercent = MAX_TAB_VERTICAL_POSITION - viewHeightPercent;
             }
 
-            Point targetPosition = new Point();
-            targetPosition.x = (int) (tabHorizontalPositionPercent * (float) mHoverView.getScreenSize().x);
-            targetPosition.y = (int) (tabVerticalPositionPercent * (float) mHoverView.getScreenSize().y);
-            boolean throwOnExit = mHoverView.mScreen.getExitView().isInExitZone(targetPosition, mHoverView.getScreenSize());
-
+            Point throwTargetPosition = new Point(
+                    (int) (tabHorizontalPositionPercent * (float) mHoverView.getScreenSize().x),
+                    (int) (tabVerticalPositionPercent * (float) mHoverView.getScreenSize().y));
+            boolean throwOnExit = mHoverView.mScreen.getExitView().isInExitZone(throwTargetPosition, screenSize);
             if (throwOnExit) {
-                targetPosition.x = screenSize.x / 2 - tabSize / 2;
-                targetPosition.y = (int) (screenSize.y * tabVerticalPositionPercent) - tabSize / 2;
-                closeWithThrowingAnimation(targetPosition);
+                Point closeTargetPosition = new Point(
+                        screenSize.x / 2 - tabSize / 2,
+                        (int) (screenSize.y * tabVerticalPositionPercent) - tabSize / 2);
+                closeWithThrowingAnimation(closeTargetPosition);
             } else {
                 int sideDockHorizontalPosition = SideDock.SidePosition.RIGHT;
                 if (tabHorizontalPositionPercent <= 0.5) {
