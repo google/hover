@@ -21,7 +21,7 @@
             android:layout_height="@dimen/hover_exit_icon_size"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
-            android:layout_marginBottom="100dp"
+            android:layout_marginBottom="48dp"
             android:src="@drawable/ic_exit" />
 
     </RelativeLayout>

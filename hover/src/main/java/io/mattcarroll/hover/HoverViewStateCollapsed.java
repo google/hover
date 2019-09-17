@@ -43,6 +43,9 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     private static final float MIN_TAB_VERTICAL_POSITION = 0.0f;
     private static final float MAX_TAB_VERTICAL_POSITION = 1.0f;
     private static final long DEFAULT_IDLE_MILLIS = 5000;
+    private static final int POP_THROWING_THRESHOLD = 20;
+    private static final int NEGATIVE = -1;
+    private static final int POSITIVE = 1;
 
     protected FloatingTab mFloatingTab;
     protected final FloatingTabDragListener mFloatingTabDragListener = new FloatingTabDragListener(this);
@@ -198,135 +201,72 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         mHoverView.notifyOnDragStart(this);
     }
 
-    private double calculateDistance(@NonNull Point p1, @NonNull Point p2) {
+    private double calculateDistance(@NonNull Point point1, @NonNull Point point2) {
         return Math.sqrt(
-                Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2)
+                Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2)
         );
     }
 
-    // Function to find the line given two points
-    Point lineFromPoints(Point p, Point q) {
-        int a = q.y - p.y;
-        int b = p.x - q.x;
-        int c = a * (p.x) + b * (p.y);
+    /**
+     * Get target Y position from 2 points
+     * @param point1 first point
+     * @param point2 second point
+     * @return targetPoint
+     */
+    private float getTargetYPosition(@NonNull Point point1, @NonNull Point point2) {
+        // STEP 1: get liner line equation from 2 points (ax + by = c)
+        float a = point2.y - point1.y;
+        float b = point1.x - point2.x;
+        float c = a * (point1.x) + b * (point1.y);
 
-        if (b < 0) {
-            Log.d(TAG, "The line passing through points P and Q is: "
-                    + a + "x " + b + "y = " + c);
-        } else {
-            Log.d(TAG, "The line passing through points P and Q is: "
-                    + a + "x + " + b + "y = " + c);
+        // STEP 2: get x direction of the line
+        int xDirection = POSITIVE;
+        if (point1.x - point2.x >= 0) {
+            xDirection = NEGATIVE;
         }
 
-        int xDirection = 0;
-        int yDirection = 0;
-
-        if (p.x - q.x >= 0) {
-            xDirection = 0;
-        } else {
-            xDirection = 1;
-        }
-
-        if (p.y - q.y >= 0) {
-            yDirection = 0;
-        } else {
-            yDirection = 1;
-        }
-
-        // TODO handle DIVIDE BY ZERO
-        Log.d(TAG, "xDirection = " + xDirection);
-        Log.d(TAG, "yDirection = " + yDirection);
-
-        // wrong
+        // To avoid divide by zero exception
         if (b == 0) {
             b = 1;
-            Log.d(TAG, "Catch divide by 0!!!");
         }
-        Log.d(TAG, "x = 0 ->  y = " + (c / b));
-//        Log.d(TAG, "x = " + (c / a) + ", y = 0");
-        Log.d(TAG, "x = mHoverView.getScreenSize().x ->  y = " + ((c - a * mHoverView.getScreenSize().x) / b));
-//        Log.d(TAG, "x = " + ((c - b * mHoverView.getScreenSize().y) / a) + ", y = mHoverView.getScreenSize().y");
 
-        if (xDirection == 0) {
-            return new Point(0, (c / b));
+        // STEP 3: return target Y position ( y = (c - ax) / b)
+        if (xDirection == NEGATIVE) {
+            return c / b;
         } else {
-            return new Point(0, (c - a * mHoverView.getScreenSize().x) / b);
+            return (c - a * mHoverView.getScreenSize().x) / b;
         }
     }
 
-    // TODO remove
-//    static Point lineLineIntersection(Point pointA, Point pointB, Point pointC, Point pointD) {
-//        // Line AB represented as a1x + b1y = c1
-//        double a1 = pointB.y - pointA.y;
-//        double b1 = pointA.x - pointB.x;
-//        double c1 = a1 * (pointA.x) + b1 * (pointA.y);
-//
-//        // Line CD represented as a2x + b2y = c2
-//        double a2 = pointD.y - pointC.y;
-//        double b2 = pointC.x - pointD.x;
-//        double c2 = a2 * (pointC.x) + b2 * (pointC.y);
-//
-//        double determinant = a1 * b2 - a2 * b1;
-//
-//        if (determinant == 0) {
-//            // The lines are parallel. This is simplified
-//            // by returning a pair of FLT_MAX
-//            return new Point(Integer.MAX_VALUE, Integer.MAX_VALUE);
-//        } else {
-//            double x = (b2 * c1 - b1 * c2) / determinant;
-//            double y = (a1 * c2 - a2 * c1) / determinant;
-//            return new Point((int) x, (int) y);
-//        }
-//    }
-
     private void onDroppedByUser() {
+        Log.d(TAG, "TRACK_DEBUG HoverViewStateCollapsed onDroppedByUser");
+
         if (!hasControl()) {
             return;
         }
 
         mHoverView.mScreen.getExitView().hide();
 
-        // TODO check location
         if (mPrevPoint == null) {
-            return;
+            mPrevPoint = mFloatingTab.getPosition();
         }
 
-        // TODO Prev can be null
         int diffPositionX = mPrevPoint.x - mFloatingTab.getPosition().x;
-        int diffPositionY = mPrevPoint.y - mFloatingTab.getPosition().y;
 
         boolean droppedOnExit = mHoverView.mScreen.getExitView().isInExitZone(mFloatingTab.getPosition(), mHoverView.getScreenSize());
         if (droppedOnExit) {
-            // TODO check userDropped option
-            onClose(false);
+            onClose(true);
         } else {
-
             float distance = (float) calculateDistance(mPrevPoint, mFloatingTab.getPosition());
-            Log.d(TAG, "TRACK_DEBUG onDroppedByUser diffPositionX = " + diffPositionX + ", diffPositionY = " + diffPositionY);
-            Log.d(TAG, "TRACK_DEBUG onDroppedByUser distance = " + calculateDistance(mPrevPoint, mFloatingTab.getPosition()));
-            Log.d(TAG, "TRACK_DEBUG onDroppedByUser diffTimeMillis = " + (System.currentTimeMillis() - mDragStartMillis));
-//            lineFromPoints(mPrevPoint, mFloatingTab.getPosition());
 
             int tabSize = mHoverView.getResources().getDimensionPixelSize(R.dimen.hover_tab_size);
             Point screenSize = mHoverView.getScreenSize();
             float tabHorizontalPositionPercent = (float) mFloatingTab.getPosition().x / screenSize.x;
             final float viewHeightPercent = mFloatingTab.getHeight() / 2f / screenSize.y;
-//            float tabVerticalPosition = (float) lineFromPoints(mPrevPoint, mFloatingTab.getPosition()).y / screenSize.y;
-            float tabVerticalPositionPercent = (float) mFloatingTab.getPosition().y / screenSize.y;
-
-            // TODO find best threshold
-            if (distance > 30) {
-                Log.d(TAG, "distance > 100");
-//                Point targetPosition = lineFromPoints(mPrevPoint, mFloatingTab.getPosition());
-                float positionY = lineFromPoints(mPrevPoint, mFloatingTab.getPosition()).y;
-
-                // TODO fine best formula
-//                positionY = (positionY - mFloatingTab.getPosition().y) * distance / 100 + mFloatingTab.getPosition().y;
-//                tabVerticalPosition = (float) lineFromPoints(mPrevPoint, mFloatingTab.getPosition()).y / screenSize.y;
-//                tabVerticalPosition = tabVerticalPosition * distance / 1000;
+            float tabVerticalPositionPercent;
+            if (distance > POP_THROWING_THRESHOLD) {
+                float positionY = getTargetYPosition(mPrevPoint, mFloatingTab.getPosition());
                 tabVerticalPositionPercent = positionY / screenSize.y;
-                Log.d(TAG, "distance > 100 tabVerticalPosition = " + tabVerticalPositionPercent);
-
 
                 if (diffPositionX > 0) {
                     tabHorizontalPositionPercent = 0f;
@@ -334,13 +274,8 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
                     tabHorizontalPositionPercent = 1f;
                 }
             } else {
-                Log.d(TAG, "is less than 100");
-//                tabVerticalPositionPercent = (float) lineFromPoints(mPrevPoint, mFloatingTab.getPosition()).y / screenSize.y;
-//                tabVerticalPositionPercent = tabVerticalPositionPercent * 3 / 10;
                 tabVerticalPositionPercent = (float) mFloatingTab.getPosition().y / screenSize.y;
             }
-
-            int sideDockHorizontalPosition = SideDock.SidePosition.LEFT;
 
             if (tabVerticalPositionPercent < MIN_TAB_VERTICAL_POSITION) {
                 tabVerticalPositionPercent = MIN_TAB_VERTICAL_POSITION;
@@ -351,27 +286,16 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
             Point targetPosition = new Point();
             targetPosition.x = (int) (tabHorizontalPositionPercent * (float) mHoverView.getScreenSize().x);
             targetPosition.y = (int) (tabVerticalPositionPercent * (float) mHoverView.getScreenSize().y);
+            boolean throwOnExit = mHoverView.mScreen.getExitView().isInExitZone(targetPosition, mHoverView.getScreenSize());
 
-            Log.d(TAG, "targetPosition.x = " + targetPosition.x);
-            Log.d(TAG, "targetPosition.y = " + targetPosition.y);
-            boolean flickingExit = mHoverView.mScreen.getExitView().isInExitZone(targetPosition, mHoverView.getScreenSize());
-            if (flickingExit) {
-                Log.d(TAG, "Dropped at horizontal " + tabHorizontalPositionPercent + ", vertical " + tabVerticalPositionPercent);
-                int x = screenSize.x / 2 - ((int) (tabSize * 0.25 * 2));
-
-                int y = (int) (screenSize.y * tabVerticalPositionPercent) - ((int) (tabSize * 0.25 * 2));
-
-                targetPosition.x = x;
-                targetPosition.y = y;
-                closeWithAnimation(targetPosition);
+            if (throwOnExit) {
+                targetPosition.x = screenSize.x / 2 - tabSize / 2;
+                targetPosition.y = (int) (screenSize.y * tabVerticalPositionPercent) - tabSize / 2;
+                closeWithThrowingAnimation(targetPosition);
             } else {
-
+                int sideDockHorizontalPosition = SideDock.SidePosition.RIGHT;
                 if (tabHorizontalPositionPercent <= 0.5) {
                     sideDockHorizontalPosition = SideDock.SidePosition.LEFT;
-                } else if (tabHorizontalPositionPercent <= 1.0) {
-                    sideDockHorizontalPosition = SideDock.SidePosition.RIGHT;
-                } else {
-                    sideDockHorizontalPosition = SideDock.SidePosition.RIGHT;
                 }
 
                 Log.d(TAG, "Dropped at horizontal " + tabHorizontalPositionPercent + ", vertical " + tabVerticalPositionPercent);
@@ -385,9 +309,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
                         sidePosition
                 );
                 mHoverView.saveVisualState();
-                Log.d(TAG, "User dropped tab. Sending to new dock: " + mHoverView.mCollapsedDock);
                 sendToDock();
-
             }
         }
     }
@@ -415,15 +337,14 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         }
     }
 
-    private void closeWithAnimation(Point targetPoint) {
-        Log.d(TAG, "Sending floating tab to dock.");
-//        deactivateDragger();
-//        mFloatingTab.setDock(mHoverView.mCollapsedDock);
+    private void closeWithThrowingAnimation(Point targetPoint) {
+        Log.d(TAG, "closeWithThrowingAnimation");
+        deactivateDragger();
         mFloatingTab.closeAnimation(targetPoint, new Runnable() {
             @Override
             public void run() {
-                // TODO check userDropped option
-                onClose(false);
+                activateDragger();
+                onClose(true);
             }
         });
     }
@@ -484,7 +405,6 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     }
 
     void moveFloatingTabTo(View floatingTab, @NonNull Point position) {
-        Log.d(TAG, "TRACK_DEBUG moveFloatingTabTo position = " + position);
         if (mHoverView.mScreen.getExitView().isInExitZone(position, mHoverView.getScreenSize())) {
             mHoverView.mScreen.getExitView().startEnterExitAnim();
         } else {

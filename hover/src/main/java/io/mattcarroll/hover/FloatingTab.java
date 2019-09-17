@@ -303,7 +303,6 @@ class FloatingTab extends HoverFrameLayout {
                 if (null != onDocked) {
                     onDocked.run();
                 }
-//                notifyListenersOfPositionChange(FloatingTab.this);
             }
 
             @Override
