@@ -35,7 +35,6 @@ import android.widget.RelativeLayout;
 /**
  * Fullscreen View that provides an exit "drop zone" for users to exit the Hover Menu.
  */
-// TODO 2019.09.09 EXIT POP - Polish code, remove logs, check landscape mode
 class ExitView extends RelativeLayout {
 
     private static final String TAG = "ExitView";
@@ -99,7 +98,6 @@ class ExitView extends RelativeLayout {
         enterAnimation.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animator) {
-                Log.d(TAG, "enterAnimation onAnimationStart");
                 mExitIcon.setScaleY(EXIT_ICON_DEFAULT_SCALE_Y);
                 mExitIcon.setScaleX(EXIT_ICON_DEFAULT_SCALE_X);
                 mExitIcon.setRotation(EXIT_ICON_DEFAULT_ROTATION);
@@ -107,12 +105,11 @@ class ExitView extends RelativeLayout {
 
             @Override
             public void onAnimationEnd(Animator animator) {
-                Log.d(TAG, "enterAnimation onAnimationEnd");
+
             }
 
             @Override
             public void onAnimationCancel(Animator animator) {
-                Log.d(TAG, "enterAnimation onAnimationCancel");
                 mExitIcon.setScaleY(EXIT_ICON_DEFAULT_SCALE_Y);
                 mExitIcon.setScaleX(EXIT_ICON_DEFAULT_SCALE_X);
                 mExitIcon.setRotation(EXIT_ICON_DEFAULT_ROTATION);
@@ -120,7 +117,7 @@ class ExitView extends RelativeLayout {
 
             @Override
             public void onAnimationRepeat(Animator animator) {
-                Log.d(TAG, "enterAnimation onAnimationRepeat");
+
             }
         });
 
@@ -131,27 +128,6 @@ class ExitView extends RelativeLayout {
         exitAnimation = ObjectAnimator.ofPropertyValuesHolder(mExitIcon, exitAnimationScaleX, exitAnimationScaleY, exitAnimationRotate, exitAnimationAlpha);
         exitAnimation.setDuration(ENTER_EXIT_DURATION);
         exitAnimation.setInterpolator(getExitViewInterpolator());
-        exitAnimation.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animator) {
-                Log.d(TAG, "exitAnimation onAnimationStart");
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animator) {
-                Log.d(TAG, "exitAnimation onAnimationEnd");
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animator) {
-                Log.d(TAG, "exitAnimation onAnimationCancel");
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animator) {
-                Log.d(TAG, "exitAnimation onAnimationRepeat");
-            }
-        });
     }
 
     public boolean isInExitZone(@NonNull Point position, @NonNull Point screenSize) {
@@ -228,7 +204,6 @@ class ExitView extends RelativeLayout {
     }
 
     public void resetExitButtonAnimation() {
-        Log.d(TAG, "resetExitButtonAnimation");
         isExitAnimated = false;
         mExitIcon.setScaleY(EXIT_ICON_DEFAULT_SCALE_Y);
         mExitIcon.setScaleX(EXIT_ICON_DEFAULT_SCALE_X);
