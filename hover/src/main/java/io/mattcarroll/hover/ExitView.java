@@ -98,9 +98,7 @@ class ExitView extends RelativeLayout {
         enterAnimation.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animator) {
-                mExitIcon.setScaleY(EXIT_ICON_DEFAULT_SCALE_Y);
-                mExitIcon.setScaleX(EXIT_ICON_DEFAULT_SCALE_X);
-                mExitIcon.setRotation(EXIT_ICON_DEFAULT_ROTATION);
+                initExitIconViewStatus();
             }
 
             @Override
@@ -110,9 +108,7 @@ class ExitView extends RelativeLayout {
 
             @Override
             public void onAnimationCancel(Animator animator) {
-                mExitIcon.setScaleY(EXIT_ICON_DEFAULT_SCALE_Y);
-                mExitIcon.setScaleX(EXIT_ICON_DEFAULT_SCALE_X);
-                mExitIcon.setRotation(EXIT_ICON_DEFAULT_ROTATION);
+                initExitIconViewStatus();
             }
 
             @Override
@@ -128,6 +124,12 @@ class ExitView extends RelativeLayout {
         exitAnimation = ObjectAnimator.ofPropertyValuesHolder(mExitIcon, exitAnimationScaleX, exitAnimationScaleY, exitAnimationRotate, exitAnimationAlpha);
         exitAnimation.setDuration(ENTER_EXIT_DURATION);
         exitAnimation.setInterpolator(getExitViewInterpolator());
+    }
+
+    private void initExitIconViewStatus() {
+        mExitIcon.setScaleY(EXIT_ICON_DEFAULT_SCALE_Y);
+        mExitIcon.setScaleX(EXIT_ICON_DEFAULT_SCALE_X);
+        mExitIcon.setRotation(EXIT_ICON_DEFAULT_ROTATION);
     }
 
     public boolean isInExitZone(@NonNull Point position, @NonNull Point screenSize) {
@@ -205,9 +207,7 @@ class ExitView extends RelativeLayout {
 
     public void resetExitButtonAnimation() {
         isExitAnimated = false;
-        mExitIcon.setScaleY(EXIT_ICON_DEFAULT_SCALE_Y);
-        mExitIcon.setScaleX(EXIT_ICON_DEFAULT_SCALE_X);
-        mExitIcon.setRotation(EXIT_ICON_DEFAULT_ROTATION);
+        initExitIconViewStatus();
     }
 
     public void hide() {
