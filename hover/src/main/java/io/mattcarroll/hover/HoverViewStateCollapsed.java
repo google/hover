@@ -252,60 +252,69 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         if (droppedOnExit) {
             onClose(true);
         } else {
-            float distance = (float) calculateDistance(mPrevPoint, mFloatingTab.getPosition());
-            int tabSize = mHoverView.getResources().getDimensionPixelSize(R.dimen.hover_tab_size);
-            float tabHorizontalPositionPercent = (float) mFloatingTab.getPosition().x / screenSize.x;
-            final float viewHeightPercent = mFloatingTab.getHeight() / 2f / screenSize.y;
-            float tabVerticalPositionPercent;
-            if (distance > POP_THROWING_THRESHOLD) {
-                float positionY = getTargetYPosition(mPrevPoint, mFloatingTab.getPosition());
-                tabVerticalPositionPercent = positionY / screenSize.y;
-
-                int diffPositionX = mPrevPoint.x - mFloatingTab.getPosition().x;
-                if (diffPositionX > 0) {
-                    tabHorizontalPositionPercent = 0f;
-                } else {
-                    tabHorizontalPositionPercent = 1f;
-                }
-            } else {
-                tabVerticalPositionPercent = (float) mFloatingTab.getPosition().y / screenSize.y;
-            }
-
-            if (tabVerticalPositionPercent < MIN_TAB_VERTICAL_POSITION) {
-                tabVerticalPositionPercent = MIN_TAB_VERTICAL_POSITION;
-            } else if (tabVerticalPositionPercent > MAX_TAB_VERTICAL_POSITION - viewHeightPercent) {
-                tabVerticalPositionPercent = MAX_TAB_VERTICAL_POSITION - viewHeightPercent;
-            }
-
-            Point throwTargetPosition = new Point(
-                    (int) (tabHorizontalPositionPercent * (float) mHoverView.getScreenSize().x),
-                    (int) (tabVerticalPositionPercent * (float) mHoverView.getScreenSize().y));
-            boolean throwOnExit = mHoverView.mScreen.getExitView().isInExitZone(throwTargetPosition, screenSize);
-            if (throwOnExit) {
-                Point closeTargetPosition = new Point(
-                        screenSize.x / 2 - tabSize / 2,
-                        (int) (screenSize.y * tabVerticalPositionPercent) - tabSize / 2);
-                closeWithThrowingAnimation(closeTargetPosition);
-            } else {
-                int sideDockHorizontalPosition = SideDock.SidePosition.RIGHT;
-                if (tabHorizontalPositionPercent <= 0.5) {
-                    sideDockHorizontalPosition = SideDock.SidePosition.LEFT;
-                }
-
-                Log.d(TAG, "Dropped at horizontal " + tabHorizontalPositionPercent + ", vertical " + tabVerticalPositionPercent);
-                SideDock.SidePosition sidePosition = new SideDock.SidePosition(
-                        sideDockHorizontalPosition,
-                        tabVerticalPositionPercent
-                );
-                mHoverView.mCollapsedDock = new SideDock(
-                        mHoverView,
-                        tabSize,
-                        sidePosition
-                );
-                mHoverView.saveVisualState();
-                sendToDock();
-            }
+            handleDrop(screenSize);
         }
+    }
+
+    private void handleDrop(Point screenSize) {
+        float distance = (float) calculateDistance(mPrevPoint, mFloatingTab.getPosition());
+        int tabSize = mHoverView.getResources().getDimensionPixelSize(R.dimen.hover_tab_size);
+        float tabHorizontalPositionPercent = (float) mFloatingTab.getPosition().x / screenSize.x;
+        final float viewHeightPercent = mFloatingTab.getHeight() / 2f / screenSize.y;
+        float tabVerticalPositionPercent;
+        if (distance > POP_THROWING_THRESHOLD) {
+            float positionY = getTargetYPosition(mPrevPoint, mFloatingTab.getPosition());
+            tabVerticalPositionPercent = positionY / screenSize.y;
+
+            int diffPositionX = mPrevPoint.x - mFloatingTab.getPosition().x;
+            if (diffPositionX > 0) {
+                tabHorizontalPositionPercent = 0f;
+            } else {
+                tabHorizontalPositionPercent = 1f;
+            }
+        } else {
+            tabVerticalPositionPercent = (float) mFloatingTab.getPosition().y / screenSize.y;
+        }
+
+        tabVerticalPositionPercent = computeVerticalPositionPercent(viewHeightPercent, tabVerticalPositionPercent);
+
+        Point throwTargetPosition = new Point(
+                (int) (tabHorizontalPositionPercent * (float) mHoverView.getScreenSize().x),
+                (int) (tabVerticalPositionPercent * (float) mHoverView.getScreenSize().y));
+        boolean throwOnExit = mHoverView.mScreen.getExitView().isInExitZone(throwTargetPosition, screenSize);
+        if (throwOnExit) {
+            Point closeTargetPosition = new Point(
+                    screenSize.x / 2 - tabSize / 2,
+                    (int) (screenSize.y * tabVerticalPositionPercent) - tabSize / 2);
+            closeWithThrowingAnimation(closeTargetPosition);
+        } else {
+            int sideDockHorizontalPosition = SideDock.SidePosition.RIGHT;
+            if (tabHorizontalPositionPercent <= 0.5) {
+                sideDockHorizontalPosition = SideDock.SidePosition.LEFT;
+            }
+
+            Log.d(TAG, "Dropped at horizontal " + tabHorizontalPositionPercent + ", vertical " + tabVerticalPositionPercent);
+            SideDock.SidePosition sidePosition = new SideDock.SidePosition(
+                    sideDockHorizontalPosition,
+                    tabVerticalPositionPercent
+            );
+            mHoverView.mCollapsedDock = new SideDock(
+                    mHoverView,
+                    tabSize,
+                    sidePosition
+            );
+            mHoverView.saveVisualState();
+            sendToDock();
+        }
+    }
+
+    private float computeVerticalPositionPercent(float viewHeightPercent, float tabVerticalPositionPercent) {
+        if (tabVerticalPositionPercent < MIN_TAB_VERTICAL_POSITION) {
+            tabVerticalPositionPercent = MIN_TAB_VERTICAL_POSITION;
+        } else if (tabVerticalPositionPercent > MAX_TAB_VERTICAL_POSITION - viewHeightPercent) {
+            tabVerticalPositionPercent = MAX_TAB_VERTICAL_POSITION - viewHeightPercent;
+        }
+        return tabVerticalPositionPercent;
     }
 
     protected void onClose(final boolean userDropped) {
