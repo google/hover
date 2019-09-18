@@ -409,9 +409,9 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
 
     void moveFloatingTabTo(View floatingTab, @NonNull Point position) {
         if (mHoverView.mScreen.getExitView().isInExitZone(position, mHoverView.getScreenSize())) {
-            mHoverView.mScreen.getExitView().startShowAnim();
+            mHoverView.mScreen.getExitView().showEnterAnimation();
         } else {
-            mHoverView.mScreen.getExitView().startHideAnim();
+            mHoverView.mScreen.getExitView().showExitAnimation();
         }
         mFloatingTab.moveCenterTo(position);
         mPrevPoint = mCurrPoint;
