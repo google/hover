@@ -144,14 +144,14 @@ class ExitView extends RelativeLayout {
                 0 - mExitIcon.getWidth(),
                 screenSize.y * 4 / 6,
                 exitXExcludeThresholdLeft,
-                screenSize.y * 5 / 6
+                screenSize.y - mExitIcon.getHeight() / 2
         );
 
         Rect excludedXExitAreaRight = new Rect(
                 exitXExcludeThresholdRight,
                 screenSize.y * 4 / 6,
                 screenSize.x + mExitIcon.getWidth(),
-                screenSize.y * 5 / 6
+                screenSize.y - mExitIcon.getHeight() / 2
         );
 
         return exitArea.contains(position.x, position.y)
