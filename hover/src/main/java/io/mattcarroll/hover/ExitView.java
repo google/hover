@@ -48,10 +48,10 @@ class ExitView extends RelativeLayout {
     private static final float EXIT_ICON_TARGET_ROTATION = 90f;
     private static final float EXIT_ICON_DEFAULT_ALPHA = 0.6f;
     private static final float EXIT_ICON_TARGET_ALPHA = 0.75f;
+    private static final float EXIT_VIEW_DEFAULT_ALPHA = 0f;
     private static final float EXIT_VIEW_TARGET_ALPHA = 1.0f;
+    private static final float EXIT_VIEW_DEFAULT_Y = 800f;
     private static final float EXIT_VIEW_TARGET_Y = 0f;
-    private static final float EXIT_VIEW_BASE_ALPHA = 0f;
-    private static final float EXIT_VIEW_BASE_Y = 800f;
 
     private int mExitRadiusInPx;
     private View mExitIcon;
@@ -194,7 +194,7 @@ class ExitView extends RelativeLayout {
         exitGradientAnimator.setInterpolator(getExitViewInterpolator());
         exitGradientAnimator.start();
 
-        ObjectAnimator vgExitAnimator = ObjectAnimator.ofFloat(mVgExit, "y", EXIT_VIEW_BASE_Y, EXIT_VIEW_TARGET_Y);
+        ObjectAnimator vgExitAnimator = ObjectAnimator.ofFloat(mVgExit, "y", EXIT_VIEW_DEFAULT_Y, EXIT_VIEW_TARGET_Y);
         vgExitAnimator.setDuration(FADE_DURATION);
         vgExitAnimator.setInterpolator(getExitViewInterpolator());
         vgExitAnimator.start();
@@ -208,12 +208,12 @@ class ExitView extends RelativeLayout {
     }
 
     public void hide() {
-        ObjectAnimator vgExitAnimator = ObjectAnimator.ofFloat(mVgExit, "y", EXIT_VIEW_TARGET_Y, EXIT_VIEW_BASE_Y);
+        ObjectAnimator vgExitAnimator = ObjectAnimator.ofFloat(mVgExit, "y", EXIT_VIEW_TARGET_Y, EXIT_VIEW_DEFAULT_Y);
         vgExitAnimator.setDuration(FADE_DURATION);
         vgExitAnimator.setInterpolator(getExitViewInterpolator());
         vgExitAnimator.start();
 
-        ObjectAnimator exitGradientAnimator = ObjectAnimator.ofFloat(mExitGradient, "alpha", EXIT_VIEW_BASE_ALPHA);
+        ObjectAnimator exitGradientAnimator = ObjectAnimator.ofFloat(mExitGradient, "alpha", EXIT_VIEW_DEFAULT_ALPHA);
         exitGradientAnimator.setDuration(FADE_DURATION);
         exitGradientAnimator.setInterpolator(getExitViewInterpolator());
         exitGradientAnimator.start();
