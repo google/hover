@@ -309,8 +309,8 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     }
 
     private float computeVerticalPositionPercent(float viewHeightPercent, float tabVerticalPositionPercent) {
-        if (tabVerticalPositionPercent < MIN_TAB_VERTICAL_POSITION) {
-            tabVerticalPositionPercent = MIN_TAB_VERTICAL_POSITION;
+        if (tabVerticalPositionPercent < MIN_TAB_VERTICAL_POSITION + viewHeightPercent) {
+            tabVerticalPositionPercent = MIN_TAB_VERTICAL_POSITION + viewHeightPercent;
         } else if (tabVerticalPositionPercent > MAX_TAB_VERTICAL_POSITION - viewHeightPercent) {
             tabVerticalPositionPercent = MAX_TAB_VERTICAL_POSITION - viewHeightPercent;
         }
@@ -409,9 +409,9 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
 
     void moveFloatingTabTo(View floatingTab, @NonNull Point position) {
         if (mHoverView.mScreen.getExitView().isInExitZone(position, mHoverView.getScreenSize())) {
-            mHoverView.mScreen.getExitView().startEnterExitAnim();
+            mHoverView.mScreen.getExitView().startShowAnim();
         } else {
-            mHoverView.mScreen.getExitView().startExitExitAnim();
+            mHoverView.mScreen.getExitView().startHideAnim();
         }
         mFloatingTab.moveCenterTo(position);
         mPrevPoint = mCurrPoint;
