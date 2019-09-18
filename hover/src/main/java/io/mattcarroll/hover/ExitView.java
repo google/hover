@@ -172,14 +172,14 @@ class ExitView extends RelativeLayout {
         );
     }
 
-    public void startShowAnim() {
+    public void startShowAnimation() {
         if (mShowAnimation != null && !mShowAnimation.isRunning() && !mIsShowing) {
             mShowAnimation.start();
             mIsShowing = true;
         }
     }
 
-    public void startHideAnim() {
+    public void startHideAnimation() {
         if (mHideAnimation != null && !mHideAnimation.isRunning() && mIsShowing) {
             mHideAnimation.start();
             mIsShowing = false;
