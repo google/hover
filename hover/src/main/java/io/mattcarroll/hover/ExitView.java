@@ -57,8 +57,8 @@ class ExitView extends RelativeLayout {
     private View mExitIcon;
     private View mExitGradient;
     private ViewGroup mVgExit;
-    private ObjectAnimator mShowAnimation = null;
-    private ObjectAnimator mHideAnimation = null;
+    private ObjectAnimator mShowEnterAnimation = null;
+    private ObjectAnimator mShowExitAnimation = null;
     private boolean mIsShowing = false;
 
     public ExitView(@NonNull Context context) {
@@ -87,14 +87,14 @@ class ExitView extends RelativeLayout {
     }
 
     private void setAnimations() {
-        PropertyValuesHolder showAnimationScaleX = PropertyValuesHolder.ofFloat("scaleX", EXIT_ICON_DEFAULT_SCALE_X, EXIT_ICON_TARGET_SCALE_X);
-        PropertyValuesHolder showAnimationScaleY = PropertyValuesHolder.ofFloat("scaleY", EXIT_ICON_DEFAULT_SCALE_Y, EXIT_ICON_TARGET_SCALE_Y);
-        PropertyValuesHolder showAnimationRotate = PropertyValuesHolder.ofFloat("rotation", EXIT_ICON_DEFAULT_ROTATION, EXIT_ICON_TARGET_ROTATION);
-        PropertyValuesHolder showAnimationAlpha = PropertyValuesHolder.ofFloat("alpha", EXIT_ICON_DEFAULT_ALPHA, EXIT_ICON_TARGET_ALPHA);
-        mShowAnimation = ObjectAnimator.ofPropertyValuesHolder(mExitIcon, showAnimationScaleX, showAnimationScaleY, showAnimationRotate, showAnimationAlpha);
-        mShowAnimation.setDuration(SHOW_HIDE_DURATION);
-        mShowAnimation.setInterpolator(getExitViewInterpolator());
-        mShowAnimation.addListener(new Animator.AnimatorListener() {
+        PropertyValuesHolder showEnterAnimationScaleX = PropertyValuesHolder.ofFloat("scaleX", EXIT_ICON_DEFAULT_SCALE_X, EXIT_ICON_TARGET_SCALE_X);
+        PropertyValuesHolder showEnterAnimationScaleY = PropertyValuesHolder.ofFloat("scaleY", EXIT_ICON_DEFAULT_SCALE_Y, EXIT_ICON_TARGET_SCALE_Y);
+        PropertyValuesHolder showEnterAnimationRotate = PropertyValuesHolder.ofFloat("rotation", EXIT_ICON_DEFAULT_ROTATION, EXIT_ICON_TARGET_ROTATION);
+        PropertyValuesHolder showEnterAnimationAlpha = PropertyValuesHolder.ofFloat("alpha", EXIT_ICON_DEFAULT_ALPHA, EXIT_ICON_TARGET_ALPHA);
+        mShowEnterAnimation = ObjectAnimator.ofPropertyValuesHolder(mExitIcon, showEnterAnimationScaleX, showEnterAnimationScaleY, showEnterAnimationRotate, showEnterAnimationAlpha);
+        mShowEnterAnimation.setDuration(SHOW_HIDE_DURATION);
+        mShowEnterAnimation.setInterpolator(getExitViewInterpolator());
+        mShowEnterAnimation.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animator) {
                 initExitIconViewStatus();
@@ -114,13 +114,13 @@ class ExitView extends RelativeLayout {
             }
         });
 
-        PropertyValuesHolder hideAnimationScaleX = PropertyValuesHolder.ofFloat("scaleX", EXIT_ICON_TARGET_SCALE_X, EXIT_ICON_DEFAULT_SCALE_X);
-        PropertyValuesHolder hideAnimationScaleY = PropertyValuesHolder.ofFloat("scaleY", EXIT_ICON_TARGET_SCALE_Y, EXIT_ICON_DEFAULT_SCALE_Y);
-        PropertyValuesHolder hideAnimationRotate = PropertyValuesHolder.ofFloat("rotation", EXIT_ICON_TARGET_ROTATION, EXIT_ICON_DEFAULT_ROTATION);
-        PropertyValuesHolder hideAnimationAlpha = PropertyValuesHolder.ofFloat("alpha", EXIT_ICON_TARGET_ALPHA, EXIT_ICON_DEFAULT_ALPHA);
-        mHideAnimation = ObjectAnimator.ofPropertyValuesHolder(mExitIcon, hideAnimationScaleX, hideAnimationScaleY, hideAnimationRotate, hideAnimationAlpha);
-        mHideAnimation.setDuration(SHOW_HIDE_DURATION);
-        mHideAnimation.setInterpolator(getExitViewInterpolator());
+        PropertyValuesHolder showExitAnimationScaleX = PropertyValuesHolder.ofFloat("scaleX", EXIT_ICON_TARGET_SCALE_X, EXIT_ICON_DEFAULT_SCALE_X);
+        PropertyValuesHolder showExitAnimationScaleY = PropertyValuesHolder.ofFloat("scaleY", EXIT_ICON_TARGET_SCALE_Y, EXIT_ICON_DEFAULT_SCALE_Y);
+        PropertyValuesHolder showExitAnimationRotate = PropertyValuesHolder.ofFloat("rotation", EXIT_ICON_TARGET_ROTATION, EXIT_ICON_DEFAULT_ROTATION);
+        PropertyValuesHolder showExitAnimationAlpha = PropertyValuesHolder.ofFloat("alpha", EXIT_ICON_TARGET_ALPHA, EXIT_ICON_DEFAULT_ALPHA);
+        mShowExitAnimation = ObjectAnimator.ofPropertyValuesHolder(mExitIcon, showExitAnimationScaleX, showExitAnimationScaleY, showExitAnimationRotate, showExitAnimationAlpha);
+        mShowExitAnimation.setDuration(SHOW_HIDE_DURATION);
+        mShowExitAnimation.setInterpolator(getExitViewInterpolator());
     }
 
     private void initExitIconViewStatus() {
@@ -172,16 +172,16 @@ class ExitView extends RelativeLayout {
         );
     }
 
-    public void startShowAnimation() {
-        if (mShowAnimation != null && !mShowAnimation.isRunning() && !mIsShowing) {
-            mShowAnimation.start();
+    public void showEnterAnimation() {
+        if (mShowEnterAnimation != null && !mShowEnterAnimation.isRunning() && !mIsShowing) {
+            mShowEnterAnimation.start();
             mIsShowing = true;
         }
     }
 
-    public void startHideAnimation() {
-        if (mHideAnimation != null && !mHideAnimation.isRunning() && mIsShowing) {
-            mHideAnimation.start();
+    public void showExitAnimation() {
+        if (mShowExitAnimation != null && !mShowExitAnimation.isRunning() && mIsShowing) {
+            mShowExitAnimation.start();
             mIsShowing = false;
         }
     }
