@@ -57,9 +57,9 @@ class ExitView extends RelativeLayout {
     private View mExitIcon;
     private View mExitGradient;
     private ViewGroup mVgExit;
-    public ObjectAnimator enterAnimation = null;
-    public ObjectAnimator exitAnimation = null;
-    public boolean isExitAnimated = false;
+    private ObjectAnimator mEnterAnimation = null;
+    private ObjectAnimator mExitAnimation = null;
+    private boolean mIsShowing = false;
 
     public ExitView(@NonNull Context context) {
         this(context, null);
@@ -91,10 +91,10 @@ class ExitView extends RelativeLayout {
         PropertyValuesHolder enterAnimationScaleY = PropertyValuesHolder.ofFloat("scaleY", EXIT_ICON_DEFAULT_SCALE_Y, EXIT_ICON_TARGET_SCALE_Y);
         PropertyValuesHolder enterAnimationRotate = PropertyValuesHolder.ofFloat("rotation", EXIT_ICON_DEFAULT_ROTATION, EXIT_ICON_TARGET_ROTATION);
         PropertyValuesHolder enterAnimationAlpha = PropertyValuesHolder.ofFloat("alpha", EXIT_ICON_DEFAULT_ALPHA, EXIT_ICON_TARGET_ALPHA);
-        enterAnimation = ObjectAnimator.ofPropertyValuesHolder(mExitIcon, enterAnimationScaleX, enterAnimationScaleY, enterAnimationRotate, enterAnimationAlpha);
-        enterAnimation.setDuration(ENTER_EXIT_DURATION);
-        enterAnimation.setInterpolator(getExitViewInterpolator());
-        enterAnimation.addListener(new Animator.AnimatorListener() {
+        mEnterAnimation = ObjectAnimator.ofPropertyValuesHolder(mExitIcon, enterAnimationScaleX, enterAnimationScaleY, enterAnimationRotate, enterAnimationAlpha);
+        mEnterAnimation.setDuration(ENTER_EXIT_DURATION);
+        mEnterAnimation.setInterpolator(getExitViewInterpolator());
+        mEnterAnimation.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animator) {
                 initExitIconViewStatus();
@@ -102,7 +102,6 @@ class ExitView extends RelativeLayout {
 
             @Override
             public void onAnimationEnd(Animator animator) {
-
             }
 
             @Override
@@ -112,7 +111,6 @@ class ExitView extends RelativeLayout {
 
             @Override
             public void onAnimationRepeat(Animator animator) {
-
             }
         });
 
@@ -120,9 +118,9 @@ class ExitView extends RelativeLayout {
         PropertyValuesHolder exitAnimationScaleY = PropertyValuesHolder.ofFloat("scaleY", EXIT_ICON_TARGET_SCALE_Y, EXIT_ICON_DEFAULT_SCALE_Y);
         PropertyValuesHolder exitAnimationRotate = PropertyValuesHolder.ofFloat("rotation", EXIT_ICON_TARGET_ROTATION, EXIT_ICON_DEFAULT_ROTATION);
         PropertyValuesHolder exitAnimationAlpha = PropertyValuesHolder.ofFloat("alpha", EXIT_ICON_TARGET_ALPHA, EXIT_ICON_DEFAULT_ALPHA);
-        exitAnimation = ObjectAnimator.ofPropertyValuesHolder(mExitIcon, exitAnimationScaleX, exitAnimationScaleY, exitAnimationRotate, exitAnimationAlpha);
-        exitAnimation.setDuration(ENTER_EXIT_DURATION);
-        exitAnimation.setInterpolator(getExitViewInterpolator());
+        mExitAnimation = ObjectAnimator.ofPropertyValuesHolder(mExitIcon, exitAnimationScaleX, exitAnimationScaleY, exitAnimationRotate, exitAnimationAlpha);
+        mExitAnimation.setDuration(ENTER_EXIT_DURATION);
+        mExitAnimation.setInterpolator(getExitViewInterpolator());
     }
 
     private void initExitIconViewStatus() {
@@ -175,16 +173,16 @@ class ExitView extends RelativeLayout {
     }
 
     public void startEnterExitAnim() {
-        if (enterAnimation != null && !enterAnimation.isRunning() && !isExitAnimated) {
-            enterAnimation.start();
-            isExitAnimated = true;
+        if (mEnterAnimation != null && !mEnterAnimation.isRunning() && !mIsShowing) {
+            mEnterAnimation.start();
+            mIsShowing = true;
         }
     }
 
     public void startExitExitAnim() {
-        if (exitAnimation != null && !exitAnimation.isRunning() && isExitAnimated) {
-            exitAnimation.start();
-            isExitAnimated = false;
+        if (mExitAnimation != null && !mExitAnimation.isRunning() && mIsShowing) {
+            mExitAnimation.start();
+            mIsShowing = false;
         }
     }
 
@@ -205,7 +203,7 @@ class ExitView extends RelativeLayout {
     }
 
     public void resetExitButtonAnimation() {
-        isExitAnimated = false;
+        mIsShowing = false;
         initExitIconViewStatus();
     }
 
