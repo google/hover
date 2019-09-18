@@ -159,19 +159,6 @@ class ExitView extends RelativeLayout {
                 && !excludedXExitAreaRight.contains(position.x, position.y);
     }
 
-    private Point getExitZoneCenter() {
-        return new Point(
-                (int) (mExitIcon.getX() + (mExitIcon.getWidth() / 2)),
-                (int) (mExitIcon.getY() + (mExitIcon.getHeight() / 2))
-        );
-    }
-
-    private double calculateDistance(@NonNull Point p1, @NonNull Point p2) {
-        return Math.sqrt(
-                Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2)
-        );
-    }
-
     public void showEnterAnimation() {
         if (mShowEnterAnimation != null && !mShowEnterAnimation.isRunning() && !mIsShowing) {
             mShowEnterAnimation.start();

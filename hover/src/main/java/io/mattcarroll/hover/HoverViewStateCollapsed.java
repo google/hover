@@ -55,8 +55,6 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     private Handler mHandler = new Handler();
     private Runnable mIdleActionRunnable;
     private Runnable mOnStateChanged;
-    private Point mStartPoint = null;
-    private long mDragStartMillis = -1L;
     private Point mPrevPoint = null;
     private Point mCurrPoint = new Point(0, 0);
 
@@ -192,9 +190,6 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         if (!hasControl()) {
             return;
         }
-
-        mStartPoint = mFloatingTab.getPosition();
-        mDragStartMillis = System.currentTimeMillis();
 
         mHoverView.mScreen.getExitView().show();
         restoreHoverViewIdleAction();
