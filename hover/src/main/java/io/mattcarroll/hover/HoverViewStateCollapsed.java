@@ -26,9 +26,7 @@ import android.view.View;
 
 import java.util.ArrayList;
 
-import static android.view.View.GONE;
 import static android.view.View.INVISIBLE;
-import static android.view.View.VISIBLE;
 
 /**
  * {@link HoverViewState} that operates the {@link HoverView} when it is collapsed. Collapsed means
@@ -45,6 +43,9 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     private static final float MIN_TAB_VERTICAL_POSITION = 0.0f;
     private static final float MAX_TAB_VERTICAL_POSITION = 1.0f;
     private static final long DEFAULT_IDLE_MILLIS = 5000;
+    private static final int POP_THROWING_THRESHOLD = 20;
+    private static final int NEGATIVE = -1;
+    private static final int POSITIVE = 1;
 
     protected FloatingTab mFloatingTab;
     protected final FloatingTabDragListener mFloatingTabDragListener = new FloatingTabDragListener(this);
@@ -54,6 +55,8 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     private Handler mHandler = new Handler();
     private Runnable mIdleActionRunnable;
     private Runnable mOnStateChanged;
+    private Point mPrevPoint = null;
+    private Point mCurrPoint = new Point(0, 0);
 
     @Override
     public void takeControl(@NonNull HoverView floatingTab, final Runnable onStateChanged) {
@@ -121,7 +124,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
             mHoverView.mMenu.setUpdatedCallback(null);
         }
 
-        mHoverView.mScreen.getExitView().setVisibility(GONE);
+        mHoverView.mScreen.getExitView().hide();
 
         deactivateDragger();
         mFloatingTab = null;
@@ -188,35 +191,107 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
             return;
         }
 
-        mHoverView.mScreen.getExitView().setVisibility(VISIBLE);
+        mHoverView.mScreen.getExitView().show();
         restoreHoverViewIdleAction();
         mHoverView.notifyOnDragStart(this);
+    }
+
+    private double calculateDistance(@NonNull Point point1, @NonNull Point point2) {
+        return Math.sqrt(
+                Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2)
+        );
+    }
+
+    /**
+     * Get target Y position from 2 points
+     * @param point1 first point
+     * @param point2 second point
+     * @return targetPoint
+     */
+    private float getTargetYPosition(@NonNull Point point1, @NonNull Point point2) {
+        // STEP 1: get liner line equation from 2 points (ax + by = c)
+        float a = point2.y - point1.y;
+        float b = point1.x - point2.x;
+        float c = a * (point1.x) + b * (point1.y);
+
+        // STEP 2: get x direction of the line
+        int xDirection = POSITIVE;
+        if (point1.x - point2.x >= 0) {
+            xDirection = NEGATIVE;
+        }
+
+        // To avoid divide by zero exception
+        if (b == 0) {
+            b = 1;
+        }
+
+        // STEP 3: return target Y position ( y = (c - ax) / b)
+        if (xDirection == NEGATIVE) {
+            return c / b;
+        } else {
+            return (c - a * mHoverView.getScreenSize().x) / b;
+        }
     }
 
     private void onDroppedByUser() {
         if (!hasControl()) {
             return;
         }
+        mHoverView.mScreen.getExitView().hide();
 
-        mHoverView.mScreen.getExitView().setVisibility(GONE);
-        boolean droppedOnExit = mHoverView.mScreen.getExitView().isInExitZone(mFloatingTab.getPosition());
+        if (mPrevPoint == null) {
+            mPrevPoint = mFloatingTab.getPosition();
+        }
+        Point screenSize = mHoverView.getScreenSize();
+        boolean droppedOnExit = mHoverView.mScreen.getExitView().isInExitZone(mFloatingTab.getPosition(), screenSize);
         if (droppedOnExit) {
             onClose(true);
         } else {
-            int tabSize = mHoverView.getResources().getDimensionPixelSize(R.dimen.hover_tab_size);
-            Point screenSize = mHoverView.getScreenSize();
-            final float tabHorizontalPositionPercent = (float) mFloatingTab.getPosition().x / screenSize.x;
-            final float viewHeightPercent = mFloatingTab.getHeight() / 2f / screenSize.y;
-            float tabVerticalPosition = (float) mFloatingTab.getPosition().y / screenSize.y;
-            if (tabVerticalPosition < MIN_TAB_VERTICAL_POSITION) {
-                tabVerticalPosition = MIN_TAB_VERTICAL_POSITION;
-            } else if (tabVerticalPosition > MAX_TAB_VERTICAL_POSITION - viewHeightPercent) {
-                tabVerticalPosition = MAX_TAB_VERTICAL_POSITION - viewHeightPercent;
+            handleDrop(screenSize);
+        }
+    }
+
+    private void handleDrop(Point screenSize) {
+        float distance = (float) calculateDistance(mPrevPoint, mFloatingTab.getPosition());
+        int tabSize = mHoverView.getResources().getDimensionPixelSize(R.dimen.hover_tab_size);
+        float tabHorizontalPositionPercent = (float) mFloatingTab.getPosition().x / screenSize.x;
+        final float viewHeightPercent = mFloatingTab.getHeight() / 2f / screenSize.y;
+        float tabVerticalPositionPercent;
+        if (distance > POP_THROWING_THRESHOLD) {
+            float positionY = getTargetYPosition(mPrevPoint, mFloatingTab.getPosition());
+            tabVerticalPositionPercent = positionY / screenSize.y;
+
+            int diffPositionX = mPrevPoint.x - mFloatingTab.getPosition().x;
+            if (diffPositionX > 0) {
+                tabHorizontalPositionPercent = 0f;
+            } else {
+                tabHorizontalPositionPercent = 1f;
             }
-            Log.d(TAG, "Dropped at horizontal " + tabHorizontalPositionPercent + ", vertical " + tabVerticalPosition);
+        } else {
+            tabVerticalPositionPercent = (float) mFloatingTab.getPosition().y / screenSize.y;
+        }
+
+        tabVerticalPositionPercent = computeVerticalPositionPercent(viewHeightPercent, tabVerticalPositionPercent);
+
+        Point throwTargetPosition = new Point(
+                (int) (tabHorizontalPositionPercent * (float) mHoverView.getScreenSize().x),
+                (int) (tabVerticalPositionPercent * (float) mHoverView.getScreenSize().y));
+        boolean throwOnExit = mHoverView.mScreen.getExitView().isInExitZone(throwTargetPosition, screenSize);
+        if (throwOnExit) {
+            Point closeTargetPosition = new Point(
+                    screenSize.x / 2 - tabSize / 2,
+                    (int) (screenSize.y * tabVerticalPositionPercent) - tabSize / 2);
+            closeWithThrowingAnimation(closeTargetPosition);
+        } else {
+            int sideDockHorizontalPosition = SideDock.SidePosition.RIGHT;
+            if (tabHorizontalPositionPercent <= 0.5) {
+                sideDockHorizontalPosition = SideDock.SidePosition.LEFT;
+            }
+
+            Log.d(TAG, "Dropped at horizontal " + tabHorizontalPositionPercent + ", vertical " + tabVerticalPositionPercent);
             SideDock.SidePosition sidePosition = new SideDock.SidePosition(
-                    tabHorizontalPositionPercent <= 0.5 ? SideDock.SidePosition.LEFT : SideDock.SidePosition.RIGHT,
-                    tabVerticalPosition
+                    sideDockHorizontalPosition,
+                    tabVerticalPositionPercent
             );
             mHoverView.mCollapsedDock = new SideDock(
                     mHoverView,
@@ -224,10 +299,17 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
                     sidePosition
             );
             mHoverView.saveVisualState();
-            Log.d(TAG, "User dropped tab. Sending to new dock: " + mHoverView.mCollapsedDock);
-
             sendToDock();
         }
+    }
+
+    private float computeVerticalPositionPercent(float viewHeightPercent, float tabVerticalPositionPercent) {
+        if (tabVerticalPositionPercent < MIN_TAB_VERTICAL_POSITION + viewHeightPercent) {
+            tabVerticalPositionPercent = MIN_TAB_VERTICAL_POSITION + viewHeightPercent;
+        } else if (tabVerticalPositionPercent > MAX_TAB_VERTICAL_POSITION - viewHeightPercent) {
+            tabVerticalPositionPercent = MAX_TAB_VERTICAL_POSITION - viewHeightPercent;
+        }
+        return tabVerticalPositionPercent;
     }
 
     protected void onClose(final boolean userDropped) {
@@ -251,6 +333,18 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         if (mHoverView != null) {
             mHoverView.notifyOnTap(this);
         }
+    }
+
+    private void closeWithThrowingAnimation(Point targetPoint) {
+        Log.d(TAG, "closeWithThrowingAnimation");
+        deactivateDragger();
+        mFloatingTab.closeAnimation(targetPoint, new Runnable() {
+            @Override
+            public void run() {
+                activateDragger();
+                onClose(true);
+            }
+        });
     }
 
     private void sendToDock() {
@@ -309,7 +403,14 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     }
 
     void moveFloatingTabTo(View floatingTab, @NonNull Point position) {
+        if (mHoverView.mScreen.getExitView().isInExitZone(position, mHoverView.getScreenSize())) {
+            mHoverView.mScreen.getExitView().showEnterAnimation();
+        } else {
+            mHoverView.mScreen.getExitView().showExitAnimation();
+        }
         mFloatingTab.moveCenterTo(position);
+        mPrevPoint = mCurrPoint;
+        mCurrPoint = position;
     }
 
     protected void activateDragger() {
