@@ -575,13 +575,13 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         }
 
         class GesturePoint {
+            private Point mPoint;
+            private long mPointMillis;
+
             GesturePoint(Point point, long pointMillis) {
                 this.mPoint = point;
                 this.mPointMillis = pointMillis;
             }
-
-            Point mPoint;
-            long mPointMillis;
         }
     }
 }
