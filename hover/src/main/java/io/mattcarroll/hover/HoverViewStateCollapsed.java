@@ -478,7 +478,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
             mGesturePoints.add(new GesturePoint(point, System.currentTimeMillis()));
         }
 
-        private boolean getPoints() {
+        private boolean updatePoints() {
             if (mGesturePoints.size() < 2) {
                 return false;
             }
@@ -497,21 +497,21 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         }
 
         private double getDistance() {
-            if (!getPoints()) {
+            if (!updatePoints()) {
                 return 0;
             }
             return calculateDistance(mFirstPoint.mPoint, mSecondPoint.mPoint);
         }
 
         private int getDiffX() {
-            if (!getPoints()) {
+            if (!updatePoints()) {
                 return 0;
             }
             return mSecondPoint.mPoint.x - mFirstPoint.mPoint.x;
         }
 
         private float getTargetYPosition() {
-            if (!getPoints()) {
+            if (!updatePoints()) {
                 return 0;
             }
 
@@ -551,7 +551,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         }
 
         private double getSpeed() {
-            if (!getPoints()) {
+            if (!updatePoints()) {
                 return 0;
             }
             return getDistance() / (mFirstPoint.mPointMillis - mSecondPoint.mPointMillis);
@@ -567,11 +567,6 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
             return Math.sqrt(
                     Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2)
             );
-        }
-
-        @Override
-        public String toString() {
-            return "" + mGesturePoints.size();
         }
 
         class GesturePoint {
