@@ -52,6 +52,8 @@ class FloatingTab extends HoverFrameLayout {
     private int mTabSize;
     private View mTabView;
     private Dock mDock;
+    private AnimatorSet mAnimatorSetDisappear;
+    private AnimatorSet mAnimatorSetAppear;
 
     public FloatingTab(@NonNull Context context, @NonNull String tabId) {
         super(context);
@@ -100,15 +102,16 @@ class FloatingTab extends HoverFrameLayout {
     }
 
     public void appear(@Nullable final Runnable onAppeared) {
-        AnimatorSet animatorSet = new AnimatorSet();
+        cancelAnimatorSetAppearIfNeeded();
+        mAnimatorSetAppear = new AnimatorSet();
         ObjectAnimator scaleX = ObjectAnimator.ofFloat(this, "scaleX", 0.0f, 1.0f);
         ObjectAnimator scaleY = ObjectAnimator.ofFloat(this, "scaleY", 0.0f, 1.0f);
-        animatorSet.setDuration(APPEARING_ANIMATION_DURATION);
-        animatorSet.setInterpolator(new OvershootInterpolator());
-        animatorSet.playTogether(scaleX, scaleY);
-        animatorSet.start();
+        mAnimatorSetAppear.setDuration(APPEARING_ANIMATION_DURATION);
+        mAnimatorSetAppear.setInterpolator(new OvershootInterpolator());
+        mAnimatorSetAppear.playTogether(scaleX, scaleY);
+        mAnimatorSetAppear.start();
 
-        animatorSet.addListener(new Animator.AnimatorListener() {
+        mAnimatorSetAppear.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
             }
@@ -133,18 +136,22 @@ class FloatingTab extends HoverFrameLayout {
     }
 
     public void appearImmediate() {
+        cancelAnimatorSetDisappearIfNeeded();
         setVisibility(VISIBLE);
+        setScaleX(1.0f);
+        setScaleY(1.0f);
     }
 
     public void disappear(@Nullable final Runnable onDisappeared) {
-        AnimatorSet animatorSet = new AnimatorSet();
+        cancelAnimatorSetDisappearIfNeeded();
+        mAnimatorSetDisappear = new AnimatorSet();
         ObjectAnimator scaleX = ObjectAnimator.ofFloat(this, "scaleX", 0.0f);
         ObjectAnimator scaleY = ObjectAnimator.ofFloat(this, "scaleY", 0.0f);
-        animatorSet.setDuration(APPEARING_ANIMATION_DURATION);
-        animatorSet.playTogether(scaleX, scaleY);
-        animatorSet.start();
+        mAnimatorSetDisappear.setDuration(APPEARING_ANIMATION_DURATION);
+        mAnimatorSetDisappear.playTogether(scaleX, scaleY);
+        mAnimatorSetDisappear.start();
 
-        animatorSet.addListener(new Animator.AnimatorListener() {
+        mAnimatorSetDisappear.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
             }
@@ -169,7 +176,22 @@ class FloatingTab extends HoverFrameLayout {
     }
 
     public void disappearImmediate() {
+        cancelAnimatorSetAppearIfNeeded();
         setVisibility(GONE);
+    }
+
+    private void cancelAnimatorSetAppearIfNeeded() {
+        if (mAnimatorSetAppear != null && mAnimatorSetAppear.isRunning()) {
+            mAnimatorSetAppear.cancel();
+            mAnimatorSetAppear = null;
+        }
+    }
+
+    private void cancelAnimatorSetDisappearIfNeeded() {
+        if (mAnimatorSetDisappear != null && mAnimatorSetDisappear.isRunning()) {
+            mAnimatorSetDisappear.cancel();
+            mAnimatorSetDisappear = null;
+        }
     }
 
     public void shrink() {
