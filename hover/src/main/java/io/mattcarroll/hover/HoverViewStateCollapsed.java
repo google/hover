@@ -304,7 +304,11 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         mFloatingTab.closeAnimation(targetPoint, new Runnable() {
             @Override
             public void run() {
-                activateDragger();
+                try {
+                    activateDragger();
+                } catch (Exception e) {
+                    // Do nothing. This may happen only on testing
+                }
                 onClose(true);
             }
         });
