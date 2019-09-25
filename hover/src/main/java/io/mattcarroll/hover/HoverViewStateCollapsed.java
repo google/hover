@@ -376,9 +376,11 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     }
 
     protected void activateDragger() {
-        ArrayList<Pair<? extends HoverFrameLayout, ? extends BaseTouchController.TouchListener>> list = new ArrayList<>();
-        list.add(new Pair<>(mFloatingTab, mFloatingTabDragListener));
-        mHoverView.mDragger.activate(list);
+        if (mHoverView != null && mHoverView.mDragger != null) {
+            ArrayList<Pair<? extends HoverFrameLayout, ? extends BaseTouchController.TouchListener>> list = new ArrayList<>();
+            list.add(new Pair<>(mFloatingTab, mFloatingTabDragListener));
+            mHoverView.mDragger.activate(list);
+        }
     }
 
     protected void deactivateDragger() {
