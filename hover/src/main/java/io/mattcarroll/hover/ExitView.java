@@ -132,6 +132,7 @@ class ExitView extends RelativeLayout {
     public boolean isInExitZone(@NonNull Point position, @NonNull Point screenSize) {
         int exitXExcludeThresholdLeft = screenSize.x / 10;
         int exitXExcludeThresholdRight = screenSize.x * 9 / 10;
+        int safeMargin = 1; // safe from the decimal point calculation
 
         Rect exitArea = new Rect(
                 0 - mExitIcon.getWidth(),
@@ -144,14 +145,14 @@ class ExitView extends RelativeLayout {
                 0 - mExitIcon.getWidth(),
                 screenSize.y * 4 / 6,
                 exitXExcludeThresholdLeft,
-                screenSize.y - mExitIcon.getHeight() / 2
+                screenSize.y - (mExitIcon.getHeight() / 2 + safeMargin)
         );
 
         Rect excludedXExitAreaRight = new Rect(
                 exitXExcludeThresholdRight,
                 screenSize.y * 4 / 6,
                 screenSize.x + mExitIcon.getWidth(),
-                screenSize.y - mExitIcon.getHeight() / 2
+                screenSize.y - (mExitIcon.getHeight() / 2 + safeMargin)
         );
 
         return exitArea.contains(position.x, position.y)

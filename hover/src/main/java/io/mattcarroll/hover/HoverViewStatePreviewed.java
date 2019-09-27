@@ -78,10 +78,12 @@ class HoverViewStatePreviewed extends HoverViewStateCollapsed {
 
     @Override
     protected void activateDragger() {
-        ArrayList<Pair<? extends HoverFrameLayout, ? extends BaseTouchController.TouchListener>> list = new ArrayList<>();
-        list.add(new Pair<>(mFloatingTab, mFloatingTabDragListener));
-        list.add(new Pair<>(mMessageView, mDefaultMessageViewDragListener));
-        mHoverView.mDragger.activate(list);
+        if (mHoverView != null && mHoverView.mDragger != null) {
+            ArrayList<Pair<? extends HoverFrameLayout, ? extends BaseTouchController.TouchListener>> list = new ArrayList<>();
+            list.add(new Pair<>(mFloatingTab, mFloatingTabDragListener));
+            list.add(new Pair<>(mMessageView, mDefaultMessageViewDragListener));
+            mHoverView.mDragger.activate(list);
+        }
     }
 
     @Override
