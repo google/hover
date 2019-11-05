@@ -22,7 +22,7 @@ import android.support.annotation.Nullable;
  * A state of a {@link HoverView}. {@code HoverView} is implemented with a state pattern and this
  * is the interface that is implemented by all such states.
  */
-interface HoverViewState {
+public interface HoverViewState {
     /**
      * Activates this state.
      * @param hoverView hoverView
