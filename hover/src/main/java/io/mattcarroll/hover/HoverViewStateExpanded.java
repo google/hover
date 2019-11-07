@@ -318,7 +318,7 @@ class HoverViewStateExpanded extends BaseHoverViewState {
         mHoverView.collapse();
     }
 
-    private void createTabsForIndices(int ... sectionIndices) {
+    private void createTabsForIndices(int... sectionIndices) {
         for (int sectionIndex : sectionIndices) {
             Log.d(TAG, "Creating tab for section at index " + sectionIndex);
             HoverMenu.Section section = mHoverView.mMenu.getSection(sectionIndex);
@@ -362,7 +362,7 @@ class HoverViewStateExpanded extends BaseHoverViewState {
         updateChainedPositions();
     }
 
-    private void updateSections(int ... sectionIndices) {
+    private void updateSections(int... sectionIndices) {
         Log.d(TAG, "Tab(s) changed: " + Arrays.toString(sectionIndices));
         for (int sectionIndex : sectionIndices) {
             updateSection(sectionIndex);
@@ -386,7 +386,7 @@ class HoverViewStateExpanded extends BaseHoverViewState {
         }
     }
 
-    private void removeSections(int ... sectionIndices) {
+    private void removeSections(int... sectionIndices) {
         Log.d(TAG, "Tab(s) removed: " + Arrays.toString(sectionIndices));
         // Sort the indices so that they appear from lowest to highest.  Then process
         // in reverse order so that we don't remove sections out from under us.
