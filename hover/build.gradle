@@ -49,4 +49,12 @@ project.afterEvaluate {
     check.dependsOn('checkstyle')
 }
 
-apply from: 'publisher.gradle'
+ext {
+    pName = 'hover'
+    pDescription = 'Buzzvil hover Android SDK'
+    pPublisherVcsUrl = rootProject.ext.buzzscreenPublisherVcsUrl
+    pGroup = project.group
+    pVersion = project.version
+}
+
+apply from: '../../../gradle/publish.gradle'
