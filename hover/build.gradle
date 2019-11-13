@@ -57,4 +57,4 @@ ext {
     pVersion = project.version
 }
 
-apply from: '../../../gradle/publish.gradle'
+apply from: "$rootDir/gradle/publish.gradle"
