@@ -52,7 +52,7 @@ project.afterEvaluate {
 ext {
     pName = 'hover'
     pDescription = 'Buzzvil hover Android SDK'
-    pPublisherVcsUrl = rootProject.ext.buzzscreenPublisherVcsUrl
+    pPublisherVcsUrl = 'https://github.com/Buzzvil/hover.git'
     pGroup = project.group
     pVersion = project.version
 }
