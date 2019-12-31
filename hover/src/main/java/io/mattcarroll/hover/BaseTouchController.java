@@ -2,8 +2,8 @@ package io.mattcarroll.hover;
 
 import android.graphics.PointF;
 import android.graphics.Rect;
-import android.support.annotation.NonNull;
-import android.support.v4.util.Pair;
+import androidx.annotation.NonNull;
+import androidx.core.util.Pair;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;

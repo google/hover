@@ -15,9 +15,9 @@
  */
 package io.mattcarroll.hover;
 
-import android.support.annotation.CallSuper;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.CallSuper;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 /**
  * {@link HoverViewState} that includes behavior common to all implementations.

@@ -21,15 +21,16 @@ import android.animation.PropertyValuesHolder;
 import android.content.Context;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.view.animation.PathInterpolatorCompat;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Interpolator;
 import android.widget.RelativeLayout;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.view.animation.PathInterpolatorCompat;
 
 /**
  * Fullscreen View that provides an exit "drop zone" for users to exit the Hover Menu.

@@ -22,10 +22,10 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    api "com.android.support:appcompat-v7:${supportLibVersion}"
-    api "com.android.support:recyclerview-v7:${supportLibVersion}" // Used to get DiffUtil
+    api ("androidx.appcompat:appcompat:$androidXAppcompatVersion")
+    api ("androidx.recyclerview:recyclerview:$androidXRecyclerviewVersion")
 
-    testImplementation 'junit:junit:4.12'
+    testImplementation "junit:junit:$junitVersion"
 }
 
 //------ Checkstyle -------

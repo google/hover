@@ -15,7 +15,7 @@
  */
 package io.mattcarroll.hover.content.menus.serialization;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import io.mattcarroll.hover.content.menus.Menu;
 import io.mattcarroll.hover.content.menus.MenuAction;

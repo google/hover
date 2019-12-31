@@ -16,7 +16,7 @@
 package io.mattcarroll.hover;
 
 import android.graphics.Point;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 /**
  * {@link Dock} that has a static position as defined by a provided {@link Point}. A

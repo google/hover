@@ -15,7 +15,7 @@
  */
 package io.mattcarroll.hover.content.menus;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 /**
  * Represents a menu item that can act as a composite with submenu items.
