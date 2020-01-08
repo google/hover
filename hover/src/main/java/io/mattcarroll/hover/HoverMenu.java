@@ -15,10 +15,10 @@
  */
 package io.mattcarroll.hover;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v7.util.DiffUtil;
-import android.support.v7.util.ListUpdateCallback;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ListUpdateCallback;
 import android.view.View;
 
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ import java.util.List;
 
 /**
  * A {@code HoverMenu} models the structure of a menu that appears within a {@link HoverView}.
- *
+ * <p>
  * A {@code HoverMenu} includes an ordered list of {@link Section}s.  Each {@code Section} has a tab
  * {@code View} that represents the section, and the {@link Content} of the given section.
  */
@@ -112,11 +112,17 @@ public abstract class HoverMenu {
         private final SectionId mId;
         private final View mTabView;
         private final Content mContent;
+        private final View mTabMessageView;
 
         public Section(@NonNull SectionId id, @NonNull View tabView, @NonNull Content content) {
+            this(id, tabView, content, null);
+        }
+
+        public Section(@NonNull SectionId id, @NonNull View tabView, @NonNull Content content, @Nullable View tabMessageView) {
             mId = id;
             mTabView = tabView;
             mContent = content;
+            mTabMessageView = tabMessageView;
         }
 
         @NonNull
@@ -127,6 +133,11 @@ public abstract class HoverMenu {
         @NonNull
         public View getTabView() {
             return mTabView;
+        }
+
+        @Nullable
+        public View getTabMessageView() {
+            return mTabMessageView;
         }
 
         @NonNull

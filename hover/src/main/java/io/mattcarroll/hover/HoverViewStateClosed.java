@@ -15,11 +15,8 @@
  */
 package io.mattcarroll.hover;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
 import android.util.Log;
-
-import static android.view.View.GONE;
 
 /**
  * {@link HoverViewState} that operates the {@link HoverView} when it is closed. Closed means that
@@ -28,79 +25,29 @@ import static android.view.View.GONE;
  */
 class HoverViewStateClosed extends BaseHoverViewState {
 
-    private static final String TAG = "HoverMenuViewStateClosed";
-
-    private HoverView mHoverView;
+    private static final String TAG = "HoverViewStateClosed";
 
     @Override
-    public void takeControl(@NonNull HoverView hoverView) {
+    public void takeControl(@NonNull HoverView hoverView, final Runnable onStateChanged) {
+        super.takeControl(hoverView, onStateChanged);
         Log.d(TAG, "Taking control.");
-        super.takeControl(hoverView);
-        mHoverView = hoverView;
-        mHoverView.notifyListenersClosing();
-        mHoverView.mState = this;
+        mHoverView.makeUntouchableInWindow();
         mHoverView.clearFocus();
-        mHoverView.mScreen.getContentDisplay().setVisibility(GONE);
 
         final FloatingTab selectedTab = mHoverView.mScreen.getChainedTab(mHoverView.mSelectedSectionId);
         if (null != selectedTab) {
             selectedTab.disappear(new Runnable() {
                 @Override
                 public void run() {
+                    if (!hasControl()) {
+                        return;
+                    }
                     mHoverView.mScreen.destroyChainedTab(selectedTab);
-                    mHoverView.notifyListenersClosed();
+                    onStateChanged.run();
                 }
             });
         } else {
-            mHoverView.notifyListenersClosed();
-        }
-
-        mHoverView.makeUntouchableInWindow();
-    }
-
-    private void changeState(@NonNull HoverViewState nextState) {
-        mHoverView.setState(nextState);
-        mHoverView = null;
-    }
-
-    @Override
-    public void expand() {
-        if (null != mHoverView.mMenu) {
-            Log.d(TAG, "Expanding.");
-            changeState(mHoverView.mExpanded);
-        } else {
-            Log.d(TAG, "Asked to expand, but there is no menu set. Can't expand until a menu is available.");
-        }
-    }
-
-    @Override
-    public void collapse() {
-        if (null != mHoverView.mMenu) {
-            Log.d(TAG, "Collapsing.");
-            changeState(mHoverView.mCollapsed);
-        } else {
-            Log.d(TAG, "Asked to collapse, but there is no menu set. Can't collapse until a menu is available.");
-        }
-    }
-
-    @Override
-    public void close() {
-        Log.d(TAG, "Instructed to close, but Hover is already closed.");
-    }
-
-    @Override
-    public void setMenu(@Nullable final HoverMenu menu) {
-        mHoverView.mMenu = menu;
-
-        // If the menu is null then there is nothing to restore.
-        if (null == menu) {
-            return;
-        }
-
-        mHoverView.restoreVisualState();
-
-        if (null == mHoverView.mSelectedSectionId || null == mHoverView.mMenu.getSection(mHoverView.mSelectedSectionId)) {
-            mHoverView.mSelectedSectionId = mHoverView.mMenu.getSection(0).getId();
+            onStateChanged.run();
         }
     }
 
@@ -112,5 +59,16 @@ class HoverViewStateClosed extends BaseHoverViewState {
     @Override
     public void onBackPressed() {
         // No-op
+    }
+
+    @Override
+    public void giveUpControl(@NonNull HoverViewState nextState) {
+        Log.d(TAG, "Giving up control.");
+        super.giveUpControl(nextState);
+    }
+
+    @Override
+    public HoverViewStateType getStateType() {
+        return HoverViewStateType.CLOSED;
     }
 }

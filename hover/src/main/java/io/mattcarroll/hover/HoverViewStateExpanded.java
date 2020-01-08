@@ -16,9 +16,9 @@
 package io.mattcarroll.hover;
 
 import android.graphics.Point;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v7.util.ListUpdateCallback;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.ListUpdateCallback;
 import android.util.Log;
 import android.view.View;
 
@@ -38,25 +38,27 @@ import java.util.Map;
  */
 class HoverViewStateExpanded extends BaseHoverViewState {
 
-    private static final String TAG = "HoverMenuViewStateExpanded";
+    private static final String TAG = "HoverViewStateExpanded";
     private static final int ANCHOR_TAB_X_OFFSET_IN_PX = 100;
     private static final int ANCHOR_TAB_Y_OFFSET_IN_PX = 100;
     private static final int TAB_SPACING_IN_PX = 200;
     private static final int TAB_APPEARANCE_DELAY_IN_MS = 100;
 
-    private boolean mHasControl = false;
-    private HoverView mHoverView;
     private boolean mHasMenu = false;
     private FloatingTab mSelectedTab;
     private final List<FloatingTab> mChainedTabs = new ArrayList<>();
     private final List<TabChain> mTabChains = new ArrayList<>();
     private final Map<FloatingTab, HoverMenu.Section> mSections = new HashMap<>();
     private Point mDock;
-    private Listener mListener;
+    private int mTabsToUnchainCount;
+    private Runnable mOnStateChanged;
 
     private final Runnable mShowTabsRunnable = new Runnable() {
         @Override
         public void run() {
+            if (!hasControl()) {
+                return;
+            }
             mHoverView.mScreen.getShadeView().show();
             mHoverView.mScreen.getContentDisplay().selectedTabIs(mSelectedTab);
 
@@ -64,41 +66,26 @@ class HoverViewStateExpanded extends BaseHoverViewState {
                     ? mHoverView.mMenu.getSection(mHoverView.mSelectedSectionId)
                     : mHoverView.mMenu.getSection(0);
             mHoverView.mScreen.getContentDisplay().displayContent(selectedSection.getContent());
-
             mHoverView.mScreen.getContentDisplay().setVisibility(View.VISIBLE);
-
-            mHoverView.notifyListenersExpanded();
-            if (null != mListener) {
-                mListener.onExpanded();
-            }
+            mOnStateChanged.run();
         }
     };
 
-    HoverViewStateExpanded() { }
-
     @Override
-    public void takeControl(@NonNull HoverView hoverView) {
+    public void takeControl(@NonNull HoverView hoverView, Runnable onStateChanged) {
+        super.takeControl(hoverView, onStateChanged);
         Log.d(TAG, "Taking control.");
-        super.takeControl(hoverView);
-        if (mHasControl) {
-            throw new RuntimeException("Cannot take control of a FloatingTab when we already control one.");
-        }
-
-        mHasControl = true;
-        mHoverView = hoverView;
-        mHoverView.mState = this;
+        mOnStateChanged = onStateChanged;
         mHoverView.makeTouchableInWindow();
         mHoverView.requestFocus(); // For handling hardware back button presses.
         mDock = new Point(
-                mHoverView.mScreen.getWidth() - ANCHOR_TAB_X_OFFSET_IN_PX,
+                mHoverView.getScreenSize().x - ANCHOR_TAB_X_OFFSET_IN_PX,
                 ANCHOR_TAB_Y_OFFSET_IN_PX
         );
         if (null != mHoverView.mMenu) {
             Log.d(TAG, "Already has menu. Expanding.");
             setMenu(mHoverView.mMenu);
         }
-
-        mHoverView.makeTouchableInWindow();
     }
 
     private void expandMenu() {
@@ -115,11 +102,6 @@ class HoverViewStateExpanded extends BaseHoverViewState {
         } else {
             mSelectedTab.dock(mShowTabsRunnable);
         }
-
-        mHoverView.notifyListenersExpanding();
-        if (null != mListener) {
-            mListener.onExpanding();
-        }
     }
 
     private void createChainedTabs() {
@@ -128,10 +110,7 @@ class HoverViewStateExpanded extends BaseHoverViewState {
             for (int i = 0; i < mHoverView.mMenu.getSectionCount(); ++i) {
                 HoverMenu.Section section = mHoverView.mMenu.getSection(i);
                 Log.d(TAG, "Creating tab view for: " + section.getId());
-                final FloatingTab chainedTab = mHoverView.mScreen.createChainedTab(
-                        section.getId(),
-                        section.getTabView()
-                );
+                final FloatingTab chainedTab = mHoverView.mScreen.createChainedTab(section);
                 Log.d(TAG, "Created FloatingTab for ID " + section.getId());
 
                 if (!mHoverView.mSelectedSectionId.equals(section.getId())) {
@@ -196,51 +175,20 @@ class HoverViewStateExpanded extends BaseHoverViewState {
     }
 
     @Override
-    public void expand() {
-        Log.d(TAG, "Instructed to expand, but already expanded.");
-    }
-
-    @Override
-    public void collapse() {
-        Log.d(TAG, "Collapsing.");
-        changeState(mHoverView.mCollapsed);
-    }
-
-    @Override
-    public void close() {
-        Log.d(TAG, "Closing.");
-        changeState(mHoverView.mClosed);
-    }
-
-    private void changeState(@NonNull final HoverViewState nextState) {
+    public void giveUpControl(@NonNull final HoverViewState nextState) {
         Log.d(TAG, "Giving up control.");
-        if (!mHasControl) {
-            throw new RuntimeException("Cannot give control to another HoverMenuController when we don't have the HoverTab.");
-        }
-
         if (null != mHoverView.mMenu) {
             mHoverView.mMenu.setUpdatedCallback(null);
         }
-
-        mHasControl = false;
         mHasMenu = false;
         mHoverView.mScreen.getContentDisplay().selectedTabIs(null);
         mHoverView.mScreen.getContentDisplay().displayContent(null);
         mHoverView.mScreen.getContentDisplay().setVisibility(View.GONE);
         mHoverView.mScreen.getShadeView().hide();
-        mHoverView.setState(nextState);
-        unchainTabs(new Runnable() {
-            @Override
-            public void run() {
-                Log.d(TAG, "Running unchained runnable.");
-                // We wait to nullify our HoverMenuView because some final animations need it.
-                // TODO: maybe the answer is for the collapse state to handle what happens to the tabs and content display and shade?
-                mHoverView = null;
-            }
-        });
+        unchainTabs(null);
+        super.giveUpControl(nextState);
     }
 
-    private int mTabsToUnchainCount;
     private void unchainTabs(@Nullable final Runnable onUnChained) {
         int selectedTabIndex = 0;
         for (int i = 0; i < mChainedTabs.size(); ++i) {
@@ -292,20 +240,6 @@ class HoverViewStateExpanded extends BaseHoverViewState {
     @Override
     public void setMenu(@Nullable HoverMenu menu) {
         Log.d(TAG, "Setting menu.");
-        mHoverView.mMenu = menu;
-
-        // Expanded menus can't be null/empty.  If it is then go to closed state.
-        if (null == mHoverView.mMenu || mHoverView.mMenu.getSectionCount() == 0) {
-            close();
-            return;
-        }
-
-        mHoverView.restoreVisualState();
-
-        if (null == mHoverView.mSelectedSectionId || null == mHoverView.mMenu.getSection(mHoverView.mSelectedSectionId)) {
-            mHoverView.mSelectedSectionId = mHoverView.mMenu.getSection(0).getId();
-        }
-
         mHoverView.mMenu.setUpdatedCallback(new ListUpdateCallback() {
             @Override
             public void onInserted(int position, int count) {
@@ -344,10 +278,10 @@ class HoverViewStateExpanded extends BaseHoverViewState {
             }
         });
 
-        if (mHasControl && !mHasMenu) {
+        if (hasControl() && !mHasMenu) {
             Log.d(TAG, "Has control.  Received initial menu.  Expanding menu.");
             expandMenu();
-        } else if (mHasControl) {
+        } else if (hasControl()) {
             Log.d(TAG, "Has control.  Already had menu.  Switching menu.");
             transitionDisplayFromOldMenuToNew();
         }
@@ -381,28 +315,23 @@ class HoverViewStateExpanded extends BaseHoverViewState {
 
     @Override
     public void onBackPressed() {
-        collapse();
+        mHoverView.collapse();
     }
 
-    private void createTabsForIndices(int ... sectionIndices) {
+    private void createTabsForIndices(int... sectionIndices) {
         for (int sectionIndex : sectionIndices) {
             Log.d(TAG, "Creating tab for section at index " + sectionIndex);
             HoverMenu.Section section = mHoverView.mMenu.getSection(sectionIndex);
             Log.d(TAG, "Adding new tab. Section: " + sectionIndex + ", ID: " + section.getId());
-            FloatingTab newTab = addTab(section.getId(), section.getTabView(), sectionIndex);
+            FloatingTab newTab = addTab(sectionIndex, section);
             mSections.put(newTab, section);
         }
 
         updateChainedPositions();
     }
 
-    private FloatingTab addTab(@NonNull HoverMenu.SectionId sectionId,
-                               @NonNull View tabView,
-                               int position) {
-        final FloatingTab newTab = mHoverView.mScreen.createChainedTab(
-                sectionId,
-                tabView
-        );
+    private FloatingTab addTab(int position, HoverMenu.Section section) {
+        final FloatingTab newTab = mHoverView.mScreen.createChainedTab(section);
         newTab.disappearImmediate();
         if (mChainedTabs.size() <= position) {
             // This section was appended to the end.
@@ -433,7 +362,7 @@ class HoverViewStateExpanded extends BaseHoverViewState {
         updateChainedPositions();
     }
 
-    private void updateSections(int ... sectionIndices) {
+    private void updateSections(int... sectionIndices) {
         Log.d(TAG, "Tab(s) changed: " + Arrays.toString(sectionIndices));
         for (int sectionIndex : sectionIndices) {
             updateSection(sectionIndex);
@@ -457,7 +386,7 @@ class HoverViewStateExpanded extends BaseHoverViewState {
         }
     }
 
-    private void removeSections(int ... sectionIndices) {
+    private void removeSections(int... sectionIndices) {
         Log.d(TAG, "Tab(s) removed: " + Arrays.toString(sectionIndices));
         // Sort the indices so that they appear from lowest to highest.  Then process
         // in reverse order so that we don't remove sections out from under us.
@@ -519,7 +448,7 @@ class HoverViewStateExpanded extends BaseHoverViewState {
         if (!section.getId().equals(mHoverView.mSelectedSectionId)) {
             selectSection(section);
         } else {
-            collapse();
+            mHoverView.collapse();
         }
     }
 
@@ -531,17 +460,8 @@ class HoverViewStateExpanded extends BaseHoverViewState {
         contentDisplay.displayContent(section.getContent());
     }
 
-    // TODO: do we need this?
-    public void setListener(@NonNull Listener listener) {
-        mListener = listener;
-    }
-
-    public interface Listener {
-        void onExpanding();
-
-        void onExpanded();
-
-        // TODO: do we need this?
-        void onCollapseRequested();
+    @Override
+    public HoverViewStateType getStateType() {
+        return HoverViewStateType.EXPANDED;
     }
 }

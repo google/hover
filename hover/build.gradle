@@ -1,11 +1,11 @@
 apply plugin: 'com.android.library'
 apply plugin: 'checkstyle'
 
-version = '0.9.8'
+project.group = 'com.buzzvil'
+project.version = '1.0.1'
 
 android {
     compileSdkVersion project.compileSdkVersion.toInteger()
-    buildToolsVersion project.buildToolsVersion
 
     defaultConfig {
         minSdkVersion 15
@@ -21,51 +21,12 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile "com.android.support:appcompat-v7:${supportLibVersion}"
-    compile "com.android.support:recyclerview-v7:${supportLibVersion}" // Used to get DiffUtil
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    api ("androidx.appcompat:appcompat:$androidXAppcompatVersion")
+    api ("androidx.recyclerview:recyclerview:$androidXRecyclerviewVersion")
 
-    testCompile 'junit:junit:4.12'
+    testImplementation "junit:junit:$junitVersion"
 }
-
-// For Bintray publishing
-ext {
-    bintrayRepo = 'maven'
-    bintrayName = 'hover'
-
-    publishedGroupId = 'io.mattcarroll.hover'
-    artifact = 'hover'
-    libraryName = 'Hover'
-
-    libraryDescription = 'An Android implementation of a floating menu.'
-
-    siteUrl = 'http://google.github.io/hover/'
-    gitUrl = 'https://github.com/google/hover.git'
-
-    libraryVersion = version
-
-    developerId = 'matthew-carroll'
-    developerName = 'Matt Carroll'
-    developerEmail = 'me@mattcarroll.io'
-
-    licenseName = 'The Apache Software License, Version 2.0'
-    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-    allLicenses = ["Apache-2.0"]
-}
-
-apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/installv1.gradle'
-apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/bintrayv1.gradle'
-
-// The following is used to add our dependencies to the classpath for Javadoc linking.
-afterEvaluate {
-    javadoc.classpath += files(android.libraryVariants.collect { variant ->
-        variant.javaCompile.classpath.files
-    })
-}
-
-// This disabled Javadoc tasks because its breaking the release build.  Since Javadocs are
-// not mission critical, they will remain disabled until the issue can be debugged.
-tasks.withType(Javadoc).all { enabled = false }
 
 //------ Checkstyle -------
 task checkstyle(type: Checkstyle) {
@@ -87,3 +48,13 @@ project.afterEvaluate {
     assemble.dependsOn('lint')
     check.dependsOn('checkstyle')
 }
+
+ext {
+    pName = 'hover'
+    pDescription = 'Buzzvil hover Android SDK'
+    pPublisherVcsUrl = 'https://github.com/Buzzvil/hover.git'
+    pGroup = project.group
+    pVersion = project.version
+}
+
+apply from: "$rootDir/gradle/publish.gradle"

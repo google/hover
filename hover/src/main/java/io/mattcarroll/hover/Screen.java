@@ -15,8 +15,8 @@
  */
 package io.mattcarroll.hover;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,10 +40,13 @@ class Screen {
     private ExitView mExitView;
     private ShadeView mShadeView;
     private Map<String, FloatingTab> mTabs = new HashMap<>();
+    private Map<String, TabMessageView> mTabMessageViews = new HashMap<>();
     private boolean mIsDebugMode = false;
 
     Screen(@NonNull ViewGroup hoverMenuContainer) {
         mContainer = hoverMenuContainer;
+        mContainer.setClipChildren(false);
+        mContainer.setClipToPadding(false);
 
         mShadeView = new ShadeView(mContainer.getContext());
         mContainer.addView(mShadeView, new WindowManager.LayoutParams(
@@ -73,18 +76,10 @@ class Screen {
         }
     }
 
-    public int getWidth() {
-        return mContainer.getWidth();
-    }
-
-    public int getHeight() {
-        return mContainer.getHeight();
-    }
-
     @NonNull
-    public FloatingTab createChainedTab(@NonNull HoverMenu.SectionId sectionId, @NonNull View tabView) {
-        String tabId = sectionId.toString();
-        return createChainedTab(tabId, tabView);
+    public FloatingTab createChainedTab(@NonNull HoverMenu.Section section) {
+        String tabId = section.getId().toString();
+        return createChainedTab(tabId, section.getTabView());
     }
 
     @NonNull
@@ -100,8 +95,11 @@ class Screen {
             FloatingTab chainedTab = new FloatingTab(mContainer.getContext(), tabId);
             chainedTab.setTabView(tabView);
             chainedTab.enableDebugMode(mIsDebugMode);
-            mContainer.addView(chainedTab);
             mTabs.put(tabId, chainedTab);
+            final TabMessageView messageView = new TabMessageView(tabView.getContext(), chainedTab);
+            mContainer.addView(messageView);
+            mContainer.addView(chainedTab);
+            mTabMessageViews.put(tabId, messageView);
             return chainedTab;
         }
     }
@@ -119,6 +117,7 @@ class Screen {
 
     public void destroyChainedTab(@NonNull FloatingTab chainedTab) {
         mTabs.remove(chainedTab.getTabId());
+        mTabMessageViews.remove(chainedTab.getTabId());
         chainedTab.setTabView(null);
         mContainer.removeView(chainedTab);
     }
@@ -133,5 +132,9 @@ class Screen {
 
     public ShadeView getShadeView() {
         return mShadeView;
+    }
+
+    public TabMessageView getTabMessageView(final HoverMenu.SectionId sectionId) {
+        return mTabMessageViews.get(sectionId.toString());
     }
 }

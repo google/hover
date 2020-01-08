@@ -1,7 +1,10 @@
 <resources>
     <dimen name="hover_tab_size">72dp</dimen>
+    <dimen name="hover_tab_size_shrunk">48dp</dimen>
     <dimen name="hover_tab_margin">8dp</dimen>
     <dimen name="hover_navigator_corner_radius">7dp</dimen>
-    <dimen name="hover_exit_icon_size">40dp</dimen>
+    <dimen name="hover_exit_icon_size">72dp</dimen>
     <dimen name="hover_exit_radius">75dp</dimen>
+    <dimen name="hover_message_animate_translation_x">32dp</dimen>
+    <dimen name="hover_message_animate_translation_y">24dp</dimen>
 </resources>

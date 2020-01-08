@@ -16,70 +16,54 @@
 package io.mattcarroll.hover;
 
 import android.graphics.Point;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v7.util.ListUpdateCallback;
+import android.os.Handler;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
+import androidx.recyclerview.widget.ListUpdateCallback;
 import android.util.Log;
 import android.view.View;
 
-import static android.view.View.GONE;
+import java.util.ArrayList;
+
 import static android.view.View.INVISIBLE;
-import static android.view.View.VISIBLE;
 
 /**
  * {@link HoverViewState} that operates the {@link HoverView} when it is collapsed. Collapsed means
  * that the only thing visible is the selected {@link FloatingTab}.  This tab docks itself against
  * the left or right sides of the screen.  The user can drag the tab around and drop it.
- *
+ * <p>
  * If the tab is tapped, the {@code HoverView} is transitioned to its expanded state.
- *
+ * <p>
  * If the tab is dropped on the exit region, the {@code HoverView} is transitioned to its closed state.
  */
 class HoverViewStateCollapsed extends BaseHoverViewState {
 
-    private static final String TAG = "HoverMenuViewStateCollapsed";
+    private static final String TAG = "HoverViewStateCollapsed";
+    private static final float MIN_TAB_VERTICAL_POSITION = 0.0f;
+    private static final float MAX_TAB_VERTICAL_POSITION = 1.0f;
+    private static final long DEFAULT_IDLE_MILLIS = 5000;
+    private static final float POP_THROWING_SPEED_THRESHOLD = 0.3f;
+    private static final int NEGATIVE = -1;
+    private static final int POSITIVE = 1;
 
-    private HoverView mHoverView;
-    private FloatingTab mFloatingTab;
-    private HoverMenu.Section mSelectedSection;
+    protected FloatingTab mFloatingTab;
+    protected final FloatingTabDragListener mFloatingTabDragListener = new FloatingTabDragListener(this);
+    protected HoverMenu.Section mSelectedSection;
     private int mSelectedSectionIndex = -1;
-    private boolean mHasControl = false;
     private boolean mIsCollapsed = false;
-    private boolean mIsDocked = false;
-    private Dragger.DragListener mDragListener;
-    private Listener mListener;
-
-    private final View.OnLayoutChangeListener mOnLayoutChangeListener = new View.OnLayoutChangeListener() {
-        @Override
-        public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-            if (mHasControl && mIsDocked) {
-                // We're docked. Adjust the tab position in case the screen was rotated. This should
-                // only be a concern when displaying as a window overlay, but not when displaying
-                // within a view hierarchy.
-                moveToDock();
-            }
-        }
-    };
-
-    HoverViewStateCollapsed() { }
+    private Handler mHandler = new Handler();
+    private Runnable mIdleActionRunnable;
+    private Runnable mOnStateChanged;
+    private GestureBlackBox mGestureBlackBox = new GestureBlackBox();
 
     @Override
-    public void takeControl(@NonNull HoverView hoverView) {
+    public void takeControl(@NonNull HoverView floatingTab, final Runnable onStateChanged) {
+        super.takeControl(floatingTab, onStateChanged);
         Log.d(TAG, "Taking control.");
-        super.takeControl(hoverView);
-
-        if (mHasControl) {
-            Log.w(TAG, "Already has control.");
-            return;
-        }
-
-        Log.d(TAG, "Instructing tab to dock itself.");
-        mHasControl = true;
-        mHoverView = hoverView;
-        mHoverView.mState = this;
-        mHoverView.clearFocus(); // For handling hardware back button presses.
-        mHoverView.mScreen.getContentDisplay().setVisibility(GONE);
+        mOnStateChanged = onStateChanged;
         mHoverView.makeUntouchableInWindow();
+        mHoverView.clearFocus(); // For handling hardware back button presses.
 
         Log.d(TAG, "Taking control with selected section: " + mHoverView.mSelectedSectionId);
         mSelectedSection = mHoverView.mMenu.getSection(mHoverView.mSelectedSectionId);
@@ -89,16 +73,11 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         final boolean wasFloatingTabVisible;
         if (null == mFloatingTab) {
             wasFloatingTabVisible = false;
-            mFloatingTab = mHoverView.mScreen.createChainedTab(mHoverView.mSelectedSectionId, mSelectedSection.getTabView());
+            mFloatingTab = mHoverView.mScreen.createChainedTab(mSelectedSection);
         } else {
             wasFloatingTabVisible = true;
         }
-        mDragListener = new FloatingTabDragListener(this);
         mIsCollapsed = false; // We're collapsing, not yet collapsed.
-        if (null != mListener) {
-            mHoverView.notifyListenersCollapsing();
-            mListener.onCollapsing();
-        }
         initDockPosition();
 
         // post() animation to dock in case the container hasn't measured itself yet.
@@ -108,76 +87,52 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         mHoverView.post(new Runnable() {
             @Override
             public void run() {
+                if (!hasControl()) {
+                    return;
+                }
                 if (wasFloatingTabVisible) {
+                    mFloatingTab.appearImmediate();
                     sendToDock();
                 } else {
-                    mFloatingTab.setVisibility(VISIBLE);
                     moveToDock();
-                    onDocked();
+                    mFloatingTab.appear(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (!hasControl()) {
+                                return;
+                            }
+                            onDocked();
+                        }
+                    });
                 }
             }
         });
 
-        mFloatingTab.addOnLayoutChangeListener(mOnLayoutChangeListener);
-
         if (null != mHoverView.mMenu) {
             listenForMenuChanges();
         }
+
+        initIdleActionRunnable();
     }
 
     @Override
-    public void expand() {
-        changeState(mHoverView.mExpanded);
-    }
-
-    @Override
-    public void collapse() {
-        Log.d(TAG, "Instructed to collapse, but already collapsed.");
-    }
-
-    @Override
-    public void close() {
-        changeState(mHoverView.mClosed);
-    }
-
-    private void changeState(@NonNull HoverViewState nextState) {
+    public void giveUpControl(@NonNull HoverViewState nextState) {
         Log.d(TAG, "Giving up control.");
-        if (!mHasControl) {
-            throw new RuntimeException("Cannot give control to another HoverMenuController when we don't have the HoverTab.");
-        }
-
-        mFloatingTab.removeOnLayoutChangeListener(mOnLayoutChangeListener);
+        restoreHoverViewIdleAction();
 
         if (null != mHoverView.mMenu) {
             mHoverView.mMenu.setUpdatedCallback(null);
         }
 
-        mHasControl = false;
-        mIsDocked = false;
-        deactivateDragger();
-        mDragListener = null;
-        mFloatingTab = null;
+        mHoverView.mScreen.getExitView().hide();
 
-        mHoverView.setState(nextState);
-        mHoverView = null;
+        deactivateDragger();
+        mFloatingTab = null;
+        super.giveUpControl(nextState);
     }
 
     @Override
     public void setMenu(@Nullable final HoverMenu menu) {
-        mHoverView.mMenu = menu;
-
-        // If the menu is null or empty then we can't be collapsed, close the menu.
-        if (null == menu || menu.getSectionCount() == 0) {
-            close();
-            return;
-        }
-
-        mHoverView.restoreVisualState();
-
-        if (null == mHoverView.mSelectedSectionId || null == mHoverView.mMenu.getSection(mHoverView.mSelectedSectionId)) {
-            mHoverView.mSelectedSectionId = mHoverView.mMenu.getSection(0).getId();
-        }
-
         listenForMenuChanges();
     }
 
@@ -194,18 +149,12 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
                 if (mSelectedSectionIndex == position) {
                     Log.d(TAG, "Selected tab removed. Displaying a new tab.");
                     // TODO: externalize a selection strategy for when the selected section disappears
-                    mFloatingTab.removeOnLayoutChangeListener(mOnLayoutChangeListener);
                     mHoverView.mScreen.destroyChainedTab(mFloatingTab);
 
                     mSelectedSectionIndex = mSelectedSectionIndex > 0 ? mSelectedSectionIndex - 1 : 0;
                     mSelectedSection = mHoverView.mMenu.getSection(mSelectedSectionIndex);
                     mHoverView.mSelectedSectionId = mSelectedSection.getId();
-                    mFloatingTab = mHoverView.mScreen.createChainedTab(
-                            mSelectedSection.getId(),
-                            mSelectedSection.getTabView()
-                    );
-
-                    mFloatingTab.addOnLayoutChangeListener(mOnLayoutChangeListener);
+                    mFloatingTab = mHoverView.mScreen.createChainedTab(mSelectedSection);
                 }
             }
 
@@ -237,44 +186,75 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         // No-op
     }
 
-    public void setListener(@Nullable Listener listener) {
-        mListener = listener;
-    }
-
-    private void onPickedUpByUser() {
-        mIsDocked = false;
-        mHoverView.mScreen.getExitView().setVisibility(VISIBLE);
-        if (null != mListener) {
-            mListener.onDragStart();
+    protected void onPickedUpByUser() {
+        if (!hasControl()) {
+            return;
         }
+
+        mHoverView.mScreen.getExitView().show();
+        restoreHoverViewIdleAction();
+        mHoverView.notifyOnDragStart(this);
     }
 
     private void onDroppedByUser() {
-        mHoverView.mScreen.getExitView().setVisibility(GONE);
-        if (null != mListener) {
-            mListener.onDragEnd();
+        if (!hasControl()) {
+            return;
+        }
+        mHoverView.mScreen.getExitView().hide();
+        mGestureBlackBox.addGesturePoint(mFloatingTab.getPosition());
+
+
+        Point screenSize = mHoverView.getScreenSize();
+        boolean droppedOnExit = mHoverView.mScreen.getExitView().isInExitZone(mFloatingTab.getPosition(), screenSize);
+        if (droppedOnExit) {
+            onClose(true);
+        } else {
+            handleDrop(screenSize);
+        }
+        mGestureBlackBox.clear();
+    }
+
+    private void handleDrop(Point screenSize) {
+        int tabSize = mHoverView.getResources().getDimensionPixelSize(R.dimen.hover_tab_size);
+        float tabHorizontalPositionPercent = (float) mFloatingTab.getPosition().x / screenSize.x;
+        final float viewHeightPercent = mFloatingTab.getHeight() / 2f / screenSize.y;
+        float tabVerticalPositionPercent;
+
+        if (mGestureBlackBox.getSpeed() > POP_THROWING_SPEED_THRESHOLD) {
+            float positionY = mGestureBlackBox.getTargetYPosition();
+            tabVerticalPositionPercent = positionY / screenSize.y;
+
+            int diffPositionX = mGestureBlackBox.getDiffX();
+            if (diffPositionX > 0) {
+                tabHorizontalPositionPercent = 0f;
+            } else {
+                tabHorizontalPositionPercent = 1f;
+            }
+        } else {
+            tabVerticalPositionPercent = (float) mFloatingTab.getPosition().y / screenSize.y;
         }
 
-        boolean droppedOnExit = mHoverView.mScreen.getExitView().isInExitZone(mFloatingTab.getPosition());
-        if (droppedOnExit) {
-            Log.d(TAG, "User dropped floating tab on exit.");
-            closeMenu(new Runnable() {
-                @Override
-                public void run() {
-                    if (null != mHoverView.mOnExitListener) {
-                        mHoverView.mOnExitListener.onExit();
-                    }
-                }
-            });
+        tabVerticalPositionPercent = computeVerticalPositionPercent(viewHeightPercent, tabVerticalPositionPercent);
+
+        Point throwTargetPosition = new Point(
+                (int) (tabHorizontalPositionPercent * (float) mHoverView.getScreenSize().x),
+                (int) (tabVerticalPositionPercent * (float) mHoverView.getScreenSize().y));
+        boolean throwOnExit = mHoverView.mScreen.getExitView().isInExitZone(throwTargetPosition, screenSize);
+        if (throwOnExit) {
+            Point closeTargetPosition = new Point(
+                    screenSize.x / 2 - tabSize / 2,
+                    (int) (screenSize.y * tabVerticalPositionPercent) - tabSize / 2);
+            closeWithThrowingAnimation(closeTargetPosition);
         } else {
-            int tabSize = mHoverView.getResources().getDimensionPixelSize(R.dimen.hover_tab_size);
-            Point screenSize = new Point(mHoverView.mScreen.getWidth(), mHoverView.mScreen.getHeight());
-            float tabHorizontalPositionPercent = (float) mFloatingTab.getPosition().x / screenSize.x;
-            float tabVerticalPosition = (float) mFloatingTab.getPosition().y / screenSize.y;
-            Log.d(TAG, "Dropped at horizontal " + tabHorizontalPositionPercent + ", vertical " + tabVerticalPosition);
+            int sideDockHorizontalPosition = SideDock.SidePosition.RIGHT;
+            if (tabHorizontalPositionPercent <= 0.5) {
+                sideDockHorizontalPosition = SideDock.SidePosition.LEFT;
+            }
+
+            Log.d(TAG, "Dropped at horizontal " + tabHorizontalPositionPercent + ", vertical " + tabVerticalPositionPercent);
             SideDock.SidePosition sidePosition = new SideDock.SidePosition(
-                    tabHorizontalPositionPercent <= 0.5 ? SideDock.SidePosition.LEFT : SideDock.SidePosition.RIGHT,
-                    tabVerticalPosition
+                    sideDockHorizontalPosition,
+                    tabVerticalPositionPercent
             );
             mHoverView.mCollapsedDock = new SideDock(
                     mHoverView,
@@ -282,18 +262,52 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
                     sidePosition
             );
             mHoverView.saveVisualState();
-            Log.d(TAG, "User dropped tab. Sending to new dock: " + mHoverView.mCollapsedDock);
-
             sendToDock();
         }
     }
 
-    private void onTap() {
-        Log.d(TAG, "Floating tab was tapped.");
-        expand();
-        if (null != mListener) {
-            mListener.onTap();
+    private float computeVerticalPositionPercent(float viewHeightPercent, float tabVerticalPositionPercent) {
+        if (tabVerticalPositionPercent < MIN_TAB_VERTICAL_POSITION + viewHeightPercent) {
+            tabVerticalPositionPercent = MIN_TAB_VERTICAL_POSITION + viewHeightPercent;
+        } else if (tabVerticalPositionPercent > MAX_TAB_VERTICAL_POSITION - viewHeightPercent) {
+            tabVerticalPositionPercent = MAX_TAB_VERTICAL_POSITION - viewHeightPercent;
         }
+        return tabVerticalPositionPercent;
+    }
+
+    protected void onClose(final boolean userDropped) {
+        if (!hasControl()) {
+            return;
+        }
+
+        if (userDropped) {
+            Log.d(TAG, "User dropped floating tab on exit.");
+            if (null != mHoverView.mOnExitListener) {
+                mHoverView.mOnExitListener.onExit();
+            }
+        } else {
+            Log.d(TAG, "Auto dropped.");
+        }
+        mHoverView.close();
+    }
+
+    protected void onTap() {
+        Log.d(TAG, "Floating tab was tapped.");
+        if (mHoverView != null) {
+            mHoverView.notifyOnTap(this);
+        }
+    }
+
+    private void closeWithThrowingAnimation(Point targetPoint) {
+        Log.d(TAG, "closeWithThrowingAnimation");
+        deactivateDragger();
+        mFloatingTab.closeAnimation(targetPoint, new Runnable() {
+            @Override
+            public void run() {
+                activateDragger();
+                onClose(true);
+            }
+        });
     }
 
     private void sendToDock() {
@@ -303,6 +317,9 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         mFloatingTab.dock(new Runnable() {
             @Override
             public void run() {
+                if (!hasControl()) {
+                    return;
+                }
                 onDocked();
             }
         });
@@ -311,10 +328,10 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     private void moveToDock() {
         Log.d(TAG, "Moving floating tag to dock.");
         Point dockPosition = mHoverView.mCollapsedDock.sidePosition().calculateDockPosition(
-                new Point(mHoverView.mScreen.getWidth(), mHoverView.mScreen.getHeight()),
+                mHoverView.getScreenSize(),
                 mFloatingTab.getTabSize()
         );
-        mFloatingTab.moveTo(dockPosition);
+        mFloatingTab.moveCenterTo(dockPosition);
     }
 
     private void initDockPosition() {
@@ -328,97 +345,241 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         }
     }
 
-    private void onDocked() {
+    protected void onDocked() {
         Log.d(TAG, "Docked. Activating dragger.");
-        mIsDocked = true;
+        if (!hasControl() || !mHoverView.mIsAddedToWindow) {
+            return;
+        }
         activateDragger();
+        scheduleHoverViewIdleAction();
 
         // We consider ourselves having gone from "collapsing" to "collapsed" upon the very first dock.
         boolean didJustCollapse = !mIsCollapsed;
         mIsCollapsed = true;
         mHoverView.saveVisualState();
-        if (null != mListener) {
-            if (didJustCollapse) {
-                mHoverView.notifyListenersCollapsed();
-                mListener.onCollapsed();
+        if (didJustCollapse) {
+            if (mOnStateChanged != null) {
+                mOnStateChanged.run();
             }
-            mListener.onDocked();
+        }
+        mHoverView.notifyOnDocked(this);
+    }
+
+    void moveFloatingTabTo(View floatingTab, @NonNull Point position) {
+        if (mHoverView.mScreen.getExitView().isInExitZone(position, mHoverView.getScreenSize())) {
+            mHoverView.mScreen.getExitView().showEnterAnimation();
+        } else {
+            mHoverView.mScreen.getExitView().showExitAnimation();
+        }
+        mFloatingTab.moveCenterTo(position);
+        mGestureBlackBox.addGesturePoint(position);
+    }
+
+    protected void activateDragger() {
+        if (mHoverView != null && mHoverView.mDragger != null) {
+            ArrayList<Pair<? extends HoverFrameLayout, ? extends BaseTouchController.TouchListener>> list = new ArrayList<>();
+            list.add(new Pair<>(mFloatingTab, mFloatingTabDragListener));
+            mHoverView.mDragger.activate(list);
         }
     }
 
-    private void moveTabTo(@NonNull Point position) {
-        mFloatingTab.moveTo(position);
-    }
-
-    private void closeMenu(final @Nullable Runnable onClosed) {
-        mFloatingTab.disappear(new Runnable() {
-            @Override
-            public void run() {
-                mHoverView.mScreen.destroyChainedTab(mFloatingTab);
-
-                if (null != onClosed) {
-                    onClosed.run();
-                }
-
-                close();
-            }
-        });
-    }
-
-    private void activateDragger() {
-        mHoverView.mDragger.activate(mDragListener, mFloatingTab.getPosition());
-    }
-
-    private void deactivateDragger() {
+    protected void deactivateDragger() {
         mHoverView.mDragger.deactivate();
     }
 
-    public interface Listener {
-        void onCollapsing();
+    private void initIdleActionRunnable() {
+        this.mIdleActionRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (mHoverView == null) {
+                    return;
+                }
 
-        void onCollapsed();
+                final HoverViewState state = mHoverView.getState();
+                if (!(state instanceof HoverViewStatePreviewed) && state instanceof HoverViewStateCollapsed) {
+                    final HoverView.HoverViewIdleAction idleAction = mHoverView.getIdleAction();
+                    if (idleAction != null) {
+                        idleAction.changeState(mFloatingTab);
+                    }
 
-        void onDragStart();
-
-        void onDragEnd();
-
-        void onDocked();
-
-        void onTap();
-
-        // TODO: do we need this?
-        void onExited();
+                }
+            }
+        };
     }
 
-    private static final class FloatingTabDragListener implements Dragger.DragListener {
+    private void scheduleHoverViewIdleAction() {
+        mHandler.postDelayed(mIdleActionRunnable, DEFAULT_IDLE_MILLIS);
+    }
+
+    protected void restoreHoverViewIdleAction() {
+        mHandler.removeCallbacks(mIdleActionRunnable);
+        final HoverView.HoverViewIdleAction idleAction = mHoverView.getIdleAction();
+        if (idleAction != null) {
+            idleAction.restoreState(mFloatingTab);
+        }
+    }
+
+    @Override
+    public HoverViewStateType getStateType() {
+        return HoverViewStateType.COLLAPSED;
+    }
+
+    protected static final class FloatingTabDragListener implements Dragger.DragListener<FloatingTab> {
 
         private final HoverViewStateCollapsed mOwner;
 
-        private FloatingTabDragListener(@NonNull HoverViewStateCollapsed owner) {
+        protected FloatingTabDragListener(@NonNull HoverViewStateCollapsed owner) {
             mOwner = owner;
         }
 
         @Override
-        public void onPress(float x, float y) { }
-
-        @Override
-        public void onDragStart(float x, float y) {
+        public void onDragStart(FloatingTab floatingTab, float x, float y) {
             mOwner.onPickedUpByUser();
         }
 
         @Override
-        public void onDragTo(float x, float y) {
-            mOwner.moveTabTo(new Point((int) x, (int) y));
+        public void onDragTo(FloatingTab floatingTab, float x, float y) {
+            mOwner.moveFloatingTabTo(floatingTab, new Point((int) x, (int) y));
         }
 
         @Override
-        public void onReleasedAt(float x, float y) {
+        public void onReleasedAt(FloatingTab floatingTab, float x, float y) {
             mOwner.onDroppedByUser();
         }
 
         @Override
-        public void onTap() {
+        public void onDragCancel(FloatingTab floatingTab) {
+            mOwner.onDroppedByUser();
+        }
+
+        @Override
+        public void onTap(FloatingTab floatingTab) {
             mOwner.onTap();
+        }
+
+        @Override
+        public void onTouchDown(FloatingTab floatingTab) {
+        }
+
+        @Override
+        public void onTouchUp(FloatingTab floatingTab) {
+        }
+    }
+
+    class GestureBlackBox {
+        private final long mMaxMeasureTimeGap = 100L;
+        private final int mMaxArraySize = 100;
+        GesturePoint mFirstPoint = null;
+        GesturePoint mSecondPoint = null;
+
+        ArrayList<GesturePoint> mGesturePoints = new ArrayList<>();
+
+        private void addGesturePoint(Point point) {
+            if (mGesturePoints.size() >= mMaxArraySize) {
+                mGesturePoints.remove(0);
+            }
+            mGesturePoints.add(new GesturePoint(point, System.currentTimeMillis()));
+        }
+
+        private boolean updatePoints() {
+            if (mGesturePoints.size() < 2) {
+                return false;
+            }
+
+            mFirstPoint = mGesturePoints.get(mGesturePoints.size() - 1);
+            mSecondPoint = mGesturePoints.get(mGesturePoints.size() - 2);
+            for (int i = mGesturePoints.size() - 2; i >= 0; i--) {
+                GesturePoint tempPoint = mGesturePoints.get(i);
+                if (mFirstPoint.mPointMillis - tempPoint.mPointMillis <= mMaxMeasureTimeGap) {
+                    mSecondPoint = tempPoint;
+                } else {
+                    break;
+                }
+            }
+            return true;
+        }
+
+        private double getDistance() {
+            if (!updatePoints()) {
+                return 0;
+            }
+            return calculateDistance(mFirstPoint.mPoint, mSecondPoint.mPoint);
+        }
+
+        private int getDiffX() {
+            if (!updatePoints()) {
+                return 0;
+            }
+            return mSecondPoint.mPoint.x - mFirstPoint.mPoint.x;
+        }
+
+        private float getTargetYPosition() {
+            if (!updatePoints()) {
+                return 0;
+            }
+
+            return getTargetYPosition(mSecondPoint.mPoint, mFirstPoint.mPoint);
+        }
+
+        /**
+         * Get target Y position from 2 points
+         *
+         * @param point1 first mPoint
+         * @param point2 second mPoint
+         * @return targetPoint
+         */
+        private float getTargetYPosition(@NonNull Point point1, @NonNull Point point2) {
+            // STEP 1: get liner line equation from 2 points (ax + by = c)
+            float a = point2.y - point1.y;
+            float b = point1.x - point2.x;
+            float c = a * (point1.x) + b * (point1.y);
+
+            // STEP 2: get x direction of the line
+            int xDirection = POSITIVE;
+            if (point1.x - point2.x >= 0) {
+                xDirection = NEGATIVE;
+            }
+
+            // To avoid divide by zero exception
+            if (b == 0) {
+                b = 1;
+            }
+
+            // STEP 3: return target Y position ( y = (c - ax) / b)
+            if (xDirection == NEGATIVE) {
+                return c / b;
+            } else {
+                return (c - a * mHoverView.getScreenSize().x) / b;
+            }
+        }
+
+        private double getSpeed() {
+            if (!updatePoints()) {
+                return 0;
+            }
+            return getDistance() / (mFirstPoint.mPointMillis - mSecondPoint.mPointMillis);
+        }
+
+        private void clear() {
+            mGesturePoints.clear();
+            mFirstPoint = null;
+            mSecondPoint = null;
+        }
+
+        private double calculateDistance(@NonNull Point point1, @NonNull Point point2) {
+            return Math.sqrt(
+                    Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2)
+            );
+        }
+
+        class GesturePoint {
+            private Point mPoint;
+            private long mPointMillis;
+
+            GesturePoint(Point point, long pointMillis) {
+                this.mPoint = point;
+                this.mPointMillis = pointMillis;
+            }
         }
     }
 }

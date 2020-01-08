@@ -15,34 +15,22 @@
  */
 package io.mattcarroll.hover;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 /**
  * A state of a {@link HoverView}. {@code HoverView} is implemented with a state pattern and this
  * is the interface that is implemented by all such states.
  */
-interface HoverViewState {
+public interface HoverViewState {
     /**
      * Activates this state.
      * @param hoverView hoverView
+     * @param onStateChanged Runnable to be run after state has changed
      */
-    void takeControl(@NonNull HoverView hoverView);
+    void takeControl(@NonNull HoverView hoverView, Runnable onStateChanged);
 
-    /**
-     * Expands the HoverView.
-     */
-    void expand();
-
-    /**
-     * Collapses the HoverView.
-     */
-    void collapse();
-
-    /**
-     * Closes the HoverView (no menu or tabs are visible).
-     */
-    void close();
+    void giveUpControl(@NonNull HoverViewState nextState);
 
     /**
      * Displays the given {@code menu} within the HoverView.
@@ -62,25 +50,5 @@ interface HoverViewState {
      */
     void onBackPressed();
 
-    /**
-     * Adds the HoverView to the Android device's Window.
-     */
-    void addToWindow();
-
-    /**
-     * Removes the HoverView from the Android device's Window.
-     */
-    void removeFromWindow();
-
-    /**
-     * Assuming that the HoverView is added to the Android device's Window, makes the HoverView
-     * touchable.
-     */
-    void makeTouchableInWindow();
-
-    /**
-     * Assuming that the HoverView is added to the Android device's Window, makes the HoverView
-     * untouchable (touch events pass through the overlay to whatever is beneath).
-     */
-    void makeUntouchableInWindow();
+    HoverViewStateType getStateType();
 }

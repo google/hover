@@ -18,24 +18,27 @@ package io.mattcarroll.hover;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.TypedArray;
+import android.graphics.Point;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.View;
 import android.view.ViewConfiguration;
+import android.view.WindowManager;
 import android.widget.RelativeLayout;
-
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
-
 import io.mattcarroll.hover.view.InViewDragger;
 import io.mattcarroll.hover.window.InWindowDragger;
 import io.mattcarroll.hover.window.WindowViewController;
 
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
+
 import static io.mattcarroll.hover.SideDock.SidePosition.LEFT;
+import static io.mattcarroll.hover.SideDock.SidePosition.RIGHT;
 
 /**
  * {@code HoverMenuView} is a floating menu implementation. This implementation displays tabs along
@@ -70,12 +73,10 @@ public class HoverView extends RelativeLayout {
     @NonNull
     private static Dragger createWindowDragger(@NonNull Context context,
                                                @NonNull WindowViewController windowViewController) {
-        int touchDiameter = context.getResources().getDimensionPixelSize(R.dimen.hover_exit_radius);
         int slop = ViewConfiguration.get(context).getScaledTouchSlop();
         return new InWindowDragger(
                 context,
                 windowViewController,
-                touchDiameter,
                 slop
         );
     }
@@ -85,22 +86,28 @@ public class HoverView extends RelativeLayout {
         return new HoverView(context, null);
     }
 
-    final HoverViewState mClosed = new HoverViewStateClosed();
-    final HoverViewState mCollapsed = new HoverViewStateCollapsed();
-    final HoverViewState mExpanded = new HoverViewStateExpanded();
+    private final HoverViewState mClosed = new HoverViewStateClosed();
+    private final HoverViewState mCollapsed = new HoverViewStateCollapsed();
+    private final HoverViewState mPreviewed = new HoverViewStatePreviewed();
+    private final HoverViewState mExpanded = new HoverViewStateExpanded();
+    private final HoverViewState mHidden = new HoverViewStateHidden();
     final WindowViewController mWindowViewController;
     final Dragger mDragger;
     final Screen mScreen;
-    HoverViewState mState;
+    private HoverViewState mState;
     HoverMenu mMenu;
     HoverMenu.SectionId mSelectedSectionId;
     SideDock mCollapsedDock;
+    SideDock.SidePosition mInitialDockPosition;
     boolean mIsAddedToWindow;
     boolean mIsTouchableInWindow;
     boolean mIsDebugMode = false;
     int mTabSize;
+    private PositionDock mPositionToHide;
     OnExitListener mOnExitListener;
-    final Set<Listener> mListeners = new CopyOnWriteArraySet<>();
+    private final Set<OnStateChangeListener> mOnStateChangeListeners = new CopyOnWriteArraySet<>();
+    private final Set<OnFloatingTabInteractionListener> mOnFloatingTabInteractionListeners = new CopyOnWriteArraySet<>();
+    private HoverViewIdleAction mIdleAction;
 
     // Public for use with XML inflation. Clients should use static methods for construction.
     public HoverView(@NonNull Context context, @Nullable AttributeSet attrs) {
@@ -118,11 +125,9 @@ public class HoverView extends RelativeLayout {
 
     @NonNull
     private Dragger createInViewDragger(@NonNull Context context) {
-        int touchDiameter = context.getResources().getDimensionPixelSize(R.dimen.hover_exit_radius);
         int slop = ViewConfiguration.get(context).getScaledTouchSlop();
         return new InViewDragger(
                 this,
-                touchDiameter,
                 slop
         );
     }
@@ -135,6 +140,7 @@ public class HoverView extends RelativeLayout {
         mDragger = dragger;
         mScreen = new Screen(this);
         mWindowViewController = windowViewController;
+        mInitialDockPosition = initialDockPosition;
 
         init();
 
@@ -173,7 +179,7 @@ public class HoverView extends RelativeLayout {
         mTabSize = getResources().getDimensionPixelSize(R.dimen.hover_tab_size);
         restoreVisualState();
         setFocusableInTouchMode(true); // For handling hardware back button presses.
-        setState(new HoverViewStateClosed());
+        close();
     }
 
     @Override
@@ -232,11 +238,9 @@ public class HoverView extends RelativeLayout {
         persistentState.restore(this, mMenu);
     }
 
-    // TODO: when to call this?
     public void release() {
         Log.d(TAG, "Released.");
         mDragger.deactivate();
-        // TODO: should we also release the screen?
     }
 
     public void enableDebugMode(boolean debugMode) {
@@ -246,9 +250,35 @@ public class HoverView extends RelativeLayout {
         mScreen.enableDrugMode(debugMode);
     }
 
-    void setState(@NonNull HoverViewState state) {
-        mState = state;
-        mState.takeControl(this);
+    public void setPositionToHide(Point position) {
+        if (position == null) {
+            this.mPositionToHide = null;
+        } else {
+            this.mPositionToHide = new PositionDock(position);
+        }
+    }
+
+    @Nullable
+    public PositionDock getPositionToHide() {
+        return mPositionToHide;
+    }
+
+    void setState(@NonNull HoverViewState newState, Runnable onStateChanged) {
+        if (mState != newState) {
+            if (mState != null) {
+                mState.giveUpControl(newState);
+            }
+            mState = newState;
+            mState.takeControl(this, onStateChanged);
+        }
+    }
+
+    public HoverViewState getState() {
+        return mState;
+    }
+
+    public void setTabMessageViewInteractionListener(@Nullable final OnTabMessageViewInteractionListener messageViewDragListener) {
+        ((HoverViewStatePreviewed) mPreviewed).setMessageViewDragListener(messageViewDragListener);
     }
 
     private void onBackPressed() {
@@ -256,91 +286,184 @@ public class HoverView extends RelativeLayout {
     }
 
     public void setMenu(@Nullable HoverMenu menu) {
+        mMenu = menu;
+        // If the menu is null or empty then close the menu.
+        if (null == menu || menu.getSectionCount() == 0) {
+            close();
+            return;
+        }
+        restoreVisualState();
+
+        if (null == mSelectedSectionId || null == mMenu.getSection(mSelectedSectionId)) {
+            mSelectedSectionId = mMenu.getSection(0).getId();
+        }
+        final FloatingTab selectedTab = mScreen.getChainedTab(mSelectedSectionId);
+        if (selectedTab != null) {
+            selectedTab.setTabView(mMenu.getSection(mSelectedSectionId).getTabView());
+        }
         mState.setMenu(menu);
     }
 
+    public void preview() {
+        setState(mPreviewed, new Runnable() {
+            @Override
+            public void run() {
+                for (OnStateChangeListener onStateChangeListener : mOnStateChangeListeners) {
+                    onStateChangeListener.onPreviewed();
+                }
+            }
+        });
+    }
+
     public void expand() {
-        mState.expand();
+        setState(mExpanded, new Runnable() {
+            @Override
+            public void run() {
+                for (OnStateChangeListener onStateChangeListener : mOnStateChangeListeners) {
+                    onStateChangeListener.onExpanded();
+                }
+            }
+        });
     }
 
     public void collapse() {
-        mState.collapse();
+        setState(mCollapsed, new Runnable() {
+            @Override
+            public void run() {
+                for (OnStateChangeListener onStateChangeListener : mOnStateChangeListeners) {
+                    onStateChangeListener.onCollapsed();
+                }
+            }
+        });
     }
 
     public void close() {
-        mState.close();
+        setState(mClosed, new Runnable() {
+            @Override
+            public void run() {
+                for (OnStateChangeListener onStateChangeListener : mOnStateChangeListeners) {
+                    onStateChangeListener.onClosed();
+                }
+            }
+        });
+    }
+
+    public void hide() {
+        setState(mHidden, new Runnable() {
+            @Override
+            public void run() {
+                for (OnStateChangeListener onStateChangeListener : mOnStateChangeListeners) {
+                    onStateChangeListener.onHidden();
+                }
+            }
+        });
+    }
+
+    public void setIdleAction(HoverViewIdleAction idleAction) {
+        this.mIdleAction = idleAction;
+    }
+
+    public HoverViewIdleAction getIdleAction() {
+        return mIdleAction;
     }
 
     public void setOnExitListener(@Nullable OnExitListener listener) {
         mOnExitListener = listener;
     }
 
-    public void addOnExpandAndCollapseListener(@NonNull Listener listener) {
-        mListeners.add(listener);
+    public void addOnStateChangeListener(@NonNull OnStateChangeListener onStateChangeListener) {
+        mOnStateChangeListeners.add(onStateChangeListener);
     }
 
-    public void removeOnExpandAndCollapseListener(@NonNull Listener listener) {
-        mListeners.remove(listener);
+    public void removeOnStateChangeListener(@NonNull OnStateChangeListener onStateChangeListener) {
+        mOnStateChangeListeners.remove(onStateChangeListener);
     }
 
-    void notifyListenersExpanding() {
-        Log.d(TAG, "Notifying listeners that Hover is expanding.");
-        for (Listener listener : mListeners) {
-            listener.onExpanding();
+    public void addOnFloatingTabInteractionListener(@NonNull OnFloatingTabInteractionListener onFloatingTabInteractionListener) {
+        mOnFloatingTabInteractionListeners.add(onFloatingTabInteractionListener);
+    }
+
+    public void removeOnFloatingTabInteractionListener(@NonNull OnFloatingTabInteractionListener onFloatingTabInteractionListener) {
+        mOnFloatingTabInteractionListeners.remove(onFloatingTabInteractionListener);
+    }
+
+    void notifyOnTap(HoverViewState state) {
+        for (OnFloatingTabInteractionListener onFloatingTabInteractionListener : mOnFloatingTabInteractionListeners) {
+            onFloatingTabInteractionListener.onTap(state.getStateType());
         }
     }
 
-    void notifyListenersExpanded() {
-        Log.d(TAG, "Notifying listeners that Hover is now expanded.");
-        for (Listener listener : mListeners) {
-            listener.onExpanded();
+    void notifyOnDragStart(HoverViewState state) {
+        for (OnFloatingTabInteractionListener onFloatingTabInteractionListener : mOnFloatingTabInteractionListeners) {
+            onFloatingTabInteractionListener.onDragStart(state.getStateType());
         }
     }
 
-    void notifyListenersCollapsing() {
-        Log.d(TAG, "Notifying listeners that Hover is collapsing.");
-        for (Listener listener : mListeners) {
-            listener.onCollapsing();
-        }
-    }
-
-    void notifyListenersCollapsed() {
-        Log.d(TAG, "Notifying listeners that Hover is now collapsed.");
-        for (Listener listener : mListeners) {
-            listener.onCollapsed();
-        }
-    }
-
-    void notifyListenersClosing() {
-        Log.d(TAG, "Notifying listeners that Hover is closing.");
-        for (Listener listener : mListeners) {
-            listener.onClosing();
-        }
-    }
-
-    void notifyListenersClosed() {
-        Log.d(TAG, "Notifying listeners that Hover is closed.");
-        for (Listener listener : mListeners) {
-            listener.onClosed();
+    void notifyOnDocked(HoverViewState state) {
+        for (OnFloatingTabInteractionListener onFloatingTabInteractionListener : mOnFloatingTabInteractionListeners) {
+            onFloatingTabInteractionListener.onDocked(state.getStateType());
         }
     }
 
     // Only call this if using HoverMenuView directly in a window.
     public void addToWindow() {
-        mState.addToWindow();
+        if (!mIsAddedToWindow) {
+            mWindowViewController.addView(
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    false,
+                    this
+            );
+
+            mIsAddedToWindow = true;
+
+            if (mIsTouchableInWindow) {
+                makeTouchableInWindow();
+            } else {
+                makeUntouchableInWindow();
+            }
+        }
     }
 
     // Only call this if using HoverMenuView directly in a window.
     public void removeFromWindow() {
-        mState.removeFromWindow();
+        if (mIsAddedToWindow) {
+            mWindowViewController.removeView(this);
+            mIsAddedToWindow = false;
+            release();
+        }
+    }
+
+    @Nullable
+    public TabMessageView getTabMessageView() {
+        if (mScreen == null) {
+            return null;
+        }
+        return mScreen.getTabMessageView(mSelectedSectionId);
     }
 
     void makeTouchableInWindow() {
-        mState.makeTouchableInWindow();
+        mIsTouchableInWindow = true;
+        if (mIsAddedToWindow) {
+            mWindowViewController.makeTouchable(this);
+        }
     }
 
     void makeUntouchableInWindow() {
-        mState.makeUntouchableInWindow();
+        mIsTouchableInWindow = false;
+        if (mIsAddedToWindow) {
+            mWindowViewController.makeUntouchable(this);
+        }
+    }
+
+    public Point getScreenSize() {
+        if (mDragger == null) {
+            final Point screenSize = new Point();
+            ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getSize(screenSize);
+            return screenSize;
+        } else {
+            return mDragger.getContainerSize();
+        }
     }
 
     // State of the HoverMenuView that is persisted across configuration change and other brief OS
@@ -453,7 +576,7 @@ public class HoverView extends RelativeLayout {
         }
 
         public void restore(@NonNull HoverView hoverView, @NonNull HoverMenu menu) {
-            SideDock.SidePosition sidePosition = getSidePosition(menu.getId());
+            SideDock.SidePosition sidePosition = getSidePosition(menu.getId(), hoverView.mInitialDockPosition);
             hoverView.mCollapsedDock = new SideDock(
                     hoverView,
                     hoverView.mTabSize,
@@ -469,10 +592,10 @@ public class HoverView extends RelativeLayout {
                     + ", Section ID: " + selectedSectionId);
         }
 
-        private SideDock.SidePosition getSidePosition(@NonNull String menuId) {
+        private SideDock.SidePosition getSidePosition(@NonNull String menuId, @Nullable SideDock.SidePosition initialDockPosition) {
             return new SideDock.SidePosition(
-                    mPrefs.getInt(menuId + SAVED_STATE_DOCKS_SIDE, LEFT),
-                    mPrefs.getFloat(menuId + SAVED_STATE_DOCK_POSITION, 0.5f)
+                    mPrefs.getInt(menuId + SAVED_STATE_DOCKS_SIDE, initialDockPosition != null ? initialDockPosition.getSide() : RIGHT),
+                    mPrefs.getFloat(menuId + SAVED_STATE_DOCK_POSITION, initialDockPosition != null ? initialDockPosition.getVerticalDockPositionPercentage() : 0.6f)
             );
         }
 
@@ -503,19 +626,54 @@ public class HoverView extends RelativeLayout {
     /**
      * Listener invoked when the corresponding transitions occur within a given {@link HoverView}.
      */
-    public interface Listener {
-
-        void onExpanding();
-
+    public interface OnStateChangeListener {
         void onExpanded();
-
-        void onCollapsing();
 
         void onCollapsed();
 
-        void onClosing();
+        void onPreviewed();
 
         void onClosed();
 
+        void onHidden();
+    }
+
+    public static class DefaultOnStateChangeListener implements OnStateChangeListener {
+        @Override
+        public void onExpanded() {
+        }
+
+        @Override
+        public void onCollapsed() {
+        }
+
+        @Override
+        public void onPreviewed() {
+        }
+
+        @Override
+        public void onClosed() {
+        }
+
+        @Override
+        public void onHidden() {
+        }
+    }
+
+    public interface OnFloatingTabInteractionListener {
+        void onTap(HoverViewStateType stateType);
+
+        void onDragStart(HoverViewStateType stateType);
+
+        void onDocked(HoverViewStateType stateType);
+    }
+
+    public abstract static class OnTabMessageViewInteractionListener implements Dragger.DragListener<TabMessageView> {
+    }
+
+    public interface HoverViewIdleAction {
+        void changeState(View iconView);
+
+        void restoreState(View iconView);
     }
 }

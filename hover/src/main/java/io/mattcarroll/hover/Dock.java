@@ -16,7 +16,7 @@
 package io.mattcarroll.hover;
 
 import android.graphics.Point;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;

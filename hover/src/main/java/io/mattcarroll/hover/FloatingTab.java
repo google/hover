@@ -20,52 +20,47 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Point;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.OvershootInterpolator;
 import android.widget.FrameLayout;
 
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
-
 /**
  * {@code FloatingTab} is the cornerstone of a {@link HoverView}.  When a {@code HoverView} is
  * collapsed, it is reduced to a single {@code FloatingTab} that the user can drag and drop.  When
  * a {@code HoverView} is expanded, that one {@code FloatingTab} slides to a row of tabs that appear
  * and offer a menu system.
- *
+ * <p>
  * A {@code FloatingTab} can move around the screen in various ways. A {@code FloatingTab} can place
  * itself at a "dock position", or slide from its current position to its "dock position", or
  * position itself at an arbitrary location on screen.
- *
+ * <p>
  * {@code FloatingTab}s position themselves based on their center.
  */
-class FloatingTab extends FrameLayout {
+class FloatingTab extends HoverFrameLayout {
 
     private static final String TAG = "FloatingTab";
+    private static final int APPEARING_ANIMATION_DURATION = 300;
 
     private final String mId;
     private int mTabSize;
     private View mTabView;
     private Dock mDock;
-    private final Set<OnPositionChangeListener> mOnPositionChangeListeners = new CopyOnWriteArraySet<>();
-
-    private final OnLayoutChangeListener mOnLayoutChangeListener = new OnLayoutChangeListener() {
-        @Override
-        public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-            notifyListenersOfPositionChange();
-        }
-    };
+    private AnimatorSet mAnimatorSetDisappear;
+    private AnimatorSet mAnimatorSetAppear;
 
     public FloatingTab(@NonNull Context context, @NonNull String tabId) {
         super(context);
         mId = tabId;
         mTabSize = getResources().getDimensionPixelSize(R.dimen.hover_tab_size);
+        setClipChildren(false);
+        setClipToPadding(false);
 
         int padding = getResources().getDimensionPixelSize(R.dimen.hover_tab_margin);
         setPadding(padding, padding, padding, padding);
@@ -74,20 +69,28 @@ class FloatingTab extends FrameLayout {
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
+        updateSize();
+    }
 
+    private void updateSize() {
         // Make this View the desired size.
-        ViewGroup.LayoutParams layoutParams = getLayoutParams();
+        final ViewGroup.LayoutParams layoutParams = getLayoutParams();
         layoutParams.width = mTabSize;
         layoutParams.height = mTabSize;
         setLayoutParams(layoutParams);
+    }
 
-        addOnLayoutChangeListener(mOnLayoutChangeListener);
+    @Override
+    protected void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (mDock != null) {
+            moveCenterTo(mDock.position());
+        }
     }
 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        removeOnLayoutChangeListener(mOnLayoutChangeListener);
     }
 
     public void enableDebugMode(boolean debugMode) {
@@ -99,15 +102,16 @@ class FloatingTab extends FrameLayout {
     }
 
     public void appear(@Nullable final Runnable onAppeared) {
-        AnimatorSet animatorSet = new AnimatorSet();
+        cancelAnimatorSetAppearIfNeeded();
+        mAnimatorSetAppear = new AnimatorSet();
         ObjectAnimator scaleX = ObjectAnimator.ofFloat(this, "scaleX", 0.0f, 1.0f);
-        scaleX.setDuration(250);
         ObjectAnimator scaleY = ObjectAnimator.ofFloat(this, "scaleY", 0.0f, 1.0f);
-        scaleY.setDuration(250);
-        animatorSet.playTogether(scaleX, scaleY);
-        animatorSet.start();
+        mAnimatorSetAppear.setDuration(APPEARING_ANIMATION_DURATION);
+        mAnimatorSetAppear.setInterpolator(new OvershootInterpolator());
+        mAnimatorSetAppear.playTogether(scaleX, scaleY);
+        mAnimatorSetAppear.start();
 
-        animatorSet.addListener(new Animator.AnimatorListener() {
+        mAnimatorSetAppear.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
             }
@@ -132,21 +136,25 @@ class FloatingTab extends FrameLayout {
     }
 
     public void appearImmediate() {
+        cancelAnimatorSetDisappearIfNeeded();
         setVisibility(VISIBLE);
+        setScaleX(1.0f);
+        setScaleY(1.0f);
     }
 
     public void disappear(@Nullable final Runnable onDisappeared) {
-        AnimatorSet animatorSet = new AnimatorSet();
+        cancelAnimatorSetDisappearIfNeeded();
+        mAnimatorSetDisappear = new AnimatorSet();
         ObjectAnimator scaleX = ObjectAnimator.ofFloat(this, "scaleX", 0.0f);
-        scaleX.setDuration(250);
         ObjectAnimator scaleY = ObjectAnimator.ofFloat(this, "scaleY", 0.0f);
-        scaleY.setDuration(250);
-        animatorSet.playTogether(scaleX, scaleY);
-        animatorSet.start();
+        mAnimatorSetDisappear.setDuration(APPEARING_ANIMATION_DURATION);
+        mAnimatorSetDisappear.playTogether(scaleX, scaleY);
+        mAnimatorSetDisappear.start();
 
-        animatorSet.addListener(new Animator.AnimatorListener() {
+        mAnimatorSetDisappear.addListener(new Animator.AnimatorListener() {
             @Override
-            public void onAnimationStart(Animator animation) { }
+            public void onAnimationStart(Animator animation) {
+            }
 
             @Override
             public void onAnimationEnd(Animator animation) {
@@ -158,15 +166,45 @@ class FloatingTab extends FrameLayout {
             }
 
             @Override
-            public void onAnimationCancel(Animator animation) { }
+            public void onAnimationCancel(Animator animation) {
+            }
 
             @Override
-            public void onAnimationRepeat(Animator animation) { }
+            public void onAnimationRepeat(Animator animation) {
+            }
         });
     }
 
     public void disappearImmediate() {
+        cancelAnimatorSetAppearIfNeeded();
         setVisibility(GONE);
+    }
+
+    private void cancelAnimatorSetAppearIfNeeded() {
+        if (mAnimatorSetAppear != null && mAnimatorSetAppear.isRunning()) {
+            mAnimatorSetAppear.cancel();
+            mAnimatorSetAppear = null;
+        }
+    }
+
+    private void cancelAnimatorSetDisappearIfNeeded() {
+        if (mAnimatorSetDisappear != null && mAnimatorSetDisappear.isRunning()) {
+            mAnimatorSetDisappear.cancel();
+            mAnimatorSetDisappear = null;
+        }
+    }
+
+    public void shrink() {
+        mTabSize = getResources().getDimensionPixelSize(R.dimen.hover_tab_size_shrunk);
+        updateSize();
+        setPadding(0, 0, 0, 0);
+    }
+
+    public void expand() {
+        mTabSize = getResources().getDimensionPixelSize(R.dimen.hover_tab_size);
+        updateSize();
+        int padding = getResources().getDimensionPixelSize(R.dimen.hover_tab_margin);
+        setPadding(padding, padding, padding, padding);
     }
 
     @NonNull
@@ -235,39 +273,79 @@ class FloatingTab extends FrameLayout {
 
         animatorSet.addListener(new Animator.AnimatorListener() {
             @Override
-            public void onAnimationStart(Animator animation) { }
+            public void onAnimationStart(Animator animation) {
+            }
 
             @Override
             public void onAnimationEnd(Animator animation) {
                 if (null != onDocked) {
                     onDocked.run();
                 }
-                notifyListenersOfPositionChange();
+                notifyListenersOfPositionChange(FloatingTab.this);
             }
 
             @Override
-            public void onAnimationCancel(Animator animation) { }
+            public void onAnimationCancel(Animator animation) {
+            }
 
             @Override
-            public void onAnimationRepeat(Animator animation) { }
+            public void onAnimationRepeat(Animator animation) {
+            }
         });
 
         xAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                notifyListenersOfPositionChange();
+                notifyListenersOfPositionChange(FloatingTab.this);
+            }
+        });
+    }
+
+    public void closeAnimation(Point targetPosition, @Nullable final Runnable onDocked) {
+        Point destinationCornerPosition = convertCenterToCorner(targetPosition);
+        Log.d(TAG, "Docking to destination point: " + destinationCornerPosition);
+
+        ObjectAnimator xAnimation = ObjectAnimator.ofFloat(this, "x", targetPosition.x);
+        xAnimation.setDuration(500);
+        xAnimation.setInterpolator(new OvershootInterpolator());
+        ObjectAnimator yAnimation = ObjectAnimator.ofFloat(this, "y", targetPosition.y);
+        yAnimation.setDuration(500);
+        yAnimation.setInterpolator(new OvershootInterpolator());
+        AnimatorSet animatorSet = new AnimatorSet();
+        animatorSet.play(xAnimation).with(yAnimation);
+        animatorSet.start();
+
+        animatorSet.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (null != onDocked) {
+                    onDocked.run();
+                }
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
             }
         });
     }
 
     public void dockImmediately() {
-        moveTo(mDock.position());
+        moveCenterTo(mDock.position());
     }
 
-    public void moveTo(@NonNull Point floatPosition) {
-        Point cornerPosition = convertCenterToCorner(floatPosition);
+    public void moveCenterTo(@NonNull Point centerPosition) {
+        Point cornerPosition = convertCenterToCorner(centerPosition);
         setX(cornerPosition.x);
         setY(cornerPosition.y);
+        notifyListenersOfPositionChange(this);
     }
 
     private Point convertCenterToCorner(@NonNull Point centerPosition) {
@@ -277,24 +355,11 @@ class FloatingTab extends FrameLayout {
         );
     }
 
-    public void addOnPositionChangeListener(@Nullable OnPositionChangeListener listener) {
-        mOnPositionChangeListeners.add(listener);
-    }
-
-    public void removeOnPositionChangeListener(@NonNull OnPositionChangeListener listener) {
-        mOnPositionChangeListeners.remove(listener);
-    }
-
-    private void notifyListenersOfPositionChange() {
-        Point position = getPosition();
-        for (OnPositionChangeListener listener : mOnPositionChangeListeners) {
-            listener.onPositionChange(position);
-        }
-    }
-
     private void notifyListenersOfDockChange() {
         for (OnPositionChangeListener listener : mOnPositionChangeListeners) {
-            listener.onDockChange(mDock.position());
+            if (listener instanceof OnFloatingTabChangeListener) {
+                ((OnFloatingTabChangeListener) listener).onDockChange(mDock);
+            }
         }
     }
 
@@ -304,9 +369,7 @@ class FloatingTab extends FrameLayout {
         super.setOnClickListener(onClickListener);
     }
 
-    public interface OnPositionChangeListener {
-        void onPositionChange(@NonNull Point tabPosition);
-
-        void onDockChange(@NonNull Point dockPosition);
+    public interface OnFloatingTabChangeListener extends OnPositionChangeListener {
+        void onDockChange(@NonNull Dock dock);
     }
 }

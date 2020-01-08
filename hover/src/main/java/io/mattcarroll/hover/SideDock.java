@@ -16,10 +16,9 @@
 package io.mattcarroll.hover;
 
 import android.graphics.Point;
-import android.support.annotation.IntDef;
-import android.support.annotation.NonNull;
+import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
 import android.util.Log;
-import android.view.ViewGroup;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -33,12 +32,12 @@ public class SideDock extends Dock {
 
     private static final String TAG = "SideDock";
 
-    private ViewGroup mContainerView;
+    private HoverView mHoverView;
     private int mTabSize;
     private SidePosition mSidePosition;
 
-    SideDock(@NonNull ViewGroup containerView, int tabSize, @NonNull SidePosition sidePosition) {
-        mContainerView = containerView;
+    SideDock(@NonNull HoverView hoverView, int tabSize, @NonNull SidePosition sidePosition) {
+        mHoverView = hoverView;
         mTabSize = tabSize;
         mSidePosition = sidePosition;
     }
@@ -46,8 +45,7 @@ public class SideDock extends Dock {
     @NonNull
     @Override
     public Point position() {
-        Point screenSize = new Point(mContainerView.getWidth(), mContainerView.getHeight());
-        return mSidePosition.calculateDockPosition(screenSize, mTabSize);
+        return mSidePosition.calculateDockPosition(mHoverView.getScreenSize(), mTabSize);
     }
 
     @NonNull
@@ -67,7 +65,6 @@ public class SideDock extends Dock {
         public @interface Side { }
         public static final int LEFT = 0;
         public static final int RIGHT = 1;
-
         @Side
         private int mSide;
         private float mVerticalDockPositionPercentage;

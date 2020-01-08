@@ -15,7 +15,7 @@
  */
 package io.mattcarroll.hover.content.menus;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
