@@ -42,7 +42,7 @@ class Screen {
     private Map<String, FloatingTab> mTabs = new HashMap<>();
     private boolean mIsDebugMode = false;
 
-    Screen(@NonNull ViewGroup hoverMenuContainer) {
+    Screen(@NonNull final ViewGroup hoverMenuContainer) {
         mContainer = hoverMenuContainer;
 
         mShadeView = new ShadeView(mContainer.getContext());
@@ -52,16 +52,16 @@ class Screen {
         ));
         mShadeView.hideImmediate();
 
+        mContentDisplay = new ContentDisplay(mContainer.getContext());
+        mContainer.addView(mContentDisplay);
+        mContentDisplay.setVisibility(GONE);
+
         mExitView = new ExitView(mContainer.getContext());
         mContainer.addView(mExitView, new WindowManager.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
         ));
-        mExitView.setVisibility(GONE);
-
-        mContentDisplay = new ContentDisplay(mContainer.getContext());
-        mContainer.addView(mContentDisplay);
-        mContentDisplay.setVisibility(GONE);
+        mExitView.setVisibility(View.INVISIBLE);
     }
 
     public void enableDrugMode(boolean debugMode) {

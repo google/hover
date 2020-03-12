@@ -113,4 +113,9 @@ class HoverViewStateClosed extends BaseHoverViewState {
     public void onBackPressed() {
         // No-op
     }
+
+    @Override
+    public void onSelectedSectionIdChanged() {
+        // No-op
+    }
 }

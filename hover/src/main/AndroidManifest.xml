@@ -6,6 +6,7 @@
 
     <application android:allowBackup="false">
 
+        <receiver android:name=".utils.HomeWatcher$InnerReceiver" />
     </application>
 
 </manifest>

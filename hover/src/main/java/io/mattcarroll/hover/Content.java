@@ -49,4 +49,5 @@ public interface Content {
      */
     void onHidden();
 
+    boolean onContentBackPressed();
 }

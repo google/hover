@@ -19,7 +19,9 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.view.Gravity;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import io.mattcarroll.hover.Content;
 
@@ -30,7 +32,7 @@ public class HoverMenuScreen implements Content {
 
     private final Context mContext;
     private final String mPageTitle;
-    private final View mWholeScreen;
+    public final View mWholeScreen;
 
     public HoverMenuScreen(@NonNull Context context, @NonNull String pageTitle) {
         mContext = context.getApplicationContext();
@@ -40,7 +42,7 @@ public class HoverMenuScreen implements Content {
 
     @NonNull
     private View createScreenView() {
-        TextView wholeScreen = new TextView(mContext);
+        Button wholeScreen = new Button(mContext);
         wholeScreen.setText("Screen: " + mPageTitle);
         wholeScreen.setGravity(Gravity.CENTER);
         return wholeScreen;
@@ -67,5 +69,11 @@ public class HoverMenuScreen implements Content {
     @Override
     public void onHidden() {
         // No-op.
+    }
+
+    @Override
+    public boolean onContentBackPressed() {
+        Toast.makeText(mContext, "On BackPressed Event", Toast.LENGTH_SHORT).show();
+        return true;
     }
 }

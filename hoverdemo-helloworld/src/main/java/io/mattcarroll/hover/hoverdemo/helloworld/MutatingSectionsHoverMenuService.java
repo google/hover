@@ -196,6 +196,12 @@ public class MutatingSectionsHoverMenuService extends HoverMenuService {
             return new ArrayList<>(mSections);
         }
 
+        @NonNull
+        @Override
+        public void removeAt(int index) {
+            // No-op
+        }
+
         private void insertTab(int position) {
             String id = Integer.toString(mSections.size());
             mSections.add(position, new Section(

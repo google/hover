@@ -21,4 +21,5 @@ package io.mattcarroll.hover;
  */
 public interface OnExitListener {
     void onExit();
+    void onExit(HoverMenu.SectionId sectionId);
 }

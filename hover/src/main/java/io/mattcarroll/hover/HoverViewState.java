@@ -83,4 +83,6 @@ interface HoverViewState {
      * untouchable (touch events pass through the overlay to whatever is beneath).
      */
     void makeUntouchableInWindow();
+
+    void onSelectedSectionIdChanged();
 }

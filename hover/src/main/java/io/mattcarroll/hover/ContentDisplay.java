@@ -44,6 +44,7 @@ class ContentDisplay extends RelativeLayout {
     private TabSelectorView mTabSelectorView;
     private FloatingTab mSelectedTab;
     private Content mContent;
+    private View mBackgroundView;
     private boolean mIsVisible = false;
 
     private final ViewTreeObserver.OnGlobalLayoutListener mMyVisibilityWatcher = new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -60,13 +61,19 @@ class ContentDisplay extends RelativeLayout {
         }
     };
 
+    boolean mIsFirstTime = true;
     private final FloatingTab.OnPositionChangeListener mOnTabPositionChangeListener = new FloatingTab.OnPositionChangeListener() {
         @Override
         public void onPositionChange(@NonNull Point position) {
             Log.d(TAG, mSelectedTab + " tab moved to " + position);
-            updateTabSelectorPosition();
 
-            setPadding(0, position.y + (mSelectedTab.getTabSize() / 2), 0, 0);
+            if (mIsFirstTime) {
+                mIsFirstTime = false;
+                findViewById(R.id.view_content)
+                        .setPadding(0, position.y + (mSelectedTab.getTabSize() / 2) + 5, 0, 0);
+            }
+
+            updateTabSelectorPosition();
 
             // We have received an affirmative position for the selected tab. Show tab selector.
             mTabSelectorView.setVisibility(VISIBLE);
@@ -89,6 +96,8 @@ class ContentDisplay extends RelativeLayout {
         mContainer = findViewById(R.id.container);
         expandToScreenBounds();
 
+        mBackgroundView = (View) findViewById(R.id.view_background);
+
         int backgroundCornerRadiusPx = (int) getResources().getDimension(R.dimen.hover_navigator_corner_radius);
         mTabSelectorView = (TabSelectorView) findViewById(R.id.tabselector);
         mTabSelectorView.setPadding(backgroundCornerRadiusPx, 0, backgroundCornerRadiusPx, 0);
@@ -108,6 +117,10 @@ class ContentDisplay extends RelativeLayout {
         layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
         layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
         setLayoutParams(layoutParams);
+    }
+
+    public View getBackgroundView() {
+        return mBackgroundView;
     }
 
     public void enableDebugMode(boolean debugMode) {

@@ -25,10 +25,12 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.WindowManager;
 
+import io.mattcarroll.hover.HoverMenu;
 import io.mattcarroll.hover.HoverView;
 import io.mattcarroll.hover.OnExitListener;
 import io.mattcarroll.hover.SideDock;
 import io.mattcarroll.hover.overlay.OverlayPermission;
+import io.mattcarroll.hover.utils.HomeWatcher;
 
 /**
  * {@code Service} that presents a {@link HoverView} within a {@code Window}.
@@ -46,6 +48,8 @@ public abstract class HoverMenuService extends Service {
 
     private HoverView mHoverView;
     private boolean mIsRunning;
+    HomeWatcher mHomeWatcher;
+
     private OnExitListener mOnMenuOnExitListener = new OnExitListener() {
         @Override
         public void onExit() {
@@ -53,6 +57,11 @@ public abstract class HoverMenuService extends Service {
             mHoverView.removeFromWindow();
             onHoverMenuExitingByUserRequest();
             stopSelf();
+        }
+
+        @Override
+        public void onExit(HoverMenu.SectionId sectionId) {
+            onTabExitingByUserRequest(sectionId);
         }
     };
 
@@ -64,6 +73,19 @@ public abstract class HoverMenuService extends Service {
             int notificationId = getForegroundNotificationId();
             startForeground(notificationId, foregroundNotification);
         }
+
+        mHomeWatcher = new HomeWatcher(getBaseContext());
+        mHomeWatcher.setOnHomePressedListener(new HomeWatcher.OnHomePressedListener() {
+            @Override
+            public void onHomePressed() {
+                mHoverView.collapse();
+            }
+            @Override
+            public void onHomeLongPressed() {
+                mHoverView.collapse();
+            }
+        });
+        mHomeWatcher.startWatch();
     }
 
     @Override
@@ -97,6 +119,7 @@ public abstract class HoverMenuService extends Service {
         if (mIsRunning) {
             mHoverView.removeFromWindow();
             mIsRunning = false;
+            mHomeWatcher.stopWatch();
         }
     }
 
@@ -155,5 +178,9 @@ public abstract class HoverMenuService extends Service {
      */
     protected void onHoverMenuExitingByUserRequest() {
         // Hook for subclasses.
+    }
+
+    protected void onTabExitingByUserRequest(HoverMenu.SectionId sectionId) {
+
     }
 }

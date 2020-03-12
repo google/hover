@@ -114,5 +114,11 @@ public class SingleSectionHoverMenuService extends HoverMenuService {
         public List<Section> getSections() {
             return Collections.singletonList(mSection);
         }
+
+        @NonNull
+        @Override
+        public void removeAt(int index) {
+
+        }
     }
 }

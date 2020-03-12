@@ -84,6 +84,8 @@ public class SideDock extends Dock {
                     : screenSize.x - ((int) (tabSize * 0.25));
 
             int y = (int) (screenSize.y * mVerticalDockPositionPercentage);
+            y = Math.max(y, tabSize / 2);
+            y = Math.min(y, screenSize.y - tabSize / 2);
 
             return new Point(x, y);
         }

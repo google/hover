@@ -18,6 +18,7 @@ package io.mattcarroll.hover;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.TypedArray;
+import android.graphics.Rect;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
@@ -195,6 +196,11 @@ public class HoverView extends RelativeLayout {
     }
 
     @Override
+    protected void onFocusChanged(boolean gainFocus, int direction, @Nullable Rect previouslyFocusedRect) {
+        super.onFocusChanged(gainFocus, direction, previouslyFocusedRect);
+    }
+
+    @Override
     protected Parcelable onSaveInstanceState() {
         Parcelable superState = super.onSaveInstanceState();
         VisualState visualState = new VisualState(superState);
@@ -246,13 +252,30 @@ public class HoverView extends RelativeLayout {
         mScreen.enableDrugMode(debugMode);
     }
 
+    @NonNull
+    public Dragger createInViewDragger() {
+        Context context = getContext();
+        int touchDiameter = context.getResources().getDimensionPixelSize(R.dimen.hover_exit_radius);
+        int slop = ViewConfiguration.get(context).getScaledTouchSlop();
+        return new InViewDragger(
+                this,
+                touchDiameter,
+                slop
+        );
+    }
+
     void setState(@NonNull HoverViewState state) {
         mState = state;
         mState.takeControl(this);
     }
 
     private void onBackPressed() {
-        mState.onBackPressed();
+        HoverMenu.Section section = mMenu.getSection(mSelectedSectionId);
+        if (section != null) {
+            if (section.getContent().onContentBackPressed()) {
+                mState.onBackPressed();
+            }
+        }
     }
 
     public void setMenu(@Nullable HoverMenu menu) {
@@ -341,6 +364,13 @@ public class HoverView extends RelativeLayout {
 
     void makeUntouchableInWindow() {
         mState.makeUntouchableInWindow();
+    }
+
+    public void setSelectedSetionId(HoverMenu.SectionId sectionId) {
+        if (mMenu.getSection(sectionId) != null && !mSelectedSectionId.equals(sectionId)) {
+            mSelectedSectionId = sectionId;
+            mState.onSelectedSectionIdChanged();
+        }
     }
 
     // State of the HoverMenuView that is persisted across configuration change and other brief OS

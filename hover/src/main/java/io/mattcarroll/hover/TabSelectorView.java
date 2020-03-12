@@ -35,8 +35,8 @@ public class TabSelectorView extends View {
 
     private static final String TAG = "HoverMenuTabSelectorView";
 
-    private static final int DEFAULT_SELECTOR_WIDTH_DP = 24;
-    private static final int DEFAULT_SELECTOR_HEIGHT_DP = 16;
+    private static final int DEFAULT_SELECTOR_WIDTH_DP = 12;
+    private static final int DEFAULT_SELECTOR_HEIGHT_DP = 8;
 
     private int mSelectorWidthPx;
     private int mSelectorHeightPx;
