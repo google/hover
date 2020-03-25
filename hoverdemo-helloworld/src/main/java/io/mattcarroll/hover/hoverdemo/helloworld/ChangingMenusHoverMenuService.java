@@ -155,5 +155,14 @@ public class ChangingMenusHoverMenuService extends HoverMenuService {
         public List<Section> getSections() {
             return new ArrayList<>(mSections);
         }
+
+        @NonNull
+        @Override
+        public void removeAt(int index) {
+            if (mSections.size() > index) {
+                mSections.remove(index);
+                notifyMenuChanged();
+            }
+        }
     }
 }

@@ -41,11 +41,13 @@ import io.mattcarroll.hover.window.HoverMenuService;
 public class MultipleSectionsHoverMenuService extends HoverMenuService {
 
     private static final String TAG = "MultipleSectionsHoverMenuService";
+    static HoverView mHoverView;
 
     @Override
     protected void onHoverMenuLaunched(@NonNull Intent intent, @NonNull HoverView hoverView) {
         hoverView.setMenu(createHoverMenu());
         hoverView.collapse();
+        mHoverView = hoverView;
     }
 
     @NonNull
@@ -56,34 +58,48 @@ public class MultipleSectionsHoverMenuService extends HoverMenuService {
     private static class MultiSectionHoverMenu extends HoverMenu {
 
         private final Context mContext;
-        private final List<Section> mSections;
+        private final ArrayList<Section> mSections;
 
         public MultiSectionHoverMenu(@NonNull Context context) {
             mContext = context.getApplicationContext();
 
-            mSections = Arrays.asList(
-                    new Section(
-                            new SectionId("1"),
-                            createTabView(),
-                            new HoverMenuScreen(mContext, "Screen 1")
-                    ),
-                    new Section(
-                            new SectionId("2"),
-                            createTabView(),
-                            new HoverMenuScreen(mContext, "Screen 2")
-                    ),
-                    new Section(
-                            new SectionId("3"),
-                            createTabView(),
-                            new HoverMenuScreen(mContext, "Screen 3")
-                    )
-            );
+            mSections = new ArrayList<>();
+            mSections.add(new Section(
+                    new SectionId("1"),
+                    createTabView(),
+                    new HoverMenuScreen(mContext, "Screen 1")
+            ));
+            mSections.add(new Section(
+                    new SectionId("2"),
+                    createTabView(),
+                    new HoverMenuScreen(mContext, "Screen 1")
+            ));
+
+            for (int i = 0; i < mSections.size(); i++) {
+                HoverMenuScreen menuScreen = (HoverMenuScreen)mSections.get(i).getContent();
+                menuScreen.mWholeScreen.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        SectionId sectionId = new SectionId(String.valueOf(mSections.size() + 1));
+                        mSections.add(new Section(
+                                sectionId,
+                                createTabView(),
+                                new HoverMenuScreen(mContext, "Screen 1")
+                        ));
+                        notifyMenuChanged();
+                        MultipleSectionsHoverMenuService.mHoverView.setSelectedSetionId(sectionId);
+                    }
+                });
+            }
         }
 
+        int mCounter = 0;
         private View createTabView() {
+            mCounter++;
             ImageView imageView = new ImageView(mContext);
             imageView.setImageResource(R.drawable.tab_background);
-            imageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+            if (mCounter == 1)
+                imageView.setImageResource(R.drawable.tab_background_blue);
             return imageView;
         }
 
@@ -119,6 +135,16 @@ public class MultipleSectionsHoverMenuService extends HoverMenuService {
         public List<Section> getSections() {
             return new ArrayList<>(mSections);
         }
+
+        @NonNull
+        @Override
+        public void removeAt(int index) {
+            if (mSections.size() > index) {
+                mSections.remove(index);
+                notifyMenuChanged();
+            }
+        }
+
     }
 
 }

@@ -54,6 +54,7 @@ class FloatingTab extends FrameLayout {
     private View mTabView;
     private Dock mDock;
     private final Set<OnPositionChangeListener> mOnPositionChangeListeners = new CopyOnWriteArraySet<>();
+    private long mCurrentPlayTime = 0;
 
     private final OnLayoutChangeListener mOnLayoutChangeListener = new OnLayoutChangeListener() {
         @Override
@@ -132,6 +133,13 @@ class FloatingTab extends FrameLayout {
     }
 
     public void appearImmediate() {
+        AnimatorSet animatorSet = new AnimatorSet();
+        ObjectAnimator scaleX = ObjectAnimator.ofFloat(this, "scaleX", 0.0f, 1f);
+        scaleX.setDuration(1);
+        ObjectAnimator scaleY = ObjectAnimator.ofFloat(this, "scaleY", 0.0f, 1f);
+        scaleY.setDuration(1);
+        animatorSet.playTogether(scaleX, scaleY);
+        animatorSet.start();
         setVisibility(VISIBLE);
     }
 
@@ -219,15 +227,15 @@ class FloatingTab extends FrameLayout {
         dock(null);
     }
 
-    public void dock(@Nullable final Runnable onDocked) {
+    public AnimatorSet dockWithDuration(@Nullable final Runnable onDocked, long duration) {
         Point destinationCornerPosition = convertCenterToCorner(mDock.position());
         Log.d(TAG, "Docking to destination point: " + destinationCornerPosition);
 
         ObjectAnimator xAnimation = ObjectAnimator.ofFloat(this, "x", destinationCornerPosition.x);
-        xAnimation.setDuration(500);
+        xAnimation.setDuration(duration);
         xAnimation.setInterpolator(new OvershootInterpolator());
         ObjectAnimator yAnimation = ObjectAnimator.ofFloat(this, "y", destinationCornerPosition.y);
-        yAnimation.setDuration(500);
+        yAnimation.setDuration(duration);
         yAnimation.setInterpolator(new OvershootInterpolator());
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.play(xAnimation).with(yAnimation);
@@ -258,6 +266,50 @@ class FloatingTab extends FrameLayout {
                 notifyListenersOfPositionChange();
             }
         });
+
+        return animatorSet;
+    }
+
+    public void dock(@Nullable final Runnable onDocked) {
+        Point destinationCornerPosition = convertCenterToCorner(mDock.position());
+        Log.d(TAG, "Docking to destination point: " + destinationCornerPosition);
+
+        ObjectAnimator xAnimation = ObjectAnimator.ofFloat(this, "x", destinationCornerPosition.x);
+        xAnimation.setDuration(450);
+        xAnimation.setInterpolator(new OvershootInterpolator());
+        ObjectAnimator yAnimation = ObjectAnimator.ofFloat(this, "y", destinationCornerPosition.y);
+        yAnimation.setDuration(450);
+        yAnimation.setInterpolator(new OvershootInterpolator());
+        AnimatorSet animatorSet = new AnimatorSet();
+        animatorSet.play(xAnimation).with(yAnimation);
+
+        animatorSet.start();
+
+        animatorSet.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) { }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (null != onDocked) {
+                    onDocked.run();
+                }
+                notifyListenersOfPositionChange();
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) { }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+            }
+        });
+        xAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                notifyListenersOfPositionChange();
+            }
+        });
     }
 
     public void dockImmediately() {
@@ -278,6 +330,7 @@ class FloatingTab extends FrameLayout {
     }
 
     public void addOnPositionChangeListener(@Nullable OnPositionChangeListener listener) {
+        if (mOnPositionChangeListeners.contains(listener)) return;
         mOnPositionChangeListeners.add(listener);
     }
 
@@ -285,11 +338,14 @@ class FloatingTab extends FrameLayout {
         mOnPositionChangeListeners.remove(listener);
     }
 
+    int mCount = 0;
     private void notifyListenersOfPositionChange() {
         Point position = getPosition();
         for (OnPositionChangeListener listener : mOnPositionChangeListeners) {
             listener.onPositionChange(position);
         }
+        mCount++;
+        Log.d("XXXXXX", String.valueOf(mCount));
     }
 
     private void notifyListenersOfDockChange() {

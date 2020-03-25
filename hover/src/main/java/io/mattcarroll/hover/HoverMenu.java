@@ -59,6 +59,9 @@ public abstract class HoverMenu {
     @NonNull
     public abstract List<Section> getSections();
 
+    @NonNull
+    public abstract void removeAt(int index);
+
     void setUpdatedCallback(@Nullable ListUpdateCallback listUpdatedCallback) {
         mListUpdateCallback = listUpdatedCallback;
     }
@@ -112,11 +115,13 @@ public abstract class HoverMenu {
         private final SectionId mId;
         private final View mTabView;
         private final Content mContent;
+        private int mDisplayTypes;
 
         public Section(@NonNull SectionId id, @NonNull View tabView, @NonNull Content content) {
             mId = id;
             mTabView = tabView;
             mContent = content;
+            mDisplayTypes = Section.DisplayType.COLLAPSED | Section.DisplayType.EXPAND;
         }
 
         @NonNull
@@ -132,6 +137,26 @@ public abstract class HoverMenu {
         @NonNull
         public Content getContent() {
             return mContent;
+        }
+
+        @NonNull
+        public void setDisplayTypes(int displayTypes) {
+            mDisplayTypes = displayTypes;
+        }
+
+        @NonNull
+        public int getDisplayTypes() {
+            return mDisplayTypes;
+        }
+
+        @NonNull
+        public boolean isContainsDisplayType(int displayType) {
+            return (getDisplayTypes() & displayType) != 0;
+        }
+
+        public static class DisplayType {
+            public static final int COLLAPSED = 1;
+            public static final int EXPAND = 2;
         }
     }
 
@@ -166,7 +191,8 @@ public abstract class HoverMenu {
             Section newSection = mNewList.get(newItemPosition);
 
             return oldSection.mTabView.equals(newSection.getTabView())
-                    && oldSection.getContent().equals(newSection.getContent());
+                    && oldSection.getContent().equals(newSection.getContent())
+                    && oldSection.getDisplayTypes() == newSection.getDisplayTypes();
         }
     }
 }

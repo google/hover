@@ -182,4 +182,10 @@ public class ToolbarNavigator extends Navigator implements Content {
         // Do nothing.
     }
 
+    @Override
+    public boolean onContentBackPressed() {
+        // Do nothing.
+        return true;
+    }
+
 }

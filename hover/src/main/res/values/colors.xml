@@ -8,4 +8,8 @@
     <color name="hover_content_menu_divider_color">#CCCCCC</color>
     <color name="hover_content_menu_title_color">#AAAAAA</color>
     <color name="hover_content_menu_item_title_color">#666666</color>
+
+    <color name="exit_view_in_exit_fill_color">#55FF2222</color>
+    <color name="exit_view_in_exit_stroke_color">#FFFF2222</color>
+    <color name="exit_view_out_exit_fill_color">#55000000</color>
 </resources>
