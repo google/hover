@@ -108,8 +108,8 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         }
         mDragListener = new FloatingTabDragListener(this);
         mIsCollapsed = false; // We're collapsing, not yet collapsed.
+        mHoverView.notifyListenersCollapsing();
         if (null != mListener) {
-            mHoverView.notifyListenersCollapsing();
             mListener.onCollapsing();
         }
         initDockPosition();
@@ -407,8 +407,11 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
                 mFloatingTab.getTabSize()
         );
         mFloatingTab.moveTo(dockPosition);
-        for (int i = 0; i < mChainedTabs.size(); i++)
+        for (int i = 0; i < mChainedTabs.size(); i++) {
             mChainedTabs.get(i).moveTo(dockPosition);
+        }
+        deactivateDragger();
+        activateDragger();
     }
 
     private void initDockPosition() {
@@ -431,9 +434,9 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         boolean didJustCollapse = !mIsCollapsed;
         mIsCollapsed = true;
         mHoverView.saveVisualState();
+        mHoverView.notifyListenersCollapsed();
         if (null != mListener) {
             if (didJustCollapse) {
-                mHoverView.notifyListenersCollapsed();
                 mListener.onCollapsed();
             }
             mListener.onDocked();

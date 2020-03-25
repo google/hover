@@ -19,6 +19,7 @@ import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.os.Build;
 import android.support.annotation.NonNull;
+import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
@@ -41,7 +42,7 @@ public class WindowViewController {
 
         int windowType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                 ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-                : WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;
+                : WindowManager.LayoutParams.TYPE_PRIORITY_PHONE;
 
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 width,
@@ -50,11 +51,19 @@ public class WindowViewController {
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS | touchableFlag,
                 PixelFormat.TRANSLUCENT
         );
-        params.gravity = Gravity.TOP | Gravity.LEFT;
+        params.gravity = Gravity.TOP | Gravity.START;
         params.x = 0;
         params.y = 0;
 
         mWindowManager.addView(view, params);
+    }
+
+    public Point getScreenSize() {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        mWindowManager.getDefaultDisplay().getMetrics(displayMetrics);
+        int height = displayMetrics.heightPixels;
+        int width = displayMetrics.widthPixels;
+        return new Point(width, height);
     }
 
     public void removeView(@NonNull View view) {

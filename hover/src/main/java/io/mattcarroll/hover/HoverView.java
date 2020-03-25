@@ -18,6 +18,7 @@ package io.mattcarroll.hover;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.TypedArray;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -364,6 +365,10 @@ public class HoverView extends RelativeLayout {
 
     void makeUntouchableInWindow() {
         mState.makeUntouchableInWindow();
+    }
+
+    public Point getScreenSize() {
+        return mWindowViewController.getScreenSize();
     }
 
     public void setSelectedSetionId(HoverMenu.SectionId sectionId) {
