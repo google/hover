@@ -41,7 +41,7 @@ public class WindowViewController {
 
         int windowType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                 ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-                : WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;
+                : WindowManager.LayoutParams.TYPE_PRIORITY_PHONE;
 
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 width,
@@ -50,7 +50,7 @@ public class WindowViewController {
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS | touchableFlag,
                 PixelFormat.TRANSLUCENT
         );
-        params.gravity = Gravity.TOP | Gravity.LEFT;
+        params.gravity = Gravity.TOP | Gravity.START;
         params.x = 0;
         params.y = 0;
 

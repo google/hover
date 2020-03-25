@@ -48,6 +48,40 @@ public class MultipleSectionsHoverMenuService extends HoverMenuService {
         hoverView.setMenu(createHoverMenu());
         hoverView.collapse();
         mHoverView = hoverView;
+
+        mHoverView.addOnExpandAndCollapseListener(new HoverView.Listener() {
+            @Override
+            public void onExpanding() {
+
+            }
+
+            @Override
+            public void onExpanded() {
+
+            }
+
+            @Override
+            public void onCollapsing() {
+                int a = 10;
+                a += 2;
+            }
+
+            @Override
+            public void onCollapsed() {
+                int a = 10;
+                a += 2;
+            }
+
+            @Override
+            public void onClosing() {
+
+            }
+
+            @Override
+            public void onClosed() {
+
+            }
+        });
     }
 
     @NonNull
@@ -72,25 +106,8 @@ public class MultipleSectionsHoverMenuService extends HoverMenuService {
             mSections.add(new Section(
                     new SectionId("2"),
                     createTabView(),
-                    new HoverMenuScreen(mContext, "Screen 1")
+                    new HoverMenuScreen(mContext, "Screen 2")
             ));
-
-            for (int i = 0; i < mSections.size(); i++) {
-                HoverMenuScreen menuScreen = (HoverMenuScreen)mSections.get(i).getContent();
-                menuScreen.mWholeScreen.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        SectionId sectionId = new SectionId(String.valueOf(mSections.size() + 1));
-                        mSections.add(new Section(
-                                sectionId,
-                                createTabView(),
-                                new HoverMenuScreen(mContext, "Screen 1")
-                        ));
-                        notifyMenuChanged();
-                        MultipleSectionsHoverMenuService.mHoverView.setSelectedSetionId(sectionId);
-                    }
-                });
-            }
         }
 
         int mCounter = 0;
