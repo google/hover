@@ -18,10 +18,13 @@ package io.mattcarroll.hover.hoverdemo.helloworld;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.codecanon.hover.hoverdemo.helloworld.R;
 
 import io.mattcarroll.hover.Content;
 
@@ -42,10 +45,7 @@ public class HoverMenuScreen implements Content {
 
     @NonNull
     private View createScreenView() {
-        Button wholeScreen = new Button(mContext);
-        wholeScreen.setText("Screen: " + mPageTitle);
-        wholeScreen.setGravity(Gravity.CENTER);
-        return wholeScreen;
+        return LayoutInflater.from(mContext).inflate(R.layout.layout_page, null, false);
     }
 
     // Make sure that this method returns the SAME View.  It should NOT create a new View each time
