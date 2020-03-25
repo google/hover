@@ -34,6 +34,11 @@ abstract class BaseHoverViewState implements HoverViewState {
     @Override
     public void addToWindow() {
         if (!mHoverView.mIsAddedToWindow) {
+            mHoverView.mWindowViewController.addViewBackground(
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    false,
+                    mHoverView.mScreen.getShadeView());
             mHoverView.mWindowViewController.addView(
                     WindowManager.LayoutParams.MATCH_PARENT,
                     WindowManager.LayoutParams.MATCH_PARENT,
@@ -56,6 +61,7 @@ abstract class BaseHoverViewState implements HoverViewState {
     public void removeFromWindow() {
         if (mHoverView.mIsAddedToWindow) {
             mHoverView.mWindowViewController.removeView(mHoverView);
+            mHoverView.mWindowViewController.removeView(mHoverView.mScreen.getShadeView());
             mHoverView.mIsAddedToWindow = false;
         }
     }

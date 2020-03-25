@@ -18,6 +18,7 @@ package io.mattcarroll.hover;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.TypedArray;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -26,6 +27,7 @@ import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.RelativeLayout;
 
@@ -90,9 +92,9 @@ public class HoverView extends RelativeLayout {
     final HoverViewState mCollapsed = new HoverViewStateCollapsed();
     final HoverViewState mExpanded = new HoverViewStateExpanded();
     final WindowViewController mWindowViewController;
-    final Dragger mDragger;
     final Screen mScreen;
     HoverViewState mState;
+    Dragger mDragger;
     HoverMenu mMenu;
     HoverMenu.SectionId mSelectedSectionId;
     SideDock mCollapsedDock;
@@ -102,6 +104,8 @@ public class HoverView extends RelativeLayout {
     int mTabSize;
     OnExitListener mOnExitListener;
     final Set<Listener> mListeners = new CopyOnWriteArraySet<>();
+    final Set<CollapsedListener> mCollapsedListeners = new CopyOnWriteArraySet<>();
+    View mBackgroundView;
 
     // Public for use with XML inflation. Clients should use static methods for construction.
     public HoverView(@NonNull Context context, @Nullable AttributeSet attrs) {
@@ -136,6 +140,8 @@ public class HoverView extends RelativeLayout {
         mDragger = dragger;
         mScreen = new Screen(this);
         mWindowViewController = windowViewController;
+        mBackgroundView = new View(context);
+        mBackgroundView.setBackgroundColor(context.getResources().getColor(R.color.hover_shade_color));
 
         init();
 
@@ -306,6 +312,14 @@ public class HoverView extends RelativeLayout {
         mListeners.remove(listener);
     }
 
+    public void addOnCollapsedListener(@NonNull CollapsedListener listener) {
+        mCollapsedListeners.add(listener);
+    }
+
+    public void removeOnCollapsedListener(@NonNull CollapsedListener listener) {
+        mCollapsedListeners.remove(listener);
+    }
+
     void notifyListenersExpanding() {
         Log.d(TAG, "Notifying listeners that Hover is expanding.");
         for (Listener listener : mListeners) {
@@ -348,6 +362,12 @@ public class HoverView extends RelativeLayout {
         }
     }
 
+    void notifyCollapsedListenerChangeCollapsedDockPosition(Point position) {
+        for (CollapsedListener listener : mCollapsedListeners) {
+            listener.onChangeCollapsedDockPosition(position);
+        }
+    }
+
     // Only call this if using HoverMenuView directly in a window.
     public void addToWindow() {
         mState.addToWindow();
@@ -355,7 +375,12 @@ public class HoverView extends RelativeLayout {
 
     // Only call this if using HoverMenuView directly in a window.
     public void removeFromWindow() {
-        mState.removeFromWindow();
+        removeAllViews();
+        if (mMenu != null) mMenu.clear();
+        if (mState != null) mState.removeFromWindow();
+        mState = null;
+        mMenu = null;
+        mSelectedSectionId = null;
     }
 
     void makeTouchableInWindow() {
@@ -364,6 +389,14 @@ public class HoverView extends RelativeLayout {
 
     void makeUntouchableInWindow() {
         mState.makeUntouchableInWindow();
+    }
+
+    public Point getScreenSize() {
+        return mWindowViewController.getScreenSize();
+    }
+
+    public WindowViewController getWindowViewController() {
+        return mWindowViewController;
     }
 
     public void setSelectedSetionId(HoverMenu.SectionId sectionId) {
@@ -546,6 +579,9 @@ public class HoverView extends RelativeLayout {
         void onClosing();
 
         void onClosed();
+    }
 
+    public interface CollapsedListener {
+        void onChangeCollapsedDockPosition(Point position);
     }
 }

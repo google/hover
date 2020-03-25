@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 
+import io.mattcarroll.hover.utils.ViewUtils;
+
 import static android.view.View.GONE;
 import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
@@ -52,14 +54,13 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     private boolean mHasControl = false;
     private boolean mIsCollapsed = false;
     private boolean mIsDocked = false;
-    private Dragger.DragListener mDragListener;
+    private FloatingTabDragListener mDragListener;
     private Listener mListener;
 
     private List<FloatingTab> mChainedTabs = new ArrayList<>();
     private Queue<Point> mHistory = new ArrayDeque<>();
-    private int mDistanceBetweenChainedTabs = 2;
     private boolean mIsInExitView = false;
-    FloatingTab.OnPositionChangeListener mOnPositionChangeListener;
+    private FloatingTab.OnPositionChangeListener mOnPositionChangeListener;
 
     private final View.OnLayoutChangeListener mOnLayoutChangeListener = new View.OnLayoutChangeListener() {
         @Override
@@ -108,8 +109,8 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         }
         mDragListener = new FloatingTabDragListener(this);
         mIsCollapsed = false; // We're collapsing, not yet collapsed.
+        mHoverView.notifyListenersCollapsing();
         if (null != mListener) {
-            mHoverView.notifyListenersCollapsing();
             mListener.onCollapsing();
         }
         initDockPosition();
@@ -197,8 +198,12 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         mHasControl = false;
         mIsDocked = false;
         deactivateDragger();
-        mDragListener = null;
+        if (mDragListener != null) {
+            mDragListener.detach();
+            mDragListener = null;
+        }
         mFloatingTab = null;
+        mSelectedSection = null;
 
         mChainedTabs.clear();
         mOnPositionChangeListener = null;
@@ -231,8 +236,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
             @Override
             public void onInserted(int position, int count) {
                 for (int i = position; i < position + count; i++) {
-                    int sectionIndex = i;
-                    HoverMenu.Section section = mHoverView.mMenu.getSection(sectionIndex);
+                    HoverMenu.Section section = mHoverView.mMenu.getSection(i);
                     FloatingTab floatingTab = mHoverView.mScreen.createChainedTab(section.getId(), section.getTabView());
                     mChainedTabs.add(floatingTab);
                     floatingTab.appear(null);
@@ -315,16 +319,18 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         mListener = listener;
     }
 
+    private void onFloatingTabPressed() {
+        ViewUtils.scale(mFloatingTab, 0.8f);
+    }
+
     private void onPickedUpByUser() {
         mIsDocked = false;
-        mHoverView.mScreen.getExitView().setVisibility(VISIBLE);
         if (null != mListener) {
             mListener.onDragStart();
         }
     }
 
     private void onDroppedByUser() {
-        mHoverView.mScreen.getExitView().setVisibility(GONE);
         if (null != mListener) {
             mListener.onDragEnd();
         }
@@ -380,7 +386,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
 
                 @Override
                 public void onDockChange(@NonNull Point dockPosition) {
-
+                    mHoverView.notifyCollapsedListenerChangeCollapsedDockPosition(dockPosition);
                 }
             };
             mFloatingTab.addOnPositionChangeListener(mOnPositionChangeListener);
@@ -389,6 +395,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
 
     private void sendToDock() {
         Log.d(TAG, "Sending floating tab to dock.");
+        mIsDocked = false;
         deactivateDragger();
         mFloatingTab.setDock(mHoverView.mCollapsedDock);
         mFloatingTab.dock(new Runnable() {
@@ -402,13 +409,17 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
 
     private void moveToDock() {
         Log.d(TAG, "Moving floating tag to dock.");
-        Point dockPosition = mHoverView.mCollapsedDock.sidePosition().calculateDockPosition(
+        final Point dockPosition = mHoverView.mCollapsedDock.sidePosition().calculateDockPosition(
                 new Point(mHoverView.mScreen.getWidth(), mHoverView.mScreen.getHeight()),
                 mFloatingTab.getTabSize()
         );
+        mHoverView.notifyCollapsedListenerChangeCollapsedDockPosition(dockPosition);
         mFloatingTab.moveTo(dockPosition);
-        for (int i = 0; i < mChainedTabs.size(); i++)
+        for (int i = 0; i < mChainedTabs.size(); i++) {
             mChainedTabs.get(i).moveTo(dockPosition);
+        }
+        deactivateDragger();
+        activateDragger();
     }
 
     private void initDockPosition() {
@@ -488,6 +499,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
             for (int i = 0; i < mChainedTabs.size(); i++) {
                 if (i == mSelectedSectionIndex) continue;
                 count++;
+                int mDistanceBetweenChainedTabs = 2;
                 if (history.length >= mDistanceBetweenChainedTabs * count) {
                     mChainedTabs.get(i).moveTo((Point) history[history.length - mDistanceBetweenChainedTabs * count]);
                 }
@@ -521,7 +533,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
 
     private static final class FloatingTabDragListener implements Dragger.DragListener {
 
-        private final HoverViewStateCollapsed mOwner;
+        private HoverViewStateCollapsed mOwner;
 
         private FloatingTabDragListener(@NonNull HoverViewStateCollapsed owner) {
             mOwner = owner;
@@ -529,6 +541,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
 
         @Override
         public void onPress(float x, float y) {
+            ViewUtils.scale(mOwner.mFloatingTab, 0.9f);
         }
 
         @Override
@@ -537,18 +550,30 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         }
 
         @Override
-        public void onDragTo(float x, float y) {
-            mOwner.moveTabTo(new Point((int) x, (int) y));
+        public void onDragTo(float x, float y, boolean isTouchWithinSlopOfOriginalTouch) {
+            Point point = new Point((int) x, (int) y);
+            if (!isTouchWithinSlopOfOriginalTouch) {
+                mOwner.mHoverView.mScreen.getExitView()
+                        .prepareExit(point);
+            }
+            mOwner.moveTabTo(point);
         }
 
         @Override
         public void onReleasedAt(float x, float y) {
+            mOwner.mHoverView.mScreen.getExitView().releaseExit();
+            ViewUtils.scale(mOwner.mFloatingTab, 1f);
             mOwner.onDroppedByUser();
         }
 
         @Override
         public void onTap() {
+            ViewUtils.scaleAfter(mOwner.mFloatingTab, 1f);
             mOwner.onTap();
+        }
+
+        public void detach() {
+            mOwner = null;
         }
     }
 }

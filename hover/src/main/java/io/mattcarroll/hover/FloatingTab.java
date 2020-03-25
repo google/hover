@@ -281,7 +281,7 @@ class FloatingTab extends FrameLayout {
         yAnimation.setDuration(450);
         yAnimation.setInterpolator(new OvershootInterpolator());
         AnimatorSet animatorSet = new AnimatorSet();
-        animatorSet.play(xAnimation).with(yAnimation);
+        animatorSet.playTogether(xAnimation, yAnimation);
 
         animatorSet.start();
 
@@ -338,14 +338,11 @@ class FloatingTab extends FrameLayout {
         mOnPositionChangeListeners.remove(listener);
     }
 
-    int mCount = 0;
     private void notifyListenersOfPositionChange() {
         Point position = getPosition();
         for (OnPositionChangeListener listener : mOnPositionChangeListeners) {
             listener.onPositionChange(position);
         }
-        mCount++;
-        Log.d("XXXXXX", String.valueOf(mCount));
     }
 
     private void notifyListenersOfDockChange() {

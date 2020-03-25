@@ -27,6 +27,8 @@ import org.codecanon.hover.hoverdemo.helloworld.R;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 
 import io.mattcarroll.hover.HoverMenu;
 import io.mattcarroll.hover.HoverView;
@@ -48,40 +50,6 @@ public class MultipleSectionsHoverMenuService extends HoverMenuService {
         hoverView.setMenu(createHoverMenu());
         hoverView.collapse();
         mHoverView = hoverView;
-
-        mHoverView.addOnExpandAndCollapseListener(new HoverView.Listener() {
-            @Override
-            public void onExpanding() {
-
-            }
-
-            @Override
-            public void onExpanded() {
-
-            }
-
-            @Override
-            public void onCollapsing() {
-                int a = 10;
-                a += 2;
-            }
-
-            @Override
-            public void onCollapsed() {
-                int a = 10;
-                a += 2;
-            }
-
-            @Override
-            public void onClosing() {
-
-            }
-
-            @Override
-            public void onClosed() {
-
-            }
-        });
     }
 
     @NonNull

@@ -19,6 +19,7 @@ import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.os.Build;
 import android.support.annotation.NonNull;
+import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
@@ -34,6 +35,33 @@ public class WindowViewController {
         mWindowManager = windowManager;
     }
 
+    public void addViewBackground(int width, int height, boolean isTouchable, @NonNull View view) {
+        // If this view is untouchable then add the corresponding flag, otherwise set to zero which
+        // won't have any effect on the OR'ing of flags.
+        int touchableFlag = isTouchable ? 0 : WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
+
+        int windowType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                : WindowManager.LayoutParams.TYPE_PRIORITY_PHONE;
+
+        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                width,
+                height,
+                windowType,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | touchableFlag,
+                PixelFormat.TRANSLUCENT
+        );
+        if (Build.VERSION.SDK_INT >= 21) {
+            params.flags |= WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
+        }
+
+        params.gravity = Gravity.TOP | Gravity.START;
+        params.x = 0;
+        params.y = 0;
+
+        mWindowManager.addView(view, params);
+    }
+
     public void addView(int width, int height, boolean isTouchable, @NonNull View view) {
         // If this view is untouchable then add the corresponding flag, otherwise set to zero which
         // won't have any effect on the OR'ing of flags.
@@ -47,14 +75,52 @@ public class WindowViewController {
                 width,
                 height,
                 windowType,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS | touchableFlag,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | touchableFlag,
                 PixelFormat.TRANSLUCENT
         );
+
+        if (Build.VERSION.SDK_INT >= 19) {
+            params.flags |= WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
+        }
+        view.setFitsSystemWindows(true);
+        params.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
         params.gravity = Gravity.TOP | Gravity.START;
         params.x = 0;
         params.y = 0;
 
         mWindowManager.addView(view, params);
+    }
+
+    public void addViewDragger(int width, int height, boolean isTouchable, @NonNull View view) {
+        // If this view is untouchable then add the corresponding flag, otherwise set to zero which
+        // won't have any effect on the OR'ing of flags.
+        int touchableFlag = isTouchable ? 0 : WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
+
+        int windowType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                : WindowManager.LayoutParams.TYPE_PRIORITY_PHONE;
+
+        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                width,
+                height,
+                windowType,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | touchableFlag,
+                PixelFormat.TRANSLUCENT
+        );
+
+        params.gravity = Gravity.TOP | Gravity.START;
+        params.x = 0;
+        params.y = 0;
+
+        mWindowManager.addView(view, params);
+    }
+
+    public Point getScreenSize() {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        mWindowManager.getDefaultDisplay().getMetrics(displayMetrics);
+        int height = displayMetrics.heightPixels;
+        int width = displayMetrics.widthPixels;
+        return new Point(width, height);
     }
 
     public void removeView(@NonNull View view) {

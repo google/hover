@@ -60,6 +60,11 @@ public abstract class HoverMenu {
     public abstract List<Section> getSections();
 
     @NonNull
+    public void clear() {
+        mSections.clear();
+    }
+
+    @NonNull
     public abstract void removeAt(int index);
 
     void setUpdatedCallback(@Nullable ListUpdateCallback listUpdatedCallback) {

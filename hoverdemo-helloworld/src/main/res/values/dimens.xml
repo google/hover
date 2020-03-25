@@ -4,5 +4,5 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="hover_tab_size">65dp</dimen>
     <color name="hover_navigator_color">#FFFFFFFF</color>
-    <color name="hover_shade_color">#44000000</color>
+    <color name="hover_shade_color">#CC000000</color>
 </resources>

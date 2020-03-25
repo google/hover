@@ -34,6 +34,7 @@ class ShadeView extends FrameLayout {
 
     public ShadeView(@NonNull Context context) {
         this(context, null);
+        init();
     }
 
     public ShadeView(@NonNull Context context, @Nullable AttributeSet attrs) {

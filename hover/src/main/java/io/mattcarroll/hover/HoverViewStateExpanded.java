@@ -268,6 +268,7 @@ class HoverViewStateExpanded extends BaseHoverViewState {
         }
         mDragListeners.clear();
         mDraggers.clear();
+        mSections.clear();
 
         mHasControl = false;
         mHasMenu = false;
@@ -635,16 +636,6 @@ class HoverViewStateExpanded extends BaseHoverViewState {
     }
 
     private void onPickedUpByUser(Point point, FloatingTab floatingTab) {
-        mIsDocked = false;
-        if (mHoverView.mSelectedSectionId.equals(mSections.get(floatingTab).getId())) {
-            ViewUtils.fadeOut(mHoverView.mScreen.getContentDisplay());
-        }
-        for (FloatingTab otherTab : mChainedTabs) {
-            if (otherTab != floatingTab) {
-                deactivateDragger(otherTab);
-            }
-        }
-        mHoverView.mScreen.getExitView().prepareExit(point);
         if (null != mListener) {
             mListener.onDragStart(mSections.get(floatingTab).getId());
         }
@@ -726,7 +717,7 @@ class HoverViewStateExpanded extends BaseHoverViewState {
 
     private boolean mIsInExitView = false;
 
-    private void moveTabTo(@NonNull Point position, FloatingTab floatingTab) {
+    private void moveTabTo(@NonNull Point position, FloatingTab floatingTab, boolean isTouchWithinSlopOfOriginalTouch) {
         ExitView exitView = mHoverView.mScreen.getExitView();
         boolean isCannotMove = exitView.receiveTabPosition(position);
         if (isCannotMove) {
@@ -738,6 +729,19 @@ class HoverViewStateExpanded extends BaseHoverViewState {
         } else {
             mIsInExitView = false;
             floatingTab.moveTo(position);
+        }
+
+        if (!isTouchWithinSlopOfOriginalTouch && mIsDocked) {
+            mIsDocked = false;
+            if (mHoverView.mSelectedSectionId.equals(mSections.get(floatingTab).getId())) {
+                ViewUtils.fadeOut(mHoverView.mScreen.getContentDisplay());
+            }
+
+            for (FloatingTab otherTab : mChainedTabs) {
+                if (otherTab != floatingTab) {
+                    deactivateDragger(otherTab);
+                }
+            }
         }
     }
 
@@ -785,6 +789,7 @@ class HoverViewStateExpanded extends BaseHoverViewState {
 
         @Override
         public void onPress(float x, float y) {
+            ViewUtils.scale(mFloatingTab, 0.9f);
         }
 
         @Override
@@ -793,17 +798,23 @@ class HoverViewStateExpanded extends BaseHoverViewState {
         }
 
         @Override
-        public void onDragTo(float x, float y) {
-            mOwner.moveTabTo(new Point((int) x, (int) y), mFloatingTab);
+        public void onDragTo(float x, float y, boolean isTouchWithinSlopOfOriginalTouch) {
+            Point point = new Point((int) x, (int) y);
+            if (!isTouchWithinSlopOfOriginalTouch) {
+                mOwner.mHoverView.mScreen.getExitView().prepareExit(point);
+            }
+            mOwner.moveTabTo(point, mFloatingTab, isTouchWithinSlopOfOriginalTouch);
         }
 
         @Override
         public void onReleasedAt(float x, float y) {
+            ViewUtils.scale(mFloatingTab, 1f);
             mOwner.onDroppedByUser(mFloatingTab);
         }
 
         @Override
         public void onTap() {
+            ViewUtils.scaleAfter(mFloatingTab, 1f);
             mOwner.onTap(mFloatingTab);
         }
     }

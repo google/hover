@@ -63,7 +63,7 @@ public interface Dragger {
          * @param x x-coordinate of the user's drag (in the parent View's coordinate space)
          * @param y y-coordiante of the user's drag (in the parent View's coordinate space)
          */
-        void onDragTo(float x, float y);
+        void onDragTo(float x, float y, boolean isTouchWithinSlopOfOriginalTouch);
 
         /**
          * The user has stopped touching the drag area.

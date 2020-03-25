@@ -37,7 +37,7 @@ public class HoverMenuScreen implements Content {
     private final String mPageTitle;
     public final View mWholeScreen;
 
-    public HoverMenuScreen(@NonNull Context context, @NonNull String pageTitle) {
+    public HoverMenuScreen(@NonNull final Context context, @NonNull String pageTitle) {
         mContext = context.getApplicationContext();
         mPageTitle = pageTitle;
         mWholeScreen = createScreenView();

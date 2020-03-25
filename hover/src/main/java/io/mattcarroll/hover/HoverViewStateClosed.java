@@ -64,6 +64,12 @@ class HoverViewStateClosed extends BaseHoverViewState {
     }
 
     @Override
+    public void removeFromWindow() {
+        mHoverView = null;
+        super.removeFromWindow();
+    }
+
+    @Override
     public void expand() {
         if (null != mHoverView.mMenu) {
             Log.d(TAG, "Expanding.");

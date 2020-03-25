@@ -21,6 +21,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.RelativeLayout;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,6 +40,7 @@ class Screen {
     private ContentDisplay mContentDisplay;
     private ExitView mExitView;
     private ShadeView mShadeView;
+    private ViewGroup mTabContainer;
     private Map<String, FloatingTab> mTabs = new HashMap<>();
     private boolean mIsDebugMode = false;
 
@@ -46,15 +48,21 @@ class Screen {
         mContainer = hoverMenuContainer;
 
         mShadeView = new ShadeView(mContainer.getContext());
-        mContainer.addView(mShadeView, new WindowManager.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-        ));
+//        mContainer.addView(mShadeView, new WindowManager.LayoutParams(
+//                ViewGroup.LayoutParams.MATCH_PARENT,
+//                ViewGroup.LayoutParams.MATCH_PARENT
+//        ));
         mShadeView.hideImmediate();
 
         mContentDisplay = new ContentDisplay(mContainer.getContext());
         mContainer.addView(mContentDisplay);
         mContentDisplay.setVisibility(GONE);
+
+        mTabContainer = new RelativeLayout(mContainer.getContext());
+        mContainer.addView(mTabContainer, new WindowManager.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+        ));
 
         mExitView = new ExitView(mContainer.getContext());
         mContainer.addView(mExitView, new WindowManager.LayoutParams(
@@ -100,7 +108,8 @@ class Screen {
             FloatingTab chainedTab = new FloatingTab(mContainer.getContext(), tabId);
             chainedTab.setTabView(tabView);
             chainedTab.enableDebugMode(mIsDebugMode);
-            mContainer.addView(chainedTab);
+
+            mTabContainer.addView(chainedTab);
             mTabs.put(tabId, chainedTab);
             return chainedTab;
         }

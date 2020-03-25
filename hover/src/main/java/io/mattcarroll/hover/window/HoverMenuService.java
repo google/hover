@@ -110,7 +110,7 @@ public abstract class HoverMenuService extends Service {
             initHoverMenu(intent);
         }
 
-        return START_STICKY;
+        return START_NOT_STICKY;
     }
 
     @Override
@@ -120,6 +120,8 @@ public abstract class HoverMenuService extends Service {
             mHoverView.removeFromWindow();
             mIsRunning = false;
             mHomeWatcher.stopWatch();
+            mHoverView = null;
+            mHomeWatcher = null;
         }
     }
 

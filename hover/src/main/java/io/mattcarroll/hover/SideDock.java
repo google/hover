@@ -46,8 +46,12 @@ public class SideDock extends Dock {
     @NonNull
     @Override
     public Point position() {
-        Point screenSize = new Point(mContainerView.getWidth(), mContainerView.getHeight());
-        return mSidePosition.calculateDockPosition(screenSize, mTabSize);
+        if (!(mContainerView instanceof HoverView)) {
+            Point screenSize = new Point(mContainerView.getWidth(), mContainerView.getHeight());
+            return mSidePosition.calculateDockPosition(screenSize, mTabSize);
+        } else {
+            return mSidePosition.calculateDockPosition(((HoverView) mContainerView).getScreenSize(), mTabSize);
+        }
     }
 
     @NonNull
@@ -80,8 +84,8 @@ public class SideDock extends Dock {
         public Point calculateDockPosition(@NonNull Point screenSize, int tabSize) {
             Log.d(TAG, "Calculating dock position. Screen size: " + screenSize + ", tab size: " + tabSize);
             int x = LEFT == mSide
-                    ? ((int) (tabSize * 0.25))
-                    : screenSize.x - ((int) (tabSize * 0.25));
+                    ? ((int) (tabSize * 0.4))
+                    : screenSize.x - ((int) (tabSize * 0.4));
 
             int y = (int) (screenSize.y * mVerticalDockPositionPercentage);
             y = Math.max(y, tabSize / 2);

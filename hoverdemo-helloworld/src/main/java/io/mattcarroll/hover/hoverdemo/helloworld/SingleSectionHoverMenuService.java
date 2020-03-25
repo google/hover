@@ -53,6 +53,11 @@ public class SingleSectionHoverMenuService extends HoverMenuService {
         return new SingleSectionHoverMenu(getApplicationContext());
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+    }
+
     private static class SingleSectionHoverMenu extends HoverMenu {
 
         private Context mContext;
@@ -107,6 +112,12 @@ public class SingleSectionHoverMenuService extends HoverMenuService {
             } else {
                 return null;
             }
+        }
+
+        @Override
+        public void clear() {
+            mSection = null;
+            super.clear();
         }
 
         @NonNull

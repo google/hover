@@ -15,8 +15,6 @@
  */
 package io.mattcarroll.hover;
 
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Point;
 import android.support.annotation.NonNull;
@@ -27,6 +25,8 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.RelativeLayout;
+
+import io.mattcarroll.hover.utils.ViewUtils;
 
 /**
  * Fullscreen View that provides an exit "drop zone" for users to exit the Hover Menu.
@@ -89,25 +89,13 @@ class ExitView extends RelativeLayout {
         }
 
         if (!mIsTouchInExitView && isInExitZone(position)) {
-            AnimatorSet animatorSet = new AnimatorSet();
-            ObjectAnimator scaleX = ObjectAnimator.ofFloat(mExitIcon, "scaleX", 1.65f);
-            scaleX.setDuration(250);
-            ObjectAnimator scaleY = ObjectAnimator.ofFloat(mExitIcon, "scaleY", 1.65f);
-            scaleY.setDuration(250);
-            animatorSet.playTogether(scaleX, scaleY);
-            animatorSet.start();
+            ViewUtils.scale(mExitIcon, 1.65f);
 
             mIsTouchInExitView = true;
             mExitIcon.highlight();
 
         } else if (mIsTouchInExitView && !isInExitZone(position)) {
-            AnimatorSet animatorSet = new AnimatorSet();
-            ObjectAnimator scaleX = ObjectAnimator.ofFloat(mExitIcon, "scaleX", 1f);
-            scaleX.setDuration(250);
-            ObjectAnimator scaleY = ObjectAnimator.ofFloat(mExitIcon, "scaleY", 1f);
-            scaleY.setDuration(250);
-            animatorSet.playTogether(scaleX, scaleY);
-            animatorSet.start();
+            ViewUtils.scale(mExitIcon, 1f);
 
             mIsTouchInExitView = false;
             mExitIcon.unhighlight();

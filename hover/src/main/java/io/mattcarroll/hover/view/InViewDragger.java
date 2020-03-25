@@ -15,6 +15,7 @@
  */
 package io.mattcarroll.hover.view;
 
+import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.support.annotation.NonNull;
@@ -48,6 +49,8 @@ public class InViewDragger implements Dragger {
     private final View.OnTouchListener mDragTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
+            float dragDeltaX = motionEvent.getRawX() - mOriginalTouchPosition.x;
+            float dragDeltaY = motionEvent.getRawY() - mOriginalTouchPosition.y;
             switch (motionEvent.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     Log.d(TAG, "ACTION_DOWN");
@@ -62,28 +65,24 @@ public class InViewDragger implements Dragger {
                     return true;
                 case MotionEvent.ACTION_MOVE:
                     Log.v(TAG, "ACTION_MOVE. motionX: " + motionEvent.getRawX() + ", motionY: " + motionEvent.getRawY());
-                    float dragDeltaX = motionEvent.getRawX() - mOriginalTouchPosition.x;
-                    float dragDeltaY = motionEvent.getRawY() - mOriginalTouchPosition.y;
                     mCurrentViewPosition = new PointF(
                             mOriginalViewPosition.x + dragDeltaX,
                             mOriginalViewPosition.y + dragDeltaY
                     );
 
-                    if (mIsDragging || !isTouchWithinSlopOfOriginalTouch(dragDeltaX, dragDeltaY)) {
-                        if (!mIsDragging) {
-                            // Dragging just started
-                            Log.d(TAG, "MOVE Start Drag.");
-                            mIsDragging = true;
-                            mDragListener.onDragStart(mCurrentViewPosition.x, mCurrentViewPosition.y);
-                        } else {
-                            moveDragViewTo(mCurrentViewPosition);
-                            mDragListener.onDragTo(mCurrentViewPosition.x, mCurrentViewPosition.y);
-                        }
+                    if (!mIsDragging) {
+                        // Dragging just started
+                        Log.d(TAG, "MOVE Start Drag.");
+                        mIsDragging = true;
+                        mDragListener.onDragStart(mCurrentViewPosition.x, mCurrentViewPosition.y);
+                    } else {
+                        moveDragViewTo(mCurrentViewPosition);
+                        mDragListener.onDragTo(mCurrentViewPosition.x, mCurrentViewPosition.y, isTouchWithinSlopOfOriginalTouch(dragDeltaX, dragDeltaY));
                     }
 
                     return true;
                 case MotionEvent.ACTION_UP:
-                    if (!mIsDragging) {
+                    if (isTouchWithinSlopOfOriginalTouch(dragDeltaX, dragDeltaY)) {
                         Log.d(TAG, "ACTION_UP: Tap.");
                         mDragListener.onTap();
                     } else {
@@ -125,6 +124,7 @@ public class InViewDragger implements Dragger {
         if (mIsActivated) {
             Log.d(TAG, "Deactivating.");
             mIsActivated = false;
+            mDragListener = null;
             destroyTouchControlView();
         }
     }
@@ -134,6 +134,7 @@ public class InViewDragger implements Dragger {
         mDragView.setId(R.id.hover_drag_view);
         mDragView.setLayoutParams(new ViewGroup.LayoutParams(mTouchAreaDiameter, mTouchAreaDiameter));
         mDragView.setOnTouchListener(mDragTouchListener);
+        mDragView.setBackgroundColor(Color.RED);
         mContainer.addView(mDragView);
 
         moveDragViewTo(new PointF(dragStartCenterPosition.x, dragStartCenterPosition.y));
