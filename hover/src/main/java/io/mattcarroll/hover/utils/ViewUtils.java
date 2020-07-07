@@ -2,6 +2,8 @@ package io.mattcarroll.hover.utils;
 
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.graphics.Point;
+import android.graphics.PointF;
 import android.view.View;
 
 public class ViewUtils {
@@ -53,5 +55,12 @@ public class ViewUtils {
                 animatorSet.start();
             }
         }, DEFAULT_SCALE_DURATION);
+    }
+
+    public static Point getLocationOnScreen(View view, PointF anchor) {
+        int[] result = new int[2];
+        view.getLocationOnScreen(result);
+        return new Point(result[0] + (int) (anchor.x * view.getMeasuredWidth()),
+                result[1] + (int) (anchor.y + view.getMeasuredHeight()));
     }
 }

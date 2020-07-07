@@ -18,177 +18,77 @@ package io.mattcarroll.hover.view;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PointF;
+import android.support.animation.FlingAnimation;
+import android.support.animation.FloatValueHolder;
 import android.support.annotation.NonNull;
-import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
 import io.mattcarroll.hover.Dragger;
-import io.mattcarroll.hover.R;
+import io.mattcarroll.hover.base.DraggerImpl;
 
 /**
  * {@link Dragger} implementation that works within a {@link ViewGroup}.
  */
-public class InViewDragger implements Dragger {
+public class InViewDragger extends DraggerImpl {
 
     private static final String TAG = "InViewDragger";
 
     private final ViewGroup mContainer;
-    private final int mTouchAreaDiameter;
-    private final int mTapTouchSlop;
-    private boolean mIsActivated;
-    private boolean mIsDragging;
-    private boolean mIsDebugMode = false;
     private View mDragView;
-    private DragListener mDragListener;
-    private PointF mOriginalViewPosition = new PointF();
-    private PointF mCurrentViewPosition = new PointF();
-    private PointF mOriginalTouchPosition = new PointF();
-
-    private final View.OnTouchListener mDragTouchListener = new View.OnTouchListener() {
-        @Override
-        public boolean onTouch(View view, MotionEvent motionEvent) {
-            float dragDeltaX = motionEvent.getRawX() - mOriginalTouchPosition.x;
-            float dragDeltaY = motionEvent.getRawY() - mOriginalTouchPosition.y;
-            switch (motionEvent.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    Log.d(TAG, "ACTION_DOWN");
-                    mIsDragging = false;
-
-                    mOriginalViewPosition = getDragViewCenterPosition();
-                    mCurrentViewPosition = new PointF(mOriginalViewPosition.x, mOriginalViewPosition.y);
-                    mOriginalTouchPosition.set(motionEvent.getRawX(), motionEvent.getRawY());
-
-                    mDragListener.onPress(mCurrentViewPosition.x, mCurrentViewPosition.y);
-
-                    return true;
-                case MotionEvent.ACTION_MOVE:
-                    Log.v(TAG, "ACTION_MOVE. motionX: " + motionEvent.getRawX() + ", motionY: " + motionEvent.getRawY());
-                    mCurrentViewPosition = new PointF(
-                            mOriginalViewPosition.x + dragDeltaX,
-                            mOriginalViewPosition.y + dragDeltaY
-                    );
-
-                    if (!mIsDragging) {
-                        // Dragging just started
-                        Log.d(TAG, "MOVE Start Drag.");
-                        mIsDragging = true;
-                        mDragListener.onDragStart(mCurrentViewPosition.x, mCurrentViewPosition.y);
-                    } else {
-                        moveDragViewTo(mCurrentViewPosition);
-                        mDragListener.onDragTo(mCurrentViewPosition.x, mCurrentViewPosition.y, isTouchWithinSlopOfOriginalTouch(dragDeltaX, dragDeltaY));
-                    }
-
-                    return true;
-                case MotionEvent.ACTION_UP:
-                    if (isTouchWithinSlopOfOriginalTouch(dragDeltaX, dragDeltaY)) {
-                        Log.d(TAG, "ACTION_UP: Tap.");
-                        mDragListener.onTap();
-                    } else {
-                        Log.d(TAG, "ACTION_UP: Released from dragging.");
-                        mDragListener.onReleasedAt(mCurrentViewPosition.x, mCurrentViewPosition.y);
-                    }
-
-                    return true;
-                default:
-                    return false;
-            }
-        }
-    };
 
     public InViewDragger(@NonNull ViewGroup container, int touchAreaDiameter, int touchSlop) {
+        super(touchAreaDiameter, touchSlop);
         mContainer = container;
-        mTouchAreaDiameter = touchAreaDiameter;
-        mTapTouchSlop = touchSlop;
     }
 
     @Override
-    public void enableDebugMode(boolean isDebugMode) {
-        mIsDebugMode = isDebugMode;
-        updateTouchControlViewAppearance();
+    protected View getDragView() {
+        return mDragView;
     }
 
     @Override
-    public void activate(@NonNull DragListener dragListener, @NonNull Point dragStartCenterPosition) {
-        if (!mIsActivated) {
-            Log.d(TAG, "Activating.");
-            mIsActivated = true;
-            mDragListener = dragListener;
-            createTouchControlView(dragStartCenterPosition);
-        }
-    }
-
-    @Override
-    public void deactivate() {
-        if (mIsActivated) {
-            Log.d(TAG, "Deactivating.");
-            mIsActivated = false;
-            mDragListener = null;
-            destroyTouchControlView();
-        }
-    }
-
-    private void createTouchControlView(@NonNull Point dragStartCenterPosition) {
-        mDragView = new View(mContainer.getContext());
-        mDragView.setId(R.id.hover_drag_view);
-        mDragView.setLayoutParams(new ViewGroup.LayoutParams(mTouchAreaDiameter, mTouchAreaDiameter));
-        mDragView.setOnTouchListener(mDragTouchListener);
-        mDragView.setBackgroundColor(Color.RED);
-        mContainer.addView(mDragView);
-
-        moveDragViewTo(new PointF(dragStartCenterPosition.x, dragStartCenterPosition.y));
-        updateTouchControlViewAppearance();
-    }
-
-    private void destroyTouchControlView() {
-        mContainer.removeView(mDragView);
-
-        mDragView.setOnTouchListener(null);
-        mDragView = null;
-    }
-
-    private void updateTouchControlViewAppearance() {
-        if (null != mDragView) {
-            if (mIsDebugMode) {
-                Log.d(TAG, "Making mDragView red: " + mDragView.hashCode());
-                mDragView.setBackgroundColor(0x44FF0000);
-            } else {
-                mDragView.setBackgroundColor(0x00000000);
-            }
-        }
-    }
-
-    private boolean isTouchWithinSlopOfOriginalTouch(float dx, float dy) {
-        double distance = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
-        return distance < mTapTouchSlop;
-    }
-
-    private PointF getDragViewCenterPosition() {
+    protected PointF getDragViewCenterPosition() {
         return convertCornerToCenter(new PointF(
                 mDragView.getX(),
                 mDragView.getY()
         ));
     }
 
-    private void moveDragViewTo(PointF centerPosition) {
-        Log.d(TAG, "Moving drag view (" + mDragView.hashCode() + ") to: " + centerPosition);
+    @Override
+    protected void createTouchControlView(@NonNull Point dragStartCenterPosition) {
+        mDragView = new View(mContainer.getContext());
+        mDragView.setLayoutParams(new ViewGroup.LayoutParams(getTouchAreaDiameter(), getTouchAreaDiameter()));
+        mDragView.setOnTouchListener(getDragTouchListener());
+        mDragView.setBackgroundColor(Color.RED);
+        mContainer.addView(mDragView);
+
+        moveDragViewTo(new PointF(dragStartCenterPosition.x - getTouchAreaDiameter() / 2f, dragStartCenterPosition.y - getTouchAreaDiameter() / 2f));
+        updateTouchControlViewAppearance();
+    }
+
+    @Override
+    protected void destroyTouchControlView() {
+        mContainer.removeView(mDragView);
+
+        mDragView.setOnTouchListener(null);
+        mDragView = null;
+    }
+
+    @Override
+    protected void moveDragViewTo(PointF centerPosition) {
         PointF cornerPosition = convertCenterToCorner(centerPosition);
         mDragView.setX(cornerPosition.x);
         mDragView.setY(cornerPosition.y);
     }
 
-    private PointF convertCornerToCenter(@NonNull PointF cornerPosition) {
-        return new PointF(
-                cornerPosition.x + (mTouchAreaDiameter / 2),
-                cornerPosition.y + (mTouchAreaDiameter / 2)
-        );
-    }
-
-    private PointF convertCenterToCorner(@NonNull PointF centerPosition) {
-        return new PointF(
-                centerPosition.x - (mTouchAreaDiameter / 2),
-                centerPosition.y - (mTouchAreaDiameter / 2)
-        );
+    @Override
+    protected FlingAnimation createAnimation(float startValue, float startVelocity, float minValue, float maxValue) {
+        float scaleVelocity = 12000f / Math.max(Math.abs(getXVelocity()), Math.abs(getYVelocity()));
+        return new FlingAnimation(new FloatValueHolder(startValue))
+                .setStartVelocity(scaleVelocity * startVelocity)
+                .setMinValue(minValue)
+                .setMaxValue(maxValue)
+                .setFriction(getDefaultFriction());
     }
 }

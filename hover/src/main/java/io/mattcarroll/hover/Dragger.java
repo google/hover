@@ -42,6 +42,8 @@ public interface Dragger {
      */
     void enableDebugMode(boolean debugMode);
 
+    void brakeIfFling();
+
     interface DragListener {
 
         /**

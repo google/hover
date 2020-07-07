@@ -23,12 +23,12 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Queue;
 
+import io.mattcarroll.hover.physics.SpringViewWrapper;
 import io.mattcarroll.hover.utils.ViewUtils;
+import io.mattcarroll.hover.window.InWindowDragger;
 
 import static android.view.View.GONE;
 import static android.view.View.INVISIBLE;
@@ -57,8 +57,8 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     private FloatingTabDragListener mDragListener;
     private Listener mListener;
 
+    private List<SpringViewWrapper> mFollowTabs = new ArrayList<>();
     private List<FloatingTab> mChainedTabs = new ArrayList<>();
-    private Queue<Point> mHistory = new ArrayDeque<>();
     private boolean mIsInExitView = false;
     private FloatingTab.OnPositionChangeListener mOnPositionChangeListener;
 
@@ -79,27 +79,26 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
 
     @Override
     public void takeControl(@NonNull HoverView hoverView) {
-        Log.d(TAG, "Taking control.");
         super.takeControl(hoverView);
 
         if (mHasControl) {
-            Log.w(TAG, "Already has control.");
             return;
         }
-
-        Log.d(TAG, "Instructing tab to dock itself.");
         mHasControl = true;
+
+        // Apply for hoverView
         mHoverView = hoverView;
         mHoverView.mState = this;
-        mHoverView.clearFocus(); // For handling hardware back button presses.
+        mHoverView.clearFocus();
         mHoverView.mScreen.getContentDisplay().setVisibility(GONE);
         mHoverView.makeUntouchableInWindow();
 
-        Log.d(TAG, "Taking control with selected section: " + mHoverView.mSelectedSectionId);
+        // Initialize selected section
         mSelectedSection = mHoverView.mMenu.getSection(mHoverView.mSelectedSectionId);
         mSelectedSection = null != mSelectedSection ? mSelectedSection : mHoverView.mMenu.getSection(0);
         mSelectedSectionIndex = mHoverView.mMenu.getSectionIndex(mSelectedSection);
         mFloatingTab = mHoverView.mScreen.getChainedTab(mHoverView.mSelectedSectionId);
+
         final boolean wasFloatingTabVisible;
         if (null == mFloatingTab) {
             wasFloatingTabVisible = false;
@@ -114,11 +113,11 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
             mListener.onCollapsing();
         }
         initDockPosition();
-
-        // post() animation to dock in case the container hasn't measured itself yet.
         if (!wasFloatingTabVisible) {
             mFloatingTab.setVisibility(INVISIBLE);
         }
+
+        // Initialize chained tabs
         createChainedTabs();
         mHoverView.post(new Runnable() {
             @Override
@@ -134,28 +133,40 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
             }
         });
 
+        // Add on layout change listener
         mFloatingTab.addOnLayoutChangeListener(mOnLayoutChangeListener);
 
+        // Listen for menu changes
         if (null != mHoverView.mMenu) {
             listenForMenuChanges();
+        }
+
+        // Initialize screen size
+        if (mHoverView.mDragger instanceof InWindowDragger) {
+            Point screenSize = mHoverView.getScreenSize();
+            ((InWindowDragger) mHoverView.mDragger).setScreenSize(screenSize.x, screenSize.y);
         }
     }
 
     private void createChainedTabs() {
-        Log.d(TAG, "Creating chained tabs");
-        if (null != mHoverView.mMenu) {
-            final int sectionCount = mHoverView.mMenu.getSectionCount();
-            for (int i = 0; i < sectionCount; i++) {
-                HoverMenu.Section section = mHoverView.mMenu.getSection(i);
+        if (null == mHoverView.mMenu) return;
 
-                if (section == null) continue;
-                if (!section.isContainsDisplayType(HoverMenu.Section.DisplayType.COLLAPSED))
-                    continue;
+        final int sectionCount = mHoverView.mMenu.getSectionCount();
+        for (int i = 0; i < sectionCount; i++) {
+            HoverMenu.Section section = mHoverView.mMenu.getSection(i);
 
-                FloatingTab chainedTab = mHoverView.mScreen.createChainedTab(section.getId(), section.getTabView());
-                mChainedTabs.add(chainedTab);
-            }
-            reorderChainedTabs();
+            if (section == null
+                    || !section.isContainsDisplayType(HoverMenu.Section.DisplayType.COLLAPSED))
+                continue;
+
+            FloatingTab chainedTab = mHoverView.mScreen.createChainedTab(section.getId(), section.getTabView());
+            mChainedTabs.add(chainedTab);
+            mFollowTabs.add(new SpringViewWrapper(chainedTab));
+        }
+        reorderChainedTabs();
+
+        for (int i = 0; i < mFollowTabs.size(); i++) {
+            mFollowTabs.get(i).onStart();
         }
     }
 
@@ -174,7 +185,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
 
     @Override
     public void collapse() {
-        Log.d(TAG, "Instructed to collapse, but already collapsed.");
+        // No-op
     }
 
     @Override
@@ -183,18 +194,28 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     }
 
     private void changeState(@NonNull HoverViewState nextState) {
-        Log.d(TAG, "Giving up control.");
         if (!mHasControl) {
             throw new RuntimeException("Cannot give control to another HoverMenuController when we don't have the HoverTab.");
         }
-
-        mFloatingTab.removeOnPositionChangeListener(mOnPositionChangeListener);
-        mFloatingTab.removeOnLayoutChangeListener(mOnLayoutChangeListener);
 
         if (null != mHoverView.mMenu) {
             mHoverView.mMenu.setUpdatedCallback(null);
         }
 
+        // Remove listener
+        mFloatingTab.removeOnPositionChangeListener(mOnPositionChangeListener);
+        mFloatingTab.removeOnLayoutChangeListener(mOnLayoutChangeListener);
+        mOnPositionChangeListener = null;
+
+        // Clear chained tabs
+        mChainedTabs.clear();
+        for (int i = 0; i < mFollowTabs.size(); i++) {
+            mFollowTabs.get(i).onDestroy();
+        }
+        mFollowTabs.clear();
+        mDragListener.detach();
+
+        // Reset variable
         mHasControl = false;
         mIsDocked = false;
         deactivateDragger();
@@ -204,10 +225,6 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         }
         mFloatingTab = null;
         mSelectedSection = null;
-
-        mChainedTabs.clear();
-        mOnPositionChangeListener = null;
-
         mHoverView.setState(nextState);
         mHoverView = null;
     }
@@ -216,7 +233,6 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     public void setMenu(@Nullable final HoverMenu menu) {
         mHoverView.mMenu = menu;
 
-        // If the menu is null or empty then we can't be collapsed, close the menu.
         if (null == menu || menu.getSectionCount() == 0) {
             close();
             return;
@@ -337,39 +353,52 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
 
         boolean droppedOnExit = mHoverView.mScreen.getExitView().isInExitZone(mFloatingTab.getPosition());
         if (droppedOnExit) {
-            Log.d(TAG, "User dropped floating tab on exit.");
-            closeMenu(new Runnable() {
+            mHoverView.mScreen.getExitView().releaseExit(mChainedTabs, new Runnable() {
                 @Override
                 public void run() {
-                    if (null != mHoverView.mOnExitListener) {
-                        mHoverView.mOnExitListener.onExit();
-                    }
+                    dropOnExitRegion();
                 }
             });
         } else {
-            int tabSize = mHoverView.getResources().getDimensionPixelSize(R.dimen.hover_tab_size);
-            Point screenSize = new Point(mHoverView.mScreen.getWidth(), mHoverView.mScreen.getHeight());
-            float tabHorizontalPositionPercent = (float) mFloatingTab.getPosition().x / screenSize.x;
-            float tabVerticalPosition = (float) mFloatingTab.getPosition().y / screenSize.y;
-            Log.d(TAG, "Dropped at horizontal " + tabHorizontalPositionPercent + ", vertical " + tabVerticalPosition);
-            SideDock.SidePosition sidePosition = new SideDock.SidePosition(
-                    tabHorizontalPositionPercent <= 0.5 ? SideDock.SidePosition.LEFT : SideDock.SidePosition.RIGHT,
-                    tabVerticalPosition
-            );
-            mHoverView.mCollapsedDock = new SideDock(
-                    mHoverView,
-                    tabSize,
-                    sidePosition
-            );
-            mHoverView.saveVisualState();
-            Log.d(TAG, "User dropped tab. Sending to new dock: " + mHoverView.mCollapsedDock);
-
-            sendToDock();
+            mHoverView.mScreen.getExitView().releaseExit(null);
+            dropNotOnExitRegion();
         }
     }
 
+    private void dropOnExitRegion() {
+        closeMenu(new Runnable() {
+            @Override
+            public void run() {
+                if (null != mHoverView && null != mHoverView.mOnExitListener) {
+                    mHoverView.mOnExitListener.onExit();
+                }
+            }
+        });
+    }
+
+    private void dropNotOnExitRegion() {
+        mHoverView.mCollapsedDock = getNewDock();
+        mHoverView.saveVisualState();
+        sendToDock();
+    }
+
+    private SideDock getNewDock() {
+        int tabSize = mHoverView.getResources().getDimensionPixelSize(R.dimen.hover_tab_size);
+        Point screenSize = mHoverView.getScreenSize();
+        float tabHorizontalPositionPercent = (float) mFloatingTab.getPosition().x / screenSize.x;
+        float tabVerticalPosition = (float) mFloatingTab.getPosition().y / screenSize.y;
+        SideDock.SidePosition sidePosition = new SideDock.SidePosition(
+                tabHorizontalPositionPercent <= 0.5 ? SideDock.SidePosition.LEFT : SideDock.SidePosition.RIGHT,
+                tabVerticalPosition
+        );
+        return new SideDock(
+                mHoverView,
+                tabSize,
+                sidePosition
+        );
+    }
+
     private void onTap() {
-        Log.d(TAG, "Floating tab was tapped.");
         expand();
         if (null != mListener) {
             mListener.onTap();
@@ -377,11 +406,11 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     }
 
     private void addOnPositionChangeListener() {
-        if (mOnPositionChangeListener == null) {
+        if (mOnPositionChangeListener == null && mFloatingTab != null) {
             mOnPositionChangeListener = new FloatingTab.OnPositionChangeListener() {
                 @Override
                 public void onPositionChange(@NonNull Point tabPosition) {
-                    chainedTabsFollow(tabPosition);
+                    animateChainedTabs(tabPosition);
                 }
 
                 @Override
@@ -394,9 +423,9 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     }
 
     private void sendToDock() {
-        Log.d(TAG, "Sending floating tab to dock.");
         mIsDocked = false;
         deactivateDragger();
+
         mFloatingTab.setDock(mHoverView.mCollapsedDock);
         mFloatingTab.dock(new Runnable() {
             @Override
@@ -418,6 +447,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         for (int i = 0; i < mChainedTabs.size(); i++) {
             mChainedTabs.get(i).moveTo(dockPosition);
         }
+
         deactivateDragger();
         activateDragger();
     }
@@ -434,11 +464,9 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     }
 
     private void onDocked() {
-        Log.d(TAG, "Docked. Activating dragger.");
         mIsDocked = true;
         activateDragger();
 
-        // We consider ourselves having gone from "collapsing" to "collapsed" upon the very first dock.
         boolean didJustCollapse = !mIsCollapsed;
         mIsCollapsed = true;
         mHoverView.saveVisualState();
@@ -459,21 +487,26 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
                 mIsInExitView = true;
                 exitView.bringExitIconToFront((ViewGroup) mFloatingTab.getParent());
                 mFloatingTab.moveTo(exitView.getExitViewPosition());
-                for (int i = 0; i < mChainedTabs.size(); i++)
-                    mChainedTabs.get(i).moveTo(exitView.getExitViewPosition());
+
+                mHoverView.mDragger.brakeIfFling();
             }
+            animateChainedTabs(exitView.getExitViewPosition());
         } else {
             mIsInExitView = false;
             mFloatingTab.moveTo(position);
+            animateChainedTabs(position);
         }
-        chainedTabsFollow(position);
     }
 
     private void closeMenu(final @Nullable Runnable onClosed) {
         mFloatingTab.disappear(new Runnable() {
             @Override
             public void run() {
-                mHoverView.mScreen.destroyChainedTab(mFloatingTab);
+                if (mHoverView != null) {
+                    for (int i = 0; i < mChainedTabs.size(); i++) {
+                        mHoverView.mScreen.destroyChainedTab(mChainedTabs.get(i));
+                    }
+                }
 
                 if (null != onClosed) {
                     onClosed.run();
@@ -485,33 +518,26 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
     }
 
     private void activateDragger() {
+        if (mHoverView == null) return;
         mHoverView.mDragger.activate(mDragListener, mFloatingTab.getPosition());
     }
 
     private void deactivateDragger() {
+        if (mHoverView == null) return;
         mHoverView.mDragger.deactivate();
     }
 
-    private void chainedTabsFollow(Point position) {
-        Object[] history = mHistory.toArray();
-        if (!mIsInExitView) {
-            int count = 0;
-            for (int i = 0; i < mChainedTabs.size(); i++) {
-                if (i == mSelectedSectionIndex) continue;
-                count++;
-                int mDistanceBetweenChainedTabs = 2;
-                if (history.length >= mDistanceBetweenChainedTabs * count) {
-                    mChainedTabs.get(i).moveTo((Point) history[history.length - mDistanceBetweenChainedTabs * count]);
-                }
+    private void animateChainedTabs(Point position) {
+        for (int i = 0; i < mChainedTabs.size(); i++) {
+            if (i == mSelectedSectionIndex) continue;
+            mFollowTabs.get(i).updatePosition(position);
+            if (mIsDocked) {
+                position.x += (mHoverView.mCollapsedDock.sidePosition().getSide() == SideDock.SidePosition.LEFT ? -1 : 1)
+                        * 5;
+            } else {
+                position = mChainedTabs.get(i).getPosition();
             }
         }
-        updateHistory(position);
-    }
-
-    private void updateHistory(Point position) {
-        mHistory.add(position);
-        if (mHistory.size() > mChainedTabs.size() * 2)
-            mHistory.poll();
     }
 
     public interface Listener {
@@ -553,15 +579,13 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
         public void onDragTo(float x, float y, boolean isTouchWithinSlopOfOriginalTouch) {
             Point point = new Point((int) x, (int) y);
             if (!isTouchWithinSlopOfOriginalTouch) {
-                mOwner.mHoverView.mScreen.getExitView()
-                        .prepareExit(point);
+                mOwner.mHoverView.mScreen.getExitView().prepareExit(point);
             }
             mOwner.moveTabTo(point);
         }
 
         @Override
         public void onReleasedAt(float x, float y) {
-            mOwner.mHoverView.mScreen.getExitView().releaseExit();
             ViewUtils.scale(mOwner.mFloatingTab, 1f);
             mOwner.onDroppedByUser();
         }

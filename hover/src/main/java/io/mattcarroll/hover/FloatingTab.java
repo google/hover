@@ -38,11 +38,11 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * collapsed, it is reduced to a single {@code FloatingTab} that the user can drag and drop.  When
  * a {@code HoverView} is expanded, that one {@code FloatingTab} slides to a row of tabs that appear
  * and offer a menu system.
- *
+ * <p>
  * A {@code FloatingTab} can move around the screen in various ways. A {@code FloatingTab} can place
  * itself at a "dock position", or slide from its current position to its "dock position", or
  * position itself at an arbitrary location on screen.
- *
+ * <p>
  * {@code FloatingTab}s position themselves based on their center.
  */
 class FloatingTab extends FrameLayout {
@@ -154,7 +154,8 @@ class FloatingTab extends FrameLayout {
 
         animatorSet.addListener(new Animator.AnimatorListener() {
             @Override
-            public void onAnimationStart(Animator animation) { }
+            public void onAnimationStart(Animator animation) {
+            }
 
             @Override
             public void onAnimationEnd(Animator animation) {
@@ -166,10 +167,12 @@ class FloatingTab extends FrameLayout {
             }
 
             @Override
-            public void onAnimationCancel(Animator animation) { }
+            public void onAnimationCancel(Animator animation) {
+            }
 
             @Override
-            public void onAnimationRepeat(Animator animation) { }
+            public void onAnimationRepeat(Animator animation) {
+            }
         });
     }
 
@@ -218,6 +221,10 @@ class FloatingTab extends FrameLayout {
         return mDock.position();
     }
 
+    public boolean isHasDock() {
+        return null != mDock;
+    }
+
     public void setDock(@NonNull Dock dock) {
         mDock = dock;
         notifyListenersOfDockChange();
@@ -227,58 +234,15 @@ class FloatingTab extends FrameLayout {
         dock(null);
     }
 
-    public AnimatorSet dockWithDuration(@Nullable final Runnable onDocked, long duration) {
-        Point destinationCornerPosition = convertCenterToCorner(mDock.position());
-        Log.d(TAG, "Docking to destination point: " + destinationCornerPosition);
-
-        ObjectAnimator xAnimation = ObjectAnimator.ofFloat(this, "x", destinationCornerPosition.x);
-        xAnimation.setDuration(duration);
-        xAnimation.setInterpolator(new OvershootInterpolator());
-        ObjectAnimator yAnimation = ObjectAnimator.ofFloat(this, "y", destinationCornerPosition.y);
-        yAnimation.setDuration(duration);
-        yAnimation.setInterpolator(new OvershootInterpolator());
-        AnimatorSet animatorSet = new AnimatorSet();
-        animatorSet.play(xAnimation).with(yAnimation);
-        animatorSet.start();
-
-        animatorSet.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animation) { }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                if (null != onDocked) {
-                    onDocked.run();
-                }
-                notifyListenersOfPositionChange();
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animation) { }
-
-            @Override
-            public void onAnimationRepeat(Animator animation) { }
-        });
-
-        xAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                notifyListenersOfPositionChange();
-            }
-        });
-
-        return animatorSet;
-    }
-
     public void dock(@Nullable final Runnable onDocked) {
         Point destinationCornerPosition = convertCenterToCorner(mDock.position());
         Log.d(TAG, "Docking to destination point: " + destinationCornerPosition);
 
         ObjectAnimator xAnimation = ObjectAnimator.ofFloat(this, "x", destinationCornerPosition.x);
-        xAnimation.setDuration(450);
+        xAnimation.setDuration(350);
         xAnimation.setInterpolator(new OvershootInterpolator());
         ObjectAnimator yAnimation = ObjectAnimator.ofFloat(this, "y", destinationCornerPosition.y);
-        yAnimation.setDuration(450);
+        yAnimation.setDuration(350);
         yAnimation.setInterpolator(new OvershootInterpolator());
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.playTogether(xAnimation, yAnimation);
@@ -287,7 +251,8 @@ class FloatingTab extends FrameLayout {
 
         animatorSet.addListener(new Animator.AnimatorListener() {
             @Override
-            public void onAnimationStart(Animator animation) { }
+            public void onAnimationStart(Animator animation) {
+            }
 
             @Override
             public void onAnimationEnd(Animator animation) {
@@ -298,13 +263,22 @@ class FloatingTab extends FrameLayout {
             }
 
             @Override
-            public void onAnimationCancel(Animator animation) { }
+            public void onAnimationCancel(Animator animation) {
+            }
 
             @Override
             public void onAnimationRepeat(Animator animation) {
             }
         });
+
         xAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                notifyListenersOfPositionChange();
+            }
+        });
+
+        yAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
                 notifyListenersOfPositionChange();
@@ -351,8 +325,6 @@ class FloatingTab extends FrameLayout {
         }
     }
 
-    // This method is declared in this class simply to make it clear that its part of our public
-    // contract and not just an inherited method.
     public void setOnClickListener(@Nullable View.OnClickListener onClickListener) {
         super.setOnClickListener(onClickListener);
     }

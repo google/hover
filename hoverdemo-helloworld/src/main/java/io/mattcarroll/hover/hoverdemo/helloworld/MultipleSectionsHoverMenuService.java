@@ -25,10 +25,7 @@ import android.widget.ImageView;
 import org.codecanon.hover.hoverdemo.helloworld.R;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
 
 import io.mattcarroll.hover.HoverMenu;
 import io.mattcarroll.hover.HoverView;
@@ -37,7 +34,7 @@ import io.mattcarroll.hover.window.HoverMenuService;
 /**
  * Extend {@link HoverMenuService} to get a Hover menu that displays the tabs and content
  * in your custom {@link HoverMenu}.
- *
+ * <p>
  * This demo menu displays multiple sections of content.
  */
 public class MultipleSectionsHoverMenuService extends HoverMenuService {
@@ -66,24 +63,25 @@ public class MultipleSectionsHoverMenuService extends HoverMenuService {
             mContext = context.getApplicationContext();
 
             mSections = new ArrayList<>();
-            mSections.add(new Section(
-                    new SectionId("1"),
-                    createTabView(),
-                    new HoverMenuScreen(mContext, "Screen 1")
-            ));
-            mSections.add(new Section(
-                    new SectionId("2"),
-                    createTabView(),
-                    new HoverMenuScreen(mContext, "Screen 2")
-            ));
+            for (int i = 0; i < 4; i++) {
+                mSections.add(new Section(
+                        new SectionId(String.valueOf(i)),
+                        createTabView(),
+                        new HoverMenuScreen(mContext, "Screen 1")
+                ));
+            }
+
+
+            notifyMenuChanged();
         }
 
         int mCounter = 0;
+
         private View createTabView() {
             mCounter++;
             ImageView imageView = new ImageView(mContext);
             imageView.setImageResource(R.drawable.tab_background);
-            if (mCounter == 1)
+            if (mCounter % 2 == 0)
                 imageView.setImageResource(R.drawable.tab_background_blue);
             return imageView;
         }

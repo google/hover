@@ -2,7 +2,7 @@
     <dimen name="hover_tab_size">70dp</dimen>
     <dimen name="hover_tab_margin">0dp</dimen>
     <dimen name="hover_navigator_corner_radius">7dp</dimen>
-    <dimen name="hover_exit_icon_size">50dp</dimen>
-    <dimen name="hover_exit_radius">65dp</dimen>
+    <dimen name="hover_exit_icon_size">60dp</dimen>
+    <dimen name="hover_exit_radius">85dp</dimen>
     <dimen name="hover_exit_margin_bottom">100dp</dimen>
 </resources>

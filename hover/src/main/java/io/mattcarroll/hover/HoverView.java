@@ -263,11 +263,14 @@ public class HoverView extends RelativeLayout {
         Context context = getContext();
         int touchDiameter = context.getResources().getDimensionPixelSize(R.dimen.hover_exit_radius);
         int slop = ViewConfiguration.get(context).getScaledTouchSlop();
-        return new InViewDragger(
+        InViewDragger dragger = new InViewDragger(
                 this,
                 touchDiameter,
                 slop
         );
+        dragger.setScreenSize(getScreenSize());
+
+        return dragger;
     }
 
     void setState(@NonNull HoverViewState state) {
