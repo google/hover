@@ -315,6 +315,7 @@ class HoverViewStateCollapsed extends BaseHoverViewState {
                 mFloatingTab.getTabSize()
         );
         mFloatingTab.moveTo(dockPosition);
+        mHoverView.mDragger.moveTo(dockPosition);
     }
 
     private void initDockPosition() {
